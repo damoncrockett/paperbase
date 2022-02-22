@@ -1,0 +1,40 @@
+{
+  "name": "phenome",
+  "packageManager": "yarn@3.2.0",
+  "devDependencies": {
+    "buble": "^0.20.0",
+    "buble-loader": "^0.5.1",
+    "css-loader": "^6.6.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  },
+  "description": "LML paper phenome",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production",
+    "start": "webpack serve --hot --mode development",
+    "deploy": "aws s3 sync /Users/damoncrockett/phenome/dist/ s3://ipch.app/phenome/",
+    "sync": "aws s3 sync /Users/damoncrockett/phenome/src/assets/json/ s3://ipch.app/phenome/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damoncrockett/phenome.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/damoncrockett/phenome/issues"
+  },
+  "homepage": "https://github.com/damoncrockett/phenome#readme",
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "three": "^0.137.5"
+  }
+}
