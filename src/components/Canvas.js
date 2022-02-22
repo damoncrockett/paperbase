@@ -69,13 +69,22 @@ class Canvas extends Component {
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 
     // Use a simple material with a specified hex color
-    var material = new THREE.MeshBasicMaterial({ color: 0x1e90ff });
+    var material = new THREE.MeshPhongMaterial({color: 0x1e90ff})
 
     // Combine the geometry and material into a mesh
     var cube = new THREE.Mesh( geometry, material );
 
     // Add the mesh to the scene
     scene.add( cube );
+
+    // Add a point light with #fff color, .7 intensity, and 0 distance
+    var light = new THREE.PointLight(0xffffff, .7, 0);
+
+    // Specify the light's position in the x, y, and z dimensions
+    light.position.set(1, 1, 100);
+
+    // Add the light to the scene
+    scene.add(light)
 
     function animate() {
       requestAnimationFrame( animate );
