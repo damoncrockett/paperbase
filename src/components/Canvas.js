@@ -5,8 +5,7 @@ class Canvas extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-    }
+    this.state = {}
 
     this.returnDomain = this.returnDomain.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
@@ -63,19 +62,7 @@ class Canvas extends Component {
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     // Add the canvas to the DOM
-    document.body.appendChild( renderer.domElement );
-
-    // Create a cube with width, height, and depth set to 1
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-
-    // Use a simple material with a specified hex color
-    var material = new THREE.MeshPhongMaterial({color: 0x1e90ff})
-
-    // Combine the geometry and material into a mesh
-    var cube = new THREE.Mesh( geometry, material );
-
-    // Add the mesh to the scene
-    scene.add( cube );
+    document.getElementById("canvas").appendChild(renderer.domElement);
 
     // Add a point light with #fff color, .7 intensity, and 0 distance
     var light = new THREE.PointLight(0xffffff, .7, 0);
@@ -84,19 +71,106 @@ class Canvas extends Component {
     light.position.set(1, 1, 100);
 
     // Add the light to the scene
+    // This, btw, is necessary if you're using textures, it seems
     scene.add(light)
 
+    // Create a texture loader so we can load the image file
+    var loader = new THREE.TextureLoader();
+
+    // Specify the path to an image
+    var url = 'https://s3.amazonaws.com/duhaime/blog/tsne-webgl/assets/cat.jpg';
+
+    // Load an image file into a MeshLambert material
+    var material = new THREE.MeshLambertMaterial({
+      map: loader.load(url)
+    });
+
+    // identify the image width and height
+    var imageSize = {width: 4, height: 4};
+
+    // identify the x, y, z coords where the image should be placed
+    // inside the scene
+    var coords = {x: -2, y: -2, z: 0};
+
+    const vertices = [
+      {
+        pos:[coords.x, coords.y, coords.z],
+        norm:[0,0,1],
+        uv:[0,0]
+      },
+      {
+        pos:[coords.x+imageSize.width, coords.y, coords.z],
+        norm:[0,0,1],
+        uv:[1,0]
+      },
+      {
+        pos:[coords.x+imageSize.width, coords.y+imageSize.height, coords.z],
+        norm:[0,0,1],
+        uv:[1,1]
+      },
+      {
+        pos:[coords.x+imageSize.width, coords.y+imageSize.height, coords.z],
+        norm:[0,0,1],
+        uv:[1,1]
+      },
+      {
+        pos:[coords.x, coords.y+imageSize.height, coords.z],
+        norm:[0,0,1],
+        uv:[0,1]
+      },
+      {
+        pos:[coords.x, coords.y, coords.z],
+        norm:[0,0,1],
+        uv:[0,0]
+      },
+
+    ];
+
+    let positions = [];
+    const normals = [];
+    const uvs = [];
+
+    vertices.forEach((item, i) => {
+      positions.push(...item.pos);
+      normals.push(...item.norm);
+      uvs.push(...item.uv);
+    });
+
+    const geometry = new THREE.BufferGeometry();
+    const positionNumComponents = 3;
+    const normalNumComponents = 3;
+    const uvNumComponents = 2;
+    geometry.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(positions), positionNumComponents));
+
+    geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents));
+
+    geometry.setAttribute(
+        'uv',
+        new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
+
+    // combine the image geometry and material into a mesh
+    var mesh = new THREE.Mesh(geometry, material);
+
+    // set the position of the image mesh in the x,y,z dimensions
+    mesh.position.set(0,0,-10);
+
+    // add the image to the scene
+    scene.add(mesh);
+
+    // necessary for meshes it seems
     function animate() {
       requestAnimationFrame( animate );
-      renderer.render( scene, camera );
+        renderer.render( scene, camera );
 
-      // Rotate the object a bit each animation frame
-      cube.rotation.y += 0.01;
-      cube.rotation.z += 0.01;
-    }
+        mesh.rotation.z += 0.01
+
+      }
 
     animate();
-
   }
 
   render() {
