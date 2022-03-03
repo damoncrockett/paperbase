@@ -28,7 +28,7 @@ class App extends Component {
   }
 
   getData() {
-    fetch(this.returnDomain()+'_data.json')
+    fetch(this.returnDomain()+'_0.json')
       .then(response => response.json())
       .then(data => this.setState(state => ({
         data: data
