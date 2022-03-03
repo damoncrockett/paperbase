@@ -17,10 +17,6 @@ class Canvas extends Component {
     if (prevProps.data !== this.props.data && prevProps.data === null) {
       this.drawCanvas();
     }
-
-    if (prevProps.data !== this.props.data && prevProps.data !== null) {
-      this.drawCanvas();
-    }
   }
 
   returnDomain() {
@@ -28,13 +24,12 @@ class Canvas extends Component {
     return production ? '' : 'http://localhost:8888/'
   }
 
-
   drawCanvas() {
     // Create the scene and a camera to view it
     var scene = new THREE.Scene();
 
     // Specify the portion of the scene visiable at any time (in degrees)
-    var fieldOfView = 100;
+    var fieldOfView = 90;
 
     // Specify the camera's aspect ratio
     var aspectRatio = window.innerWidth / window.innerHeight;
@@ -52,7 +47,7 @@ class Canvas extends Component {
     );
 
     // Finally, set the camera's position in the z-dimension
-    camera.position.z = 1800;
+    camera.position.z = 800;
 
     // Create the canvas with a renderer and tell the
     // renderer to clean up jagged aliased lines
@@ -80,37 +75,43 @@ class Canvas extends Component {
     // Create a texture loader so we can load the image file
     var loader = new THREE.TextureLoader();
 
-    // Load an image file into a MeshLambert material
-    var material = new THREE.MeshLambertMaterial({
-      map: loader.load(this.returnDomain()+'img/0.jpg')
-    });
-
     const data = this.props.data;
 
-    const geometry = new THREE.BufferGeometry();
-    const positionNumComponents = 3;
-    const normalNumComponents = 3;
-    const uvNumComponents = 2;
-    geometry.setAttribute(
-        'position',
-        new THREE.BufferAttribute(new Float32Array(data.pos), positionNumComponents));
+    for (var i=0; i<2; i++) {
+      // Load an image file into a MeshLambert material
+      let material = new THREE.MeshLambertMaterial({
+        map: loader.load(this.returnDomain()+'img/'+ i +'.jpg')
+      });
 
-    geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(data.norm), normalNumComponents));
+      let vertices = data[i];
+      console.log(vertices);
 
-    geometry.setAttribute(
-        'uv',
-        new THREE.BufferAttribute(new Float32Array(data.uv), uvNumComponents));
+      let geometry = new THREE.BufferGeometry();
+      let positionNumComponents = 3;
+      let normalNumComponents = 3;
+      let uvNumComponents = 2;
+      geometry.setAttribute(
+          'position',
+          new THREE.BufferAttribute(new Float32Array(vertices.pos), positionNumComponents));
 
-    // combine the image geometry and material into a mesh
-    var mesh = new THREE.Mesh(geometry, material);
+      geometry.setAttribute(
+          'normal',
+          new THREE.BufferAttribute(new Float32Array(vertices.norm), normalNumComponents));
 
-    // set the position of the image mesh in the x,y,z dimensions
-    mesh.position.set(0,0,0);
+      geometry.setAttribute(
+          'uv',
+          new THREE.BufferAttribute(new Float32Array(vertices.uv), uvNumComponents));
 
-    // add the image to the scene
-    scene.add(mesh);
+      // combine the image geometry and material into a mesh
+      var mesh = new THREE.Mesh(geometry, material);
+
+      // set the position of the image mesh in the x,y,z dimensions
+      mesh.position.set(0,0,0);
+
+      // add the image to the scene
+      scene.add(mesh);
+
+    }
 
     // necessary for meshes it seems
     function animate() {
@@ -119,6 +120,7 @@ class Canvas extends Component {
       }
 
     animate();
+
   }
 
   render() {
