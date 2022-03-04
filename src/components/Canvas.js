@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
-import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 class Canvas extends Component {
   constructor(props) {
@@ -28,9 +28,10 @@ class Canvas extends Component {
   drawCanvas() {
     // Create the scene and a camera to view it
     var scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xfff8dc );
 
     // Specify the portion of the scene visible at any time (in degrees)
-    var fieldOfView = 100;
+    var fieldOfView = 90;
 
     // Specify the camera's aspect ratio
     var aspectRatio = window.innerWidth / window.innerHeight;
@@ -40,7 +41,7 @@ class Canvas extends Component {
     // (these values help control the number of items rendered
     // at any given time)
     var nearPlane = 0.1;
-    var farPlane = 1500;
+    var farPlane = 100000;
 
     // Use the values specified above to create a camera
     var camera = new THREE.PerspectiveCamera(
@@ -78,7 +79,7 @@ class Canvas extends Component {
 
     const data = this.props.data;
 
-    for (var i=0; i<1; i++) {
+    for (var i=0; i<3; i++) {
       // Load an image file into a MeshLambert material
       let material = new THREE.MeshLambertMaterial({
         map: loader.load(this.returnDomain()+'img/'+ i +'.jpg')
@@ -113,7 +114,8 @@ class Canvas extends Component {
 
     }
 
-    const controls = new TrackballControls( camera, renderer.domElement );
+    const controls = new OrbitControls( camera, renderer.domElement );
+    controls.maxDistance = 10000;
 
     // necessary for meshes it seems
     function animate() {
