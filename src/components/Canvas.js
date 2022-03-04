@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 class Canvas extends Component {
   constructor(props) {
@@ -28,8 +29,8 @@ class Canvas extends Component {
     // Create the scene and a camera to view it
     var scene = new THREE.Scene();
 
-    // Specify the portion of the scene visiable at any time (in degrees)
-    var fieldOfView = 90;
+    // Specify the portion of the scene visible at any time (in degrees)
+    var fieldOfView = 100;
 
     // Specify the camera's aspect ratio
     var aspectRatio = window.innerWidth / window.innerHeight;
@@ -39,7 +40,7 @@ class Canvas extends Component {
     // (these values help control the number of items rendered
     // at any given time)
     var nearPlane = 0.1;
-    var farPlane = 2000;
+    var farPlane = 1500;
 
     // Use the values specified above to create a camera
     var camera = new THREE.PerspectiveCamera(
@@ -47,7 +48,7 @@ class Canvas extends Component {
     );
 
     // Finally, set the camera's position in the z-dimension
-    camera.position.z = 800;
+    camera.position.z = 1200;
 
     // Create the canvas with a renderer and tell the
     // renderer to clean up jagged aliased lines
@@ -63,10 +64,10 @@ class Canvas extends Component {
     document.getElementById("canvas").appendChild(renderer.domElement);
 
     // Add a point light with #fff color, .7 intensity, and 0 distance
-    var light = new THREE.PointLight(0xffffff, .7, 0);
+    var light = new THREE.PointLight(0xffffff, 1.0, 0);
 
     // Specify the light's position in the x, y, and z dimensions
-    light.position.set(1, 1, 900);
+    light.position.set(1, 1, 1200);
 
     // Add the light to the scene
     // This, btw, is necessary if you're using textures, it seems
@@ -77,14 +78,13 @@ class Canvas extends Component {
 
     const data = this.props.data;
 
-    for (var i=0; i<2; i++) {
+    for (var i=0; i<1; i++) {
       // Load an image file into a MeshLambert material
       let material = new THREE.MeshLambertMaterial({
         map: loader.load(this.returnDomain()+'img/'+ i +'.jpg')
       });
 
       let vertices = data[i];
-      console.log(vertices);
 
       let geometry = new THREE.BufferGeometry();
       let positionNumComponents = 3;
@@ -113,8 +113,11 @@ class Canvas extends Component {
 
     }
 
+    const controls = new TrackballControls( camera, renderer.domElement );
+
     // necessary for meshes it seems
     function animate() {
+      controls.update();
       requestAnimationFrame( animate );
         renderer.render( scene, camera );
       }
