@@ -111,6 +111,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dat.gui@npm:^0.7.7":
+  version: 0.7.7
+  resolution: "@types/dat.gui@npm:0.7.7"
+  checksum: 0a20c10013c5d8595593b9d258f48c070a09601382e9cb0a4d03b98821a8373430747b31935f73434bf0c59122c43276c6763ca1e493eaeb05a9d74bf37a7b81
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@npm:^3.7.3":
   version: 3.7.3
   resolution: "@types/eslint-scope@npm:3.7.3"
@@ -1165,6 +1172,13 @@ __metadata:
   bin:
     cssesc: bin/cssesc
   checksum: f8c4ababffbc5e2ddf2fa9957dda1ee4af6048e22aeda1869d0d00843223c1b13ad3f5d88b51caa46c994225eacb636b764eb807a8883e2fb6f99b4f4e8c48b2
+  languageName: node
+  linkType: hard
+
+"dat.gui@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "dat.gui@npm:0.7.9"
+  checksum: b5b70160657224eacdb8e0a8d76376e6e59adcc654db577531c7bebce854c4f774d1511df6f064e8246a88cf9a3abe489e4d647cf9e53d26a26141a1b5d31e68
   languageName: node
   linkType: hard
 
@@ -3071,9 +3085,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "phenome@workspace:."
   dependencies:
+    "@types/dat.gui": ^0.7.7
     buble: ^0.20.0
     buble-loader: ^0.5.1
     css-loader: ^6.6.0
+    dat.gui: ^0.7.9
     html-webpack-plugin: ^5.5.0
     react: ^17.0.2
     react-dom: ^17.0.2

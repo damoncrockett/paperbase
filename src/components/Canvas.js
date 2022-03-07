@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GUI } from 'dat.gui'
 
 class Canvas extends Component {
   constructor(props) {
@@ -10,6 +11,10 @@ class Canvas extends Component {
 
     this.returnDomain = this.returnDomain.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
+
+  }
+
+  componentDidMount() {
 
   }
 
@@ -88,9 +93,9 @@ class Canvas extends Component {
       let vertices = data[i];
 
       let geometry = new THREE.BufferGeometry();
-      let positionNumComponents = 3;
-      let normalNumComponents = 3;
-      let uvNumComponents = 2;
+      const positionNumComponents = 3;
+      const normalNumComponents = 3;
+      const uvNumComponents = 2;
       geometry.setAttribute(
           'position',
           new THREE.BufferAttribute(new Float32Array(vertices.pos), positionNumComponents));
@@ -114,15 +119,31 @@ class Canvas extends Component {
 
     }
 
+    var parameters = {
+    }
+
+    var gui = new GUI()
+    var cameraFolder = gui.addFolder('Camera')
+    //cameraFolder.add(camera.position, 'z', 0, 1200)
+    cameraFolder.add(camera, 'near', 0, 1, 0.01).onChange(updateCamera);
+    cameraFolder.add(camera, 'far', 1000, 100000, 1000).onChange(updateCamera);
+    cameraFolder.add(camera, 'fov', 1, 180, 1).onChange(updateCamera);
+    cameraFolder.open()
+
+    function updateCamera() {
+      camera.updateProjectionMatrix();
+    }
+
     const controls = new OrbitControls( camera, renderer.domElement );
     controls.maxDistance = 10000;
+    //controls.enableRotate = false;
 
     // necessary for meshes it seems
     function animate() {
       controls.update();
       requestAnimationFrame( animate );
-        renderer.render( scene, camera );
-      }
+          renderer.render( scene, camera );
+    }
 
     animate();
 
