@@ -1,16 +1,18 @@
 import React, { Component } from "react";
-import Canvas from './Canvas';
+import Field from './Field';
 
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      data: null
+      data: null,
+      model: 'pn'
     }
 
     this.returnDomain = this.returnDomain.bind(this);
     this.getData = this.getData.bind(this);
+    this.handleModel = this.handleModel.bind(this);
 
   }
 
@@ -19,6 +21,9 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.model!==this.state.model && this.state.data !== null) {
+      this.getData();
+    }
 
   }
 
@@ -28,20 +33,35 @@ class App extends Component {
   }
 
   getData() {
-    fetch(this.returnDomain()+'data.json')
+    fetch(this.returnDomain()+this.state.model+'.json')
       .then(response => response.json())
       .then(data => this.setState(state => ({
         data: data
       })));
     }
 
+  handleModel(e) {
+    const model = e.target.value
+    this.setState(state => ({
+      model: model
+    }));
+    }
+
   render() {
       return (
         <div className='app'>
           <div id='componentEnclosure'>
-            <Canvas
+            <Field
               data={this.state.data}
+              model={this.state.model}
             />
+          </div>
+          <div className='buttonStrip'>
+            <div className='radSwitch' onChange={this.handleModel}>
+              <input type="radio" value={'pn'} name="Model" defaultChecked /> PCA
+              <input type="radio" value={'tn'} name="Model" /> t-SNE
+              <input type="radio" value={'un'} name="Model" /> UMAP
+            </div>
           </div>
         </div>
     );

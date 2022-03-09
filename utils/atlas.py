@@ -142,5 +142,5 @@ for atlasgrp in df.atlasgrp.unique():
 
     atlasgrps.append(d)
 
-with open(JSONDIR + "data.json","w") as f:
+with open(JSONDIR + rcolx[1:] + ".json","w") as f:
     json.dump(atlasgrps,f)

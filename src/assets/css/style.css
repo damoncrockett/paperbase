@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+:root {
+  --panel-background: #dddddd;
+	--panel-stroke: #424242;
+}
+
+.buttonStrip {
+  position: fixed;
+  bottom: 4vh;
+  right: 4vh;
+  display: inline-block;
+  padding: 4vh;
+}
+
+.radSwitch {
+  font-family: 'Roboto';
+  border-color: var(--panel-stroke);
+  border-radius: 5px;
+  padding: 2px;
+  margin: 2px;
+  outline: none;
+}
+
+#componentEnclosure {
+  width: 100vw;
+  height: 100vh;
+}
