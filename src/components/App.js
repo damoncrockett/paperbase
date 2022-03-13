@@ -9,92 +9,55 @@ function Scatter(props) {
 
   const ref = useRef();
 
-  if (data !== null) {
-    const vertices = new Float32Array(data.pos);
-    const normals = new Float32Array(data.norm);
+  const vertices = new Float32Array(data.pos);
+  const normals = new Float32Array(data.norm);
 
-    // this can apparently be useEffect or useLayoutEffect, no difference
-    useEffect(() => {
-        if (ref.current) {
-          const newVertices = new BufferAttribute( vertices, itemSize );
-          ref.current.geometry.setAttribute("position", newVertices);
-          ref.current.geometry.attributes.position.needsUpdate = true;
-        }
-      },
-      [vertices]
-    );
+  // this can apparently be useEffect or useLayoutEffect, no difference
+  useEffect(() => {
+      if (ref.current) {
+        const newVertices = new BufferAttribute( vertices, itemSize );
+        ref.current.geometry.setAttribute("position", newVertices);
+        ref.current.geometry.attributes.position.needsUpdate = true;
+      }
+    }, [vertices]);
 
-    return (
-      <mesh ref={ref}>
-        <bufferGeometry>
-          <bufferAttribute
-            attachObject={['attributes', 'position']}
-            array={vertices}
-            count={vertices.length / itemSize}
-            itemSize={itemSize}
-          />
-          <bufferAttribute
-            attachObject={['attributes', 'normal']}
-            array={normals}
-            count={normals.length / itemSize}
-            itemSize={itemSize}
-          />
-        </bufferGeometry>
-        <meshPhongMaterial color={'dodgerblue'} />
-      </mesh>
-    )
-  } else {
-    return null
-  }
+  return (
+    <mesh ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute
+          attachObject={['attributes', 'position']}
+          array={vertices}
+          count={vertices.length / itemSize}
+          itemSize={itemSize}
+        />
+        <bufferAttribute
+          attachObject={['attributes', 'normal']}
+          array={normals}
+          count={normals.length / itemSize}
+          itemSize={itemSize}
+        />
+      </bufferGeometry>
+      <meshPhongMaterial color={'dodgerblue'} />
+    </mesh>
+  )
 }
 
-class App extends Component {
-  constructor(props) {
-    super(props);
+function returnDomain() {
+  const production = process.env.NODE_ENV === 'production';
+  return production ? '' : 'http://localhost:8888/'
+}
 
-    this.state = {
-      data: null,
-      model: 'pn'
-    }
+export default function App() {
+  const [model, setModel] = useState('tn');
+  const [data, setData] = useState(null);
 
-    this.returnDomain = this.returnDomain.bind(this);
-    this.getData = this.getData.bind(this);
-    this.handleModel = this.handleModel.bind(this);
-
-  }
-
-  componentDidMount() {
-    this.getData();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.model!==this.state.model && this.state.data !== null) {
-      this.getData();
-    }
-
-  }
-
-  returnDomain() {
-    const production = process.env.NODE_ENV === 'production';
-    return production ? '' : 'http://localhost:8888/'
-  }
-
-  getData() {
-    fetch(this.returnDomain()+this.state.model+'.json')
+  useEffect(() => {
+    fetch(returnDomain()+model+'.json')
       .then(response => response.json())
-      .then(data => this.setState(state => ({
-        data: data[0]
-      })));
-    }
+      .then(data => setData(data[0]))
+  }, [model])
 
-  handleModel(e) {
-    const model = e.target.value
-    this.setState(state => ({
-      model: model
-    }));
-    }
-
-  render() {
+  if (data !== null) {
     return (
       <div className='app'>
         <div id='componentEnclosure'>
@@ -103,21 +66,20 @@ class App extends Component {
             <ambientLight />
             <pointLight position={[1, 1, 2000]} />
             <Scatter
-              data={this.state.data}
+              data={data}
             />
             <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
           </Canvas>
         </div>
         <div className='buttonStrip'>
-          <div className='radSwitch' onChange={this.handleModel}>
-            <input type="radio" value={'pn'} name="Model" defaultChecked /> PCA
-            <input type="radio" value={'tn'} name="Model" /> t-SNE
+          <div className='radSwitch' onChange={e => setModel(e.target.value)}>
+            <input type="radio" value={'tn'} name="Model" defaultChecked /> t-SNE
             <input type="radio" value={'un'} name="Model" /> UMAP
           </div>
         </div>
       </div>
     )
+  } else {
+    return null
   }
 }
-
-export default App;
