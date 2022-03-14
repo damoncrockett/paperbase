@@ -1,44 +1,16 @@
-import React, { Component, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-import { BufferAttribute } from 'three';
+import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
+import { Canvas } from '@react-three/fiber';
+import { Instances, Instance, OrbitControls } from '@react-three/drei';
 
-function Scatter(props) {
-  const itemSize = 3;
-  const data = props.data;
-
-  const ref = useRef();
-
-  const vertices = new Float32Array(data.pos);
-  const normals = new Float32Array(data.norm);
-
-  // this can apparently be useEffect or useLayoutEffect, no difference
-  useEffect(() => {
-      if (ref.current) {
-        const newVertices = new BufferAttribute( vertices, itemSize );
-        ref.current.geometry.setAttribute("position", newVertices);
-        ref.current.geometry.attributes.position.needsUpdate = true;
-      }
-    }, [vertices]);
-
+function Boxes(props) {
   return (
-    <mesh ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute
-          attachObject={['attributes', 'position']}
-          array={vertices}
-          count={vertices.length / itemSize}
-          itemSize={itemSize}
-        />
-        <bufferAttribute
-          attachObject={['attributes', 'normal']}
-          array={normals}
-          count={normals.length / itemSize}
-          itemSize={itemSize}
-        />
-      </bufferGeometry>
-      <meshPhongMaterial color={'dodgerblue'} />
-    </mesh>
+    <Instances>
+      <boxGeometry args={[1, 1, 0.2]} />
+      <meshStandardMaterial />
+      {props.data[props.model].map((data, i) => (
+        <Instance key={i} position={data} />
+      ))}
+    </Instances>
   )
 }
 
@@ -51,35 +23,32 @@ export default function App() {
   const [model, setModel] = useState('tn');
   const [data, setData] = useState(null);
 
-  useEffect(() => {
-    fetch(returnDomain()+model+'.json')
+  useLayoutEffect(() => {
+    fetch(returnDomain()+'data.json')
       .then(response => response.json())
-      .then(data => setData(data[0]))
-  }, [model])
+      .then(data => setData(data))
+  }, [])
 
-  if (data !== null) {
-    return (
-      <div className='app'>
-        <div id='componentEnclosure'>
-          <Canvas dpr={[1, 2]} camera={{ position: [1, 1, 4000], far: 100000 }}>
-            <color attach="background" args={[0xfff8dc]} />
-            <ambientLight />
-            <pointLight position={[1, 1, 2000]} />
-            <Scatter
-              data={data}
-            />
-            <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-          </Canvas>
-        </div>
-        <div className='buttonStrip'>
-          <div className='radSwitch' onChange={e => setModel(e.target.value)}>
-            <input type="radio" value={'tn'} name="Model" defaultChecked /> t-SNE
-            <input type="radio" value={'un'} name="Model" /> UMAP
-          </div>
+  return (
+    <div id='app'>
+      <div id='viewpane'>
+        <Canvas dpr={[1, 2]} camera={{ position: [1, 1, 100], far: 1000 }}>
+          <color attach="background" args={[0x87ceeb]} />
+          <ambientLight />
+          <pointLight position={[1, 1, 100]} />
+          <Boxes
+            model={model}
+            data={data}
+          />
+          <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+        </Canvas>
+      </div>
+      <div id='userControls'>
+        <div className='radSwitch' onChange={e => setModel(e.target.value)}>
+          <input type="radio" value={'tn'} name="Model" defaultChecked /> t-SNE
+          <input type="radio" value={'un'} name="Model" /> UMAP
         </div>
       </div>
-    )
-  } else {
-    return null
-  }
+    </div>
+  )
 }
