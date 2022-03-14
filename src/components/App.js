@@ -5,7 +5,7 @@ import { Instances, Instance, OrbitControls } from '@react-three/drei';
 function Boxes(props) {
   return (
     <Instances>
-      <boxGeometry args={[1, 1, 0.2]} />
+      <boxBufferGeometry args={[0.5, 0.5, 0.1]} />
       <meshStandardMaterial />
       {props.data[props.model].map((data, i) => (
         <Instance key={i} position={data} />
@@ -20,7 +20,7 @@ function returnDomain() {
 }
 
 export default function App() {
-  const [model, setModel] = useState('tn');
+  const [model, setModel] = useState('gr');
   const [data, setData] = useState(null);
 
   useLayoutEffect(() => {
@@ -32,10 +32,10 @@ export default function App() {
   return (
     <div id='app'>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [1, 1, 100], far: 1000 }}>
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 200], far: 20000 }}>
           <color attach="background" args={[0x87ceeb]} />
           <ambientLight />
-          <pointLight position={[1, 1, 100]} />
+          <pointLight position={[0, 0, 100]} />
           <Boxes
             model={model}
             data={data}
@@ -45,8 +45,9 @@ export default function App() {
       </div>
       <div id='userControls'>
         <div className='radSwitch' onChange={e => setModel(e.target.value)}>
-          <input type="radio" value={'tn'} name="Model" defaultChecked /> t-SNE
+          <input type="radio" value={'tn'} name="Model" /> t-SNE
           <input type="radio" value={'un'} name="Model" /> UMAP
+          <input type="radio" value={'gr'} name="Model" defaultChecked /> GRID
         </div>
       </div>
     </div>
