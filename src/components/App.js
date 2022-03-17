@@ -1,16 +1,34 @@
-import React, { useState, useLayoutEffect, useEffect, useRef } from "react";
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Instances, Instance, OrbitControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
+import { Object3D } from 'three';
+import { coords } from './data';
 
-function Boxes(props) {
+const substrate = new Object3D();
+
+function Boxes({ model }) {
+  const meshRef = useRef();
+  const data = coords[model];
+  const n = data.length;
+
+  useEffect(() => {
+    const mesh = meshRef.current;
+
+    data.forEach((item, i) => {
+      substrate.position.set(item[0],item[1],item[2]);
+      substrate.updateMatrix();
+      mesh.setMatrixAt(i, substrate.matrix);
+    });
+
+    mesh.instanceMatrix.needsUpdate = true;
+
+  }, [model]);
+
   return (
-    <Instances>
+    <instancedMesh ref={meshRef} args={[null, null, n]}>
       <boxBufferGeometry args={[0.5, 0.5, 0.1]} />
       <meshStandardMaterial />
-      {props.data[props.model].map((data, i) => (
-        <Instance key={i} position={data} />
-      ))}
-    </Instances>
+    </instancedMesh>
   )
 }
 
@@ -21,13 +39,6 @@ function returnDomain() {
 
 export default function App() {
   const [model, setModel] = useState('gr');
-  const [data, setData] = useState(null);
-
-  useLayoutEffect(() => {
-    fetch(returnDomain()+'data.json')
-      .then(response => response.json())
-      .then(data => setData(data))
-  }, [])
 
   return (
     <div id='app'>
@@ -38,7 +49,6 @@ export default function App() {
           <pointLight position={[0, 0, 100]} />
           <Boxes
             model={model}
-            data={data}
           />
           <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         </Canvas>
