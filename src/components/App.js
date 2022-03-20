@@ -2,30 +2,56 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Object3D } from 'three';
+import { useSpring } from '@react-spring/three';
 import { coords } from './data';
+
+const animatedCoords = coords['gr'];
+
+function interpolatePositions(coords, model, progress) {
+  animatedCoords.forEach((item, i) => {
+    animatedCoords[i][0] = (1 - progress) * item[0] + progress * coords[model][i][0];
+    animatedCoords[i][1] = (1 - progress) * item[1] + progress * coords[model][i][1];
+    animatedCoords[i][2] = (1 - progress) * item[2] + progress * coords[model][i][2];
+  });
+}
+
+function useSpringAnimation({ coords, model, onChange }) {
+  useSpring({
+    animationProgress: 1,
+    from: { animationProgress: 0 },
+    reset: true,
+    onChange: (_, ctrl) => {
+      interpolatePositions( coords, model, ctrl.get().animationProgress );
+      onChange();
+    },
+  }, [model]);
+}
 
 const substrate = new Object3D();
 
+function updatePositions({ mesh }) {
+  if (!mesh) return;
+  animatedCoords.forEach((item, i) => {
+    substrate.position.set(item[0],item[1],item[2]);
+    substrate.updateMatrix();
+    mesh.setMatrixAt(i, substrate.matrix);
+  });
+
+  mesh.instanceMatrix.needsUpdate = true;
+}
+
 function Boxes({ model }) {
+  const numItems = animatedCoords.length;
   const meshRef = useRef();
-  const data = coords[model];
-  const n = data.length;
 
-  useEffect(() => {
-    const mesh = meshRef.current;
-
-    data.forEach((item, i) => {
-      substrate.position.set(item[0],item[1],item[2]);
-      substrate.updateMatrix();
-      mesh.setMatrixAt(i, substrate.matrix);
-    });
-
-    mesh.instanceMatrix.needsUpdate = true;
-
-  }, [model]);
+  useSpringAnimation({
+    coords,
+    model,
+    onChange: () => { updatePositions({ mesh: meshRef.current }) }
+  });
 
   return (
-    <instancedMesh ref={meshRef} args={[null, null, n]}>
+    <instancedMesh ref={meshRef} args={[null, null, numItems]}>
       <boxBufferGeometry args={[0.5, 0.5, 0.1]} />
       <meshStandardMaterial />
     </instancedMesh>
