@@ -19,20 +19,28 @@ body {
 }
 
 .controls {
-  position: fixed;
-  bottom: 10vh;
-  right: 10vh;
   z-index: 1;
   background: white;
   padding: 16px;
   color: var(--grey);
-  width: 8vw;
+  width: 10vw;
   border-radius: 16px;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
-.controls > button,
-.reset-button {
+#modelControls {
+  position: fixed;
+  bottom: 6vh;
+  right: 10vh;
+}
+
+#reset-button {
+  position: fixed;
+  top: 10vh;
+  right: 10vh;
+}
+
+.controls > button {
   background-color: #FFFFFF;
   border: 0;
   border-radius: .5rem;
@@ -54,8 +62,7 @@ body {
   margin: 1vh;
 }
 
-.controls > button:hover,
-.reset-button:hover {
+.controls > button:hover {
   background-color: rgb(249,250,251);
 }
 
@@ -65,7 +72,7 @@ body {
   color: white;
 }
 
-#controlsLabel {
+.controlsLabel {
   margin: 2vh;
   font-weight: bold;
 }

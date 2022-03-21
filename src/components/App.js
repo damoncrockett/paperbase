@@ -1,11 +1,16 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, Color } from 'three';
+import { Object3D, Color, MOUSE } from 'three';
 import { useSpring } from '@react-spring/three';
 import { coords } from './data';
 
 const animatedCoords = Array.from({ length: coords['gr'].length }, () => [0, 0, 0]);
+
+// key code constants
+const ALT_KEY = 18;
+const CTRL_KEY = 17;
+const CMD_KEY = 91;
 
 function interpolatePositions(coords, model, progress) {
   animatedCoords.forEach((item, i) => {
@@ -80,11 +85,25 @@ export default function App() {
           <Boxes
             model={model}
           />
-          <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={false}
+            keys={[
+              ALT_KEY, // orbit
+              CTRL_KEY, // zoom
+              CMD_KEY, // pan
+            ]}
+            mouseButtons={{
+              LEFT: MOUSE.PAN, // make pan the default instead of rotate
+              MIDDLE: MOUSE.ZOOM,
+              RIGHT: MOUSE.ROTATE,
+            }}
+          />
         </Canvas>
       </div>
-      <div className='controls'>
-        <div id='controlsLabel'>Models</div>
+      <div className='controls' id='modelControls'>
+        <div className='controlsLabel'>Models</div>
         <button onClick={() => setModel('gr')} className={model === 'gr' ? 'active' : undefined}>GRID</button>
         <button onClick={() => setModel('tn')} className={model === 'tn' ? 'active' : undefined}>t-SNE</button>
         <button onClick={() => setModel('un')} className={model === 'un' ? 'active' : undefined}>UMAP</button>
