@@ -5,7 +5,7 @@ import { Object3D } from 'three';
 import { useSpring } from '@react-spring/three';
 import { coords } from './data';
 
-const animatedCoords = coords['gr'];
+const animatedCoords = Array.from({ length: coords['gr'].length }, () => [0, 0, 0]);
 
 function interpolatePositions(coords, model, progress) {
   animatedCoords.forEach((item, i) => {
@@ -17,7 +17,7 @@ function interpolatePositions(coords, model, progress) {
 
 function useSpringAnimation({ coords, model, onChange }) {
   useSpring({
-    animationProgress: 1,
+    to: { animationProgress: 1 },
     from: { animationProgress: 0 },
     reset: true,
     onChange: (_, ctrl) => {
@@ -69,7 +69,7 @@ export default function App() {
   return (
     <div id='app'>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 200], far: 20000 }}>
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }}>
           <color attach="background" args={[0x87ceeb]} />
           <ambientLight />
           <pointLight position={[0, 0, 100]} />
