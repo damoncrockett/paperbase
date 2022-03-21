@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D } from 'three';
+import { Object3D, Color } from 'three';
 import { useSpring } from '@react-spring/three';
 import { coords } from './data';
 
@@ -51,7 +51,11 @@ function Boxes({ model }) {
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[null, null, numItems]}>
+    <instancedMesh
+      ref={meshRef}
+      args={[null, null, numItems]}
+      onClick={e => console.log(e.instanceId)}
+    >
       <boxBufferGeometry args={[0.5, 0.5, 0.1]} />
       <meshStandardMaterial />
     </instancedMesh>
@@ -72,19 +76,18 @@ export default function App() {
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }}>
           <color attach="background" args={[0x87ceeb]} />
           <ambientLight />
-          <pointLight position={[0, 0, 100]} />
+          <pointLight position={[0, 0, 135]} />
           <Boxes
             model={model}
           />
           <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         </Canvas>
       </div>
-      <div id='userControls'>
-        <div className='radSwitch' onChange={e => setModel(e.target.value)}>
-          <input type="radio" value={'tn'} name="Model" /> t-SNE
-          <input type="radio" value={'un'} name="Model" /> UMAP
-          <input type="radio" value={'gr'} name="Model" defaultChecked /> GRID
-        </div>
+      <div className='controls'>
+        <div id='controlsLabel'>Models</div>
+        <button onClick={() => setModel('gr')} className={model === 'gr' ? 'active' : undefined}>GRID</button>
+        <button onClick={() => setModel('tn')} className={model === 'tn' ? 'active' : undefined}>t-SNE</button>
+        <button onClick={() => setModel('un')} className={model === 'un' ? 'active' : undefined}>UMAP</button>
       </div>
     </div>
   )

@@ -1,28 +1,71 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-:root {
-  --panel-background: #dddddd;
-	--panel-stroke: #424242;
-}
-
-#userControls {
-  position: fixed;
-  bottom: 4vh;
-  right: 4vh;
-  display: inline-block;
-  padding: 4vh;
-}
-
-.radSwitch {
+body {
+  margin: 0;
   font-family: 'Roboto';
-  border-color: var(--panel-stroke);
-  border-radius: 5px;
-  padding: 2px;
-  margin: 2px;
-  outline: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --grey: #97afba;
+  --darkgrey: #344a53;
+  --switch: #368678;
 }
 
 #viewpane {
   width: 100vw;
   height: 100vh;
+}
+
+.controls {
+  position: fixed;
+  bottom: 10vh;
+  right: 10vh;
+  z-index: 1;
+  background: white;
+  padding: 16px;
+  color: var(--grey);
+  width: 8vw;
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.controls > button,
+.reset-button {
+  background-color: #FFFFFF;
+  border: 0;
+  border-radius: .5rem;
+  box-sizing: border-box;
+  color: var(--grey);
+  font-family: "Roboto";
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  padding: .75rem 1rem;
+  text-align: center;
+  text-decoration: none #D1D5DB solid;
+  text-decoration-thickness: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin: 1vh;
+}
+
+.controls > button:hover,
+.reset-button:hover {
+  background-color: rgb(249,250,251);
+}
+
+.controls > button.active {
+  font-weight: bold;
+  background-color: var(--darkgrey);
+  color: white;
+}
+
+#controlsLabel {
+  margin: 2vh;
+  font-weight: bold;
 }
