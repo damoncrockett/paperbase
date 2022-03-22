@@ -35,9 +35,9 @@ function useSpringAnimation({ coords, model, onChange }) {
     from: { animationProgress: 0 },
     reset: true,
     config: {
-      friction: 208,
-      tension: 340,
-      mass: 50,
+      friction: 416,
+      tension: 170,
+      mass: 100,
     },
     onChange: (_, ctrl) => {
       interpolatePositions( coords, model, ctrl.get().animationProgress );
@@ -51,7 +51,7 @@ const substrate = new Object3D();
 function updatePositions({ mesh }) {
   if (!mesh) return;
   animatedCoords.forEach((item, i) => {
-    substrate.position.set(item[0],item[1],item[2]);
+    substrate.position.set(item[0],item[1],item[2] * 0.35);
     substrate.updateMatrix();
     mesh.setMatrixAt(i, substrate.matrix);
   });
@@ -121,8 +121,8 @@ export default function App() {
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }}>
           <color attach="background" args={[0x87ceeb]} />
-          <ambientLight />
-          <pointLight position={[0, 0, 135]} />
+          <ambientLight intensity={0.25}/>
+          <pointLight position={[0, 0, 135]} intensity={0.25}/>
           <Boxes
             model={model}
             group={group}
@@ -130,7 +130,7 @@ export default function App() {
           <OrbitControls
             enablePan={true}
             enableZoom={true}
-            enableRotate={false}
+            enableRotate={true}
             keys={[
               ALT_KEY, // orbit
               CTRL_KEY, // zoom
