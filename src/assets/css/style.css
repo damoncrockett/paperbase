@@ -23,20 +23,26 @@ body {
   background: white;
   padding: 16px;
   color: var(--grey);
-  width: 10vw;
+  width: 7vw;
   border-radius: 16px;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+#reset-button {
+  position: fixed;
+  top: 6vh;
+  right: 10vh;
+}
+
+#groupControls {
+  position: fixed;
+  top: 10vh;
+  right: 10vh;
 }
 
 #modelControls {
   position: fixed;
   bottom: 6vh;
-  right: 10vh;
-}
-
-#reset-button {
-  position: fixed;
-  top: 10vh;
   right: 10vh;
 }
 

@@ -1,16 +1,25 @@
-import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, Color, MOUSE } from 'three';
+import { Object3D, Color, MOUSE, VertexColors } from 'three';
 import { useSpring } from '@react-spring/three';
-import { coords } from './data';
+import { coords } from './models';
+import { groups } from './groups';
 
-const animatedCoords = Array.from({ length: coords['gr'].length }, () => [0, 0, 0]);
+const numItems = coords['gr'].length;
+const animatedCoords = Array.from({ length: numItems }, () => [0, 0, 0]);
 
 // key code constants
 const ALT_KEY = 18;
 const CTRL_KEY = 17;
 const CMD_KEY = 91;
+
+// colors
+const colorArray = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
+                    0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+
+// re-use for instance computations
+const colorSubstrate = new Color();
 
 function interpolatePositions(coords, model, progress) {
   animatedCoords.forEach((item, i) => {
@@ -25,6 +34,11 @@ function useSpringAnimation({ coords, model, onChange }) {
     to: { animationProgress: 1 },
     from: { animationProgress: 0 },
     reset: true,
+    config: {
+      friction: 208,
+      tension: 340,
+      mass: 50,
+    },
     onChange: (_, ctrl) => {
       interpolatePositions( coords, model, ctrl.get().animationProgress );
       onChange();
@@ -45,8 +59,23 @@ function updatePositions({ mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-function Boxes({ model }) {
-  const numItems = animatedCoords.length;
+function updateColors({ group }) {
+  const colorAttrib = useRef();
+  const colorBuffer = useMemo(() => new Float32Array(numItems * 3), [numItems]);
+  const colorVals = groups[group];
+
+  useEffect(() => {
+    for (let i = 0; i < numItems; ++i) {
+      colorSubstrate.set(colorArray[colorVals[i]]);
+      colorSubstrate.toArray(colorBuffer, i * 3);
+    }
+    colorAttrib.current.needsUpdate = true;
+  }, [group, colorBuffer]);
+
+  return { colorAttrib, colorBuffer }
+}
+
+function Boxes({ model, group }) {
   const meshRef = useRef();
 
   useSpringAnimation({
@@ -55,14 +84,25 @@ function Boxes({ model }) {
     onChange: () => { updatePositions({ mesh: meshRef.current }) }
   });
 
+  const { colorAttrib, colorBuffer } = updateColors({ group });
+
   return (
     <instancedMesh
       ref={meshRef}
       args={[null, null, numItems]}
       onClick={e => console.log(e.instanceId)}
     >
-      <boxBufferGeometry args={[0.5, 0.5, 0.1]} />
-      <meshStandardMaterial />
+      <boxBufferGeometry args={[0.75, 0.75, 0.25]}>
+        <instancedBufferAttribute
+            ref={colorAttrib}
+            attachObject={['attributes', 'color']}
+            args={[colorBuffer, 3]}
+        />
+      </boxBufferGeometry>
+      <meshStandardMaterial
+        attach="material"
+        vertexColors={VertexColors}
+      />
     </instancedMesh>
   )
 }
@@ -74,6 +114,7 @@ function returnDomain() {
 
 export default function App() {
   const [model, setModel] = useState('gr');
+  const [group, setGroup] = useState('b');
 
   return (
     <div id='app'>
@@ -84,6 +125,7 @@ export default function App() {
           <pointLight position={[0, 0, 135]} />
           <Boxes
             model={model}
+            group={group}
           />
           <OrbitControls
             enablePan={true}
@@ -101,6 +143,12 @@ export default function App() {
             }}
           />
         </Canvas>
+      </div>
+      <div className='controls' id='groupControls'>
+        <div className='controlsLabel'>Groups</div>
+        <button onClick={() => setGroup('b')} className={group === 'b' ? 'active' : undefined}>BINDER</button>
+        <button onClick={() => setGroup('k')} className={group === 'k' ? 'active' : undefined}>KMEANS</button>
+        <button onClick={() => setGroup('c')} className={group === 'c' ? 'active' : undefined}>HDBSCAN</button>
       </div>
       <div className='controls' id='modelControls'>
         <div className='controlsLabel'>Models</div>
