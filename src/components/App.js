@@ -14,13 +14,6 @@ const ALT_KEY = 18;
 const CTRL_KEY = 17;
 const CMD_KEY = 91;
 
-// colors
-const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
-                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
-
-// re-use for instance computations
-const colorSubstrate = new Color();
-
 function interpolatePositions(coords, model, progress) {
   animatedCoords.forEach((item, i) => {
     animatedCoords[i][0] = (1 - progress) * item[0] + progress * coords[model][i][0];
@@ -59,9 +52,14 @@ function updatePositions({ mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
+const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
+                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+
+const colorSubstrate = new Color();
+const colorBuffer = new Float32Array(numItems * 3);
+
 function updateColors({ group }) {
   const colorAttrib = useRef();
-  const colorBuffer = useMemo(() => new Float32Array(numItems * 3), [numItems]);
   const colorVals = groups[group];
 
   useEffect(() => {
@@ -70,9 +68,16 @@ function updateColors({ group }) {
       colorSubstrate.toArray(colorBuffer, i * 3);
     }
     colorAttrib.current.needsUpdate = true;
-  }, [group, colorBuffer]);
+  }, [group]);
 
-  return { colorAttrib, colorBuffer }
+  return { colorAttrib }
+}
+
+const handleClick = e => {
+  const { delta, instanceId } = e;
+  if ( delta <= 5 ) {
+    console.log(instanceId);
+  }
 }
 
 function Boxes({ model, group }) {
@@ -89,22 +94,22 @@ function Boxes({ model, group }) {
     }
   });
 
-  const { colorAttrib, colorBuffer } = updateColors({ group });
-
-  const handleClick = e => {
-    const { delta, instanceId } = e;
-    if ( delta <= 5 ) {
-      console.log(instanceId);
-    }
-  };
+  const { colorAttrib } = updateColors({ group });
 
   const handleEnter = e => {
-    console.log(e.instanceId);
-  };
+    const { instanceId } = e;
+    colorSubstrate.set(0xffffff);
+    colorSubstrate.toArray(colorBuffer, instanceId * 3);
+    colorAttrib.current.needsUpdate = true;
+  }
 
   const handleLeave = e => {
-    console.log(e.instanceId);
-  };
+    const { instanceId } = e;
+    const colorVals = groups[group];
+    colorSubstrate.set(groupColors[colorVals[instanceId]]);
+    colorSubstrate.toArray(colorBuffer, instanceId * 3);
+    colorAttrib.current.needsUpdate = true;
+  }
 
   return (
     <instancedMesh
