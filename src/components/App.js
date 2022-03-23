@@ -86,11 +86,18 @@ function Boxes({ model, group }) {
 
   const { colorAttrib, colorBuffer } = updateColors({ group });
 
+  const handleClick = e => {
+    const { delta, instanceId } = e;
+    if ( delta <= 5 ) {
+      console.log(instanceId);
+    }
+  };
+
   return (
     <instancedMesh
       ref={meshRef}
       args={[null, null, numItems]}
-      onClick={e => console.log(e.instanceId)}
+      onClick={handleClick}
     >
       <boxBufferGeometry args={[0.75, 0.75, 0.25]}>
         <instancedBufferAttribute
