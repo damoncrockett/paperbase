@@ -58,14 +58,16 @@ const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
 
-function updateColors({ group, invalidate }) {
+function updateColors({ group, clickedItem, invalidate }) {
   const colorAttrib = useRef();
   const colorVals = groups[group];
 
   useEffect(() => {
     for (let i = 0; i < numItems; ++i) {
-      colorSubstrate.set(groupColors[colorVals[i]]);
-      colorSubstrate.toArray(colorBuffer, i * 3);
+      if ( i !== clickedItem ) {
+        colorSubstrate.set(groupColors[colorVals[i]]);
+        colorSubstrate.toArray(colorBuffer, i * 3);
+      }
     }
     colorAttrib.current.needsUpdate = true;
     invalidate();
@@ -88,7 +90,7 @@ function Boxes({ model, group }) {
     }
   });
 
-  const { colorAttrib } = updateColors({ group, invalidate });
+  const { colorAttrib } = updateColors({ group, clickedItem, invalidate });
 
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
