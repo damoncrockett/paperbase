@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect, useRef, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, VertexColors } from 'three';
 import { useSpring } from '@react-spring/three';
@@ -15,8 +15,8 @@ const CTRL_KEY = 17;
 const CMD_KEY = 91;
 
 // colors
-const colorArray = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
-                    0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
+                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
 
 // re-use for instance computations
 const colorSubstrate = new Color();
@@ -66,7 +66,7 @@ function updateColors({ group }) {
 
   useEffect(() => {
     for (let i = 0; i < numItems; ++i) {
-      colorSubstrate.set(colorArray[colorVals[i]]);
+      colorSubstrate.set(groupColors[colorVals[i]]);
       colorSubstrate.toArray(colorBuffer, i * 3);
     }
     colorAttrib.current.needsUpdate = true;
@@ -77,11 +77,16 @@ function updateColors({ group }) {
 
 function Boxes({ model, group }) {
   const meshRef = useRef();
+  // necessary because frameloop="demand"
+  const { invalidate } = useThree();
 
   useSpringAnimation({
     coords,
     model,
-    onChange: () => { updatePositions({ mesh: meshRef.current }) }
+    onChange: () => {
+      updatePositions({ mesh: meshRef.current });
+      invalidate();
+    }
   });
 
   const { colorAttrib, colorBuffer } = updateColors({ group });
@@ -126,7 +131,7 @@ export default function App() {
   return (
     <div id='app'>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }}>
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x87ceeb]} />
           <ambientLight intensity={0.25}/>
           <pointLight position={[0, 0, 135]} intensity={0.25}/>
