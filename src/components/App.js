@@ -58,7 +58,7 @@ const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
 
-function updateColors({ group }) {
+function updateColors({ group, invalidate }) {
   const colorAttrib = useRef();
   const colorVals = groups[group];
 
@@ -68,21 +68,15 @@ function updateColors({ group }) {
       colorSubstrate.toArray(colorBuffer, i * 3);
     }
     colorAttrib.current.needsUpdate = true;
+    invalidate();
   }, [group]);
 
   return { colorAttrib }
 }
 
-const handleClick = e => {
-  const { delta, instanceId } = e;
-  if ( delta <= 5 ) {
-    console.log(instanceId);
-  }
-}
-
 function Boxes({ model, group }) {
   const meshRef = useRef();
-  // necessary because frameloop="demand"
+  const [clickedItem, setClickedItem] = useState(null);
   const { invalidate } = useThree();
 
   useSpringAnimation({
@@ -94,21 +88,46 @@ function Boxes({ model, group }) {
     }
   });
 
-  const { colorAttrib } = updateColors({ group });
+  const { colorAttrib } = updateColors({ group, invalidate });
 
-  const handleEnter = e => {
-    const { instanceId } = e;
-    colorSubstrate.set(0xffffff);
-    colorSubstrate.toArray(colorBuffer, instanceId * 3);
-    colorAttrib.current.needsUpdate = true;
-  }
+  const handleClick = e => {
+    // this appears to select first raycast intersection, but not sure
+    e.stopPropagation();
 
-  const handleLeave = e => {
-    const { instanceId } = e;
+    const { delta, instanceId } = e;
     const colorVals = groups[group];
-    colorSubstrate.set(groupColors[colorVals[instanceId]]);
-    colorSubstrate.toArray(colorBuffer, instanceId * 3);
-    colorAttrib.current.needsUpdate = true;
+
+    if ( delta <= 5 ) {
+      document.getElementById("infoPanel").innerHTML = "";
+
+      if ( clickedItem === null ) {
+
+        colorSubstrate.set(0xffff00);
+        colorSubstrate.toArray(colorBuffer, instanceId * 3);
+        document.getElementById("infoPanel").innerHTML = instanceId;
+        setClickedItem(instanceId);
+
+      } else if ( clickedItem === instanceId ) {
+
+        colorSubstrate.set(groupColors[colorVals[instanceId]]);
+        colorSubstrate.toArray(colorBuffer, instanceId * 3);
+        setClickedItem(null);
+
+      } else {
+
+        colorSubstrate.set(groupColors[colorVals[clickedItem]]);
+        colorSubstrate.toArray(colorBuffer, clickedItem * 3);
+
+        colorSubstrate.set(0xffff00);
+        colorSubstrate.toArray(colorBuffer, instanceId * 3);
+        document.getElementById("infoPanel").innerHTML = instanceId;
+        setClickedItem(instanceId)
+
+      }
+
+      colorAttrib.current.needsUpdate = true;
+      invalidate();
+    }
   }
 
   return (
@@ -116,8 +135,6 @@ function Boxes({ model, group }) {
       ref={meshRef}
       args={[null, null, numItems]}
       onClick={handleClick}
-      onPointerEnter={handleEnter}
-      onPointerLeave={handleLeave}
     >
       <boxBufferGeometry args={[0.75, 0.75, 0.25]}>
         <instancedBufferAttribute
@@ -145,6 +162,7 @@ export default function App() {
 
   return (
     <div id='app'>
+      <div id='infoPanel'></div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x87ceeb]} />

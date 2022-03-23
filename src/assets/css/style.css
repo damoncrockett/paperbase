@@ -18,6 +18,21 @@ body {
   height: 100vh;
 }
 
+#infoPanel {
+  position: fixed;
+  top: 10vh;
+  left: 10vh;
+  width: 7vh;
+  height: 10vh;
+  z-index: 1;
+  background: white;
+  padding: 16px;
+  color: var(--grey);
+  width: 7vw;
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
 .controls {
   z-index: 1;
   background: white;
