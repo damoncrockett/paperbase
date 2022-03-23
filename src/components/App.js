@@ -98,11 +98,21 @@ function Boxes({ model, group }) {
     }
   };
 
+  const handleEnter = e => {
+    console.log(e.instanceId);
+  };
+
+  const handleLeave = e => {
+    console.log(e.instanceId);
+  };
+
   return (
     <instancedMesh
       ref={meshRef}
       args={[null, null, numItems]}
       onClick={handleClick}
+      onPointerEnter={handleEnter}
+      onPointerLeave={handleLeave}
     >
       <boxBufferGeometry args={[0.75, 0.75, 0.25]}>
         <instancedBufferAttribute
