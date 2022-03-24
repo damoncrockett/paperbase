@@ -3,8 +3,21 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, VertexColors } from 'three';
 import { useSpring } from '@react-spring/three';
+import { select } from 'd3-selection';
 import { coords } from './models';
 import { groups } from './groups';
+import { db } from './db';
+
+const catalog = db['c'];
+const binder = db['b'];
+const man = db['m'];
+const bran = db['r'];
+const year = db['y'];
+const texture = db['x'];
+
+function writePanelArray(i) {
+  return [ catalog[i], binder[i], man[i], bran[i], year[i], texture[i] ]
+}
 
 const numItems = coords['gr'].length;
 const animatedCoords = Array.from({ length: numItems }, () => [0, 0, 0]);
@@ -64,7 +77,7 @@ function updateColors({ group, clickedItem, invalidate }) {
 
   useEffect(() => {
     for (let i = 0; i < numItems; ++i) {
-      if ( i !== clickedItem ) {
+      if ( i !== clickedItem ) { // so we don't recolor the clicked point
         colorSubstrate.set(groupColors[colorVals[i]]);
         colorSubstrate.toArray(colorBuffer, i * 3);
       }
@@ -100,13 +113,22 @@ function Boxes({ model, group }) {
     const colorVals = groups[group];
 
     if ( delta <= 5 ) {
-      document.getElementById("infoPanel").innerHTML = "";
+
+      select("#infoPanel")
+        .selectAll("p")
+        .remove()
 
       if ( clickedItem === null ) {
 
+        select("#infoPanel")
+          .selectAll("p")
+          .data(writePanelArray(instanceId))
+          .enter()
+          .append("p")
+          .text(d => d)
+
         colorSubstrate.set(0xffff00);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        document.getElementById("infoPanel").innerHTML = instanceId;
         setClickedItem(instanceId);
 
       } else if ( clickedItem === instanceId ) {
@@ -117,12 +139,18 @@ function Boxes({ model, group }) {
 
       } else {
 
+        select("#infoPanel")
+          .selectAll("p")
+          .data(writePanelArray(instanceId))
+          .enter()
+          .append("p")
+          .text(d => d)
+
         colorSubstrate.set(groupColors[colorVals[clickedItem]]);
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
 
         colorSubstrate.set(0xffff00);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        document.getElementById("infoPanel").innerHTML = instanceId;
         setClickedItem(instanceId)
 
       }

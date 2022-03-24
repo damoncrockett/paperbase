@@ -1796,6 +1796,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"d3-selection@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "d3-selection@npm:3.0.0"
+  checksum: f4e60e133309115b99f5b36a79ae0a19d71ee6e2d5e3c7216ef3e75ebd2cb1e778c2ed2fa4c01bef35e0dcbd96c5428f5bd6ca2184fe2957ed582fde6841cbc5
+  languageName: node
+  linkType: hard
+
 "dat.gui@npm:^0.7.9":
   version: 0.7.9
   resolution: "dat.gui@npm:0.7.9"
@@ -3900,6 +3907,7 @@ __metadata:
     buble: ^0.20.0
     buble-loader: ^0.5.1
     css-loader: ^6.6.0
+    d3-selection: ^3.0.0
     dat.gui: ^0.7.9
     html-webpack-plugin: ^5.5.0
     leva: ^0.9.23
