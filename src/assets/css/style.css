@@ -1,10 +1,21 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@100&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700&display=swap');
 
 body {
   margin: 0;
-  font-family: 'Roboto';
+  font-family: 'Archivo';
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+p {
+  margin: 0vh;
+}
+
+button {
+  display: block;
 }
 
 :root {
@@ -20,26 +31,58 @@ body {
 
 #infoPanel {
   position: fixed;
-  top: 10vh;
-  left: 10vh;
-  width: 7vh;
-  height: 30vh;
+  top: 5vh;
+  left: 5vh;
   z-index: 1;
   background: white;
-  padding: 16px;
+  padding: 2vh;
   color: var(--grey);
-  width: 7vw;
-  border-radius: 16px;
+  border-radius: 2vh;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+#titleBar {
+  display: inline-block;
+}
+
+#infoBar {
+}
+
+#catalog {
+  font-size: 1.5vh;
+}
+
+.man {
+  font-weight: 700;
+  font-size: 3vh;
+  float: left;
+  color: var(--darkgrey);
+  margin-right: 0.5vh;
+}
+
+.bran {
+  font-size: 3vh;
+  float: left;
+  margin-right: 0.5vh;
+}
+
+.year {
+  font-size: 3vh;
+  float: left;
+  margin-right: 0.335vh;
+  font-weight: 100;
+}
+
+.texture {
+  font-size: 2vh;
 }
 
 .controls {
   z-index: 1;
   background: white;
-  padding: 16px;
+  padding: 2vh;
   color: var(--grey);
-  width: 7vw;
-  border-radius: 16px;
+  border-radius: 2vh;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
@@ -67,9 +110,8 @@ body {
   border-radius: .5rem;
   box-sizing: border-box;
   color: var(--grey);
-  font-family: "Roboto";
   font-size: .875rem;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.25rem;
   padding: .75rem 1rem;
   text-align: center;
@@ -88,12 +130,11 @@ body {
 }
 
 .controls > button.active {
-  font-weight: bold;
   background-color: var(--darkgrey);
   color: white;
 }
 
 .controlsLabel {
   margin: 2vh;
-  font-weight: bold;
+  font-weight: 700;
 }

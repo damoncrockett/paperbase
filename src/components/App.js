@@ -15,8 +15,37 @@ const bran = db['r'];
 const year = db['y'];
 const texture = db['x'];
 
-function writePanelArray(i) {
-  return [ catalog[i], binder[i], man[i], bran[i], year[i], texture[i] ]
+function writeTitleArray(i) {
+  return [ man[i], bran[i], year[i] ]
+}
+
+function writeInfoArray(i) {
+  return [ texture[i]==='_' ? '' : texture[i] ]
+}
+
+const pCatsTitle = [ "man", "bran", "year" ];
+const pCatsInfo = [ "texture" ];
+
+function writePanel(instanceId) {
+  select("#catalog")
+    .append("p")
+    .text("#"+catalog[instanceId])
+
+  select("#titleBar")
+    .selectAll("p.title")
+    .data(writeTitleArray(instanceId))
+    .enter()
+    .append("p")
+    .text(d => d)
+    .attr("class", (d, i) => "title " + pCatsTitle[i])
+
+  select("#infoBar")
+    .selectAll("p.info")
+    .data(writeInfoArray(instanceId))
+    .enter()
+    .append("p")
+    .text(d => d)
+    .attr("class", (d, i) => "info " + pCatsInfo[i])
 }
 
 const numItems = coords['gr'].length;
@@ -65,8 +94,18 @@ function updatePositions({ mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
-                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+function LightenDarkenColor(col, amt) {
+  return (((col & 0x0000FF) + amt) | ((((col >> 8) & 0x00FF) + amt) << 8) | (((col >> 16) + amt) << 16));
+}
+
+let groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
+                   0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+
+/*
+groupColors.forEach((d, i) =>  {
+  groupColors[i] = LightenDarkenColor(d, -80);
+});
+*/
 
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
@@ -114,18 +153,21 @@ function Boxes({ model, group }) {
 
     if ( delta <= 5 ) {
 
-      select("#infoPanel")
+      select("#catalog")
+        .selectAll("p")
+        .remove()
+
+      select("#infoBar")
+        .selectAll("p")
+        .remove()
+
+      select("#titleBar")
         .selectAll("p")
         .remove()
 
       if ( clickedItem === null ) {
 
-        select("#infoPanel")
-          .selectAll("p")
-          .data(writePanelArray(instanceId))
-          .enter()
-          .append("p")
-          .text(d => d)
+        writePanel(instanceId);
 
         colorSubstrate.set(0xffff00);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
@@ -139,12 +181,7 @@ function Boxes({ model, group }) {
 
       } else {
 
-        select("#infoPanel")
-          .selectAll("p")
-          .data(writePanelArray(instanceId))
-          .enter()
-          .append("p")
-          .text(d => d)
+        writePanel(instanceId);
 
         colorSubstrate.set(groupColors[colorVals[clickedItem]]);
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
@@ -192,7 +229,11 @@ export default function App() {
 
   return (
     <div id='app'>
-      <div id='infoPanel'></div>
+      <div id='infoPanel'>
+        <div id='catalog'></div>
+        <div id='titleBar'></div>
+        <div id='infoBar'></div>
+      </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x87ceeb]} />
