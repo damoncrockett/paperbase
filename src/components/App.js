@@ -7,7 +7,9 @@ import { select } from 'd3-selection';
 import { coords } from './models';
 import { groups } from './groups';
 import { db } from './db';
+import { c } from './cstr';
 
+const cstr = c['c'];
 const catalog = db['c'];
 const binder = db['b'];
 const man = db['m'];
@@ -94,18 +96,8 @@ function updatePositions({ mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-function LightenDarkenColor(col, amt) {
-  return (((col & 0x0000FF) + amt) | ((((col >> 8) & 0x00FF) + amt) << 8) | (((col >> 16) + amt) << 16));
-}
-
 let groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
                    0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
-
-/*
-groupColors.forEach((d, i) =>  {
-  groupColors[i] = LightenDarkenColor(d, -80);
-});
-*/
 
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
@@ -115,10 +107,19 @@ function updateColors({ group, clickedItem, invalidate }) {
   const colorVals = groups[group];
 
   useEffect(() => {
-    for (let i = 0; i < numItems; ++i) {
-      if ( i !== clickedItem ) { // so we don't recolor the clicked point
-        colorSubstrate.set(groupColors[colorVals[i]]);
-        colorSubstrate.toArray(colorBuffer, i * 3);
+    if ( group === 'cstr' ) {
+      for (let i = 0; i < numItems; ++i) {
+        if ( i !== clickedItem ) { // so we don't recolor the clicked point
+          colorSubstrate.set(cstr[i]);
+          colorSubstrate.toArray(colorBuffer, i * 3);
+        }
+      }
+    } else {
+      for (let i = 0; i < numItems; ++i) {
+        if ( i !== clickedItem ) { // so we don't recolor the clicked point
+          colorSubstrate.set(groupColors[colorVals[i]]);
+          colorSubstrate.toArray(colorBuffer, i * 3);
+        }
       }
     }
     colorAttrib.current.needsUpdate = true;
@@ -175,7 +176,12 @@ function Boxes({ model, group }) {
 
       } else if ( clickedItem === instanceId ) {
 
-        colorSubstrate.set(groupColors[colorVals[instanceId]]);
+        if ( group === 'cstr') {
+          colorSubstrate.set(cstr[instanceId]);
+        } else {
+          colorSubstrate.set(groupColors[colorVals[instanceId]]);
+        }
+
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
         setClickedItem(null);
 
@@ -183,7 +189,12 @@ function Boxes({ model, group }) {
 
         writePanel(instanceId);
 
-        colorSubstrate.set(groupColors[colorVals[clickedItem]]);
+        if ( group === 'cstr') {
+          colorSubstrate.set(cstr[instanceId]);
+        } else {
+          colorSubstrate.set(groupColors[colorVals[clickedItem]]);
+        }
+
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
 
         colorSubstrate.set(0xffff00);
@@ -237,8 +248,8 @@ export default function App() {
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x87ceeb]} />
-          <ambientLight intensity={0.25}/>
-          <pointLight position={[0, 0, 135]} intensity={0.25}/>
+          <ambientLight intensity={0.5}/>
+          <pointLight position={[0, 0, 135]} intensity={1.0}/>
           <Boxes
             model={model}
             group={group}
@@ -265,6 +276,7 @@ export default function App() {
         <button onClick={() => setGroup('b')} className={group === 'b' ? 'active' : undefined}>BINDER</button>
         <button onClick={() => setGroup('k')} className={group === 'k' ? 'active' : undefined}>KMEANS</button>
         <button onClick={() => setGroup('c')} className={group === 'c' ? 'active' : undefined}>HDBSCAN</button>
+        <button onClick={() => setGroup('cstr')} className={group === 'cstr' ? 'active' : undefined}>COLOR</button>
       </div>
       <div className='controls' id='modelControls'>
         <div className='controlsLabel'>Models</div>
