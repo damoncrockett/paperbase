@@ -9,6 +9,7 @@ import { groups } from './groups';
 import { db } from './db';
 import { m } from './measurements';
 
+const cstrHue = m['cstrHue'];
 const cstr = m['cstr'];
 const catalog = db['c'];
 const binder = db['b'];
@@ -112,8 +113,14 @@ function updateColors({ group, clickedItem, invalidate }) {
     if ( group === 'cstr' ) {
       for (let i = 0; i < numItems; ++i) {
         if ( i !== clickedItem ) { // so we don't recolor the clicked point
-          console.log(cstr[i]);
           colorSubstrate.set(cstr[i]);
+          colorSubstrate.toArray(colorBuffer, i * 3);
+        }
+      }
+    } else if ( group === 'cstrHue' ) {
+      for (let i = 0; i < numItems; ++i) {
+        if ( i !== clickedItem ) { // so we don't recolor the clicked point
+          colorSubstrate.set(cstrHue[i]);
           colorSubstrate.toArray(colorBuffer, i * 3);
         }
       }
@@ -181,6 +188,8 @@ function Boxes({ model, group }) {
 
         if ( group === 'cstr') {
           colorSubstrate.set(cstr[instanceId]);
+        } else if ( group === 'cstrHue' ) {
+          colorSubstrate.set(cstrHue[instanceId]);
         } else {
           colorSubstrate.set(groupColors[colorVals[instanceId]]);
         }
@@ -194,8 +203,10 @@ function Boxes({ model, group }) {
 
         if ( group === 'cstr') {
           colorSubstrate.set(cstr[instanceId]);
+        } else if ( group === 'cstrHue' ) {
+          colorSubstrate.set(cstrHue[instanceId]);
         } else {
-          colorSubstrate.set(groupColors[colorVals[clickedItem]]);
+          colorSubstrate.set(groupColors[colorVals[instanceId]]);
         }
 
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
@@ -250,8 +261,8 @@ export default function App() {
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
-          <color attach="background" args={[0x87ceeb]} />
-          <ambientLight intensity={0.5}/>
+          <color attach="background" args={[0x808080]} />
+          <ambientLight intensity={0.75}/>
           <pointLight position={[0, 0, 135]} intensity={1.0}/>
           <Boxes
             model={model}
@@ -279,6 +290,7 @@ export default function App() {
         <button onClick={() => setGroup('b')} className={group === 'b' ? 'active' : undefined}>BINDER</button>
         <button onClick={() => setGroup('k')} className={group === 'k' ? 'active' : undefined}>KMEANS</button>
         <button onClick={() => setGroup('cstr')} className={group === 'cstr' ? 'active' : undefined}>COLOR</button>
+        <button onClick={() => setGroup('cstrHue')} className={group === 'cstrHue' ? 'active' : undefined}>HUE</button>
       </div>
       <div className='controls' id='modelControls'>
         <div className='controlsLabel'>Models</div>

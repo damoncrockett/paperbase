@@ -19,9 +19,8 @@ button {
 }
 
 :root {
-  --grey: #97afba;
-  --darkgrey: #344a53;
-  --switch: #368678;
+  --grey: #989898;
+  --darkgrey: #494949;
 }
 
 #viewpane {
