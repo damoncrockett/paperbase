@@ -7,9 +7,9 @@ import { select } from 'd3-selection';
 import { coords } from './models';
 import { groups } from './groups';
 import { db } from './db';
-import { c } from './cstr';
+import { m } from './measurements';
 
-const cstr = c['c'];
+const cstr = m['cstr'];
 const catalog = db['c'];
 const binder = db['b'];
 const man = db['m'];
@@ -96,8 +96,10 @@ function updatePositions({ mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-let groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
-                   0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
+                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+
+const highlightColor = 0xff00ff;
 
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
@@ -110,6 +112,7 @@ function updateColors({ group, clickedItem, invalidate }) {
     if ( group === 'cstr' ) {
       for (let i = 0; i < numItems; ++i) {
         if ( i !== clickedItem ) { // so we don't recolor the clicked point
+          console.log(cstr[i]);
           colorSubstrate.set(cstr[i]);
           colorSubstrate.toArray(colorBuffer, i * 3);
         }
@@ -170,7 +173,7 @@ function Boxes({ model, group }) {
 
         writePanel(instanceId);
 
-        colorSubstrate.set(0xffff00);
+        colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
         setClickedItem(instanceId);
 
@@ -197,7 +200,7 @@ function Boxes({ model, group }) {
 
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
 
-        colorSubstrate.set(0xffff00);
+        colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
         setClickedItem(instanceId)
 
@@ -275,7 +278,6 @@ export default function App() {
         <div className='controlsLabel'>Groups</div>
         <button onClick={() => setGroup('b')} className={group === 'b' ? 'active' : undefined}>BINDER</button>
         <button onClick={() => setGroup('k')} className={group === 'k' ? 'active' : undefined}>KMEANS</button>
-        <button onClick={() => setGroup('c')} className={group === 'c' ? 'active' : undefined}>HDBSCAN</button>
         <button onClick={() => setGroup('cstr')} className={group === 'cstr' ? 'active' : undefined}>COLOR</button>
       </div>
       <div className='controls' id='modelControls'>
