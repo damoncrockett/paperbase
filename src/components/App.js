@@ -4,33 +4,25 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, VertexColors } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
-import { coords } from './models';
-import { groups } from './groups';
-import { db } from './db';
-import { m } from './measurements';
+import { data } from './data';
 
-const catalog = db['c'];
-const binder = db['b'];
-const man = db['m'];
-const bran = db['r'];
-const year = db['y'];
-const texture = db['x'];
+/*Text------------------------------------------------------------------------*/
 
 function writeTitleArray(i) {
-  return [ man[i], bran[i], year[i] ]
+  return [ data['man'][i], data['bran'][i], data['year'][i] ]
 }
 
 function writeInfoArray(i) {
-  return [ texture[i]==='_' ? '' : texture[i] ]
+  return [ data['textureWord'][i]==='_' ? '' : data['textureWord'][i] ]
 }
 
 const pCatsTitle = [ "man", "bran", "year" ];
-const pCatsInfo = [ "texture" ];
+const pCatsInfo = [ "textureWord" ];
 
 function writePanel(instanceId) {
   select("#catalog")
     .append("p")
-    .text("#"+catalog[instanceId])
+    .text("#"+data['catalog'][instanceId])
 
   select("#titleBar")
     .selectAll("p.title")
@@ -49,18 +41,20 @@ function writePanel(instanceId) {
     .attr("class", (d, i) => "info " + pCatsInfo[i])
 }
 
-const numItems = coords['gr'].length;
+/*Models----------------------------------------------------------------------*/
+
+const numItems = data['grid'].length;
 const animatedCoords = Array.from({ length: numItems }, () => [0, 0, 0]);
 
-function interpolatePositions( animatedCoords, coords, model, progress ) {
+function interpolatePositions( animatedCoords, model, progress ) {
   animatedCoords.forEach((item, i) => {
-    animatedCoords[i][0] = (1 - progress) * item[0] + progress * coords[model][i][0];
-    animatedCoords[i][1] = (1 - progress) * item[1] + progress * coords[model][i][1];
-    animatedCoords[i][2] = (1 - progress) * item[2] + progress * coords[model][i][2];
+    animatedCoords[i][0] = (1 - progress) * item[0] + progress * data[model][i][0];
+    animatedCoords[i][1] = (1 - progress) * item[1] + progress * data[model][i][1];
+    animatedCoords[i][2] = (1 - progress) * item[2] + progress * data[model][i][2];
   });
 }
 
-function useSpringAnimation({ animatedCoords, coords, model, onChange }) {
+function useSpringAnimation({ animatedCoords, model, onChange }) {
   useSpring({
     to: { animationProgress: 1 },
     from: { animationProgress: 0 },
@@ -71,7 +65,7 @@ function useSpringAnimation({ animatedCoords, coords, model, onChange }) {
       mass: 100,
     },
     onChange: (_, ctrl) => {
-      interpolatePositions( animatedCoords, coords, model, ctrl.get().animationProgress );
+      interpolatePositions( animatedCoords, model, ctrl.get().animationProgress );
       onChange();
     },
   }, [model]);
@@ -90,6 +84,8 @@ function updatePositions({ animatedCoords, mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
+/*Colors----------------------------------------------------------------------*/
+
 const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
                      0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
 
@@ -98,32 +94,16 @@ const highlightColor = 0xff00ff;
 const colorSubstrate = new Color();
 const colorBuffer = new Float32Array(numItems * 3);
 
-const itemColorGroups = [ 'cstr', 'cstrHue', 'cstrSat' ];
-
 function updateColors({ group, clickedItem, invalidate }) {
   const colorAttrib = useRef();
-  let colorVals;
-
-  if ( itemColorGroups.includes(group) ) {
-    colorVals = m[group];
-  } else {
-    colorVals = groups[group];
-  }
+  const colorVals = data[group];
 
   useEffect(() => {
-    if ( itemColorGroups.includes(group) ) {
-      for (let i = 0; i < numItems; ++i) {
-        if ( i !== clickedItem ) { // so we don't recolor the clicked point
-          colorSubstrate.set(colorVals[i]);
-          colorSubstrate.toArray(colorBuffer, i * 3);
-        }
-      }
-    } else {
-      for (let i = 0; i < numItems; ++i) {
-        if ( i !== clickedItem ) { // so we don't recolor the clicked point
-          colorSubstrate.set(groupColors[colorVals[i]]);
-          colorSubstrate.toArray(colorBuffer, i * 3);
-        }
+    for (let i = 0; i < numItems; ++i) {
+      if ( i !== clickedItem ) { // so we don't recolor the clicked point
+        const colorVal = groupColors[colorVals[i]] || colorVals[i];
+        colorSubstrate.set(colorVal);
+        colorSubstrate.toArray(colorBuffer, i * 3);
       }
     }
     colorAttrib.current.needsUpdate = true;
@@ -133,6 +113,8 @@ function updateColors({ group, clickedItem, invalidate }) {
   return { colorAttrib }
 }
 
+/*instancedMesh---------------------------------------------------------------*/
+
 function Boxes({ model, group }) {
   const meshRef = useRef();
   const [clickedItem, setClickedItem] = useState(null);
@@ -140,7 +122,6 @@ function Boxes({ model, group }) {
 
   useSpringAnimation({
     animatedCoords,
-    coords,
     model,
     onChange: () => {
       updatePositions({ animatedCoords, mesh: meshRef.current });
@@ -155,13 +136,7 @@ function Boxes({ model, group }) {
     e.stopPropagation();
 
     const { delta, instanceId } = e;
-
-    let colorVals;
-    if ( itemColorGroups.includes(group) ) {
-      colorVals = m[group];
-    } else {
-      colorVals = groups[group];
-    }
+    const colorVals = data[group];
 
     if ( delta <= 5 ) {
 
@@ -187,12 +162,8 @@ function Boxes({ model, group }) {
 
       } else if ( clickedItem === instanceId ) {
 
-        if ( itemColorGroups.includes(group) ) {
-          colorSubstrate.set(colorVals[instanceId]);
-        } else {
-          colorSubstrate.set(groupColors[colorVals[instanceId]]);
-        }
-
+        const colorVal = groupColors[colorVals[instanceId]] || colorVals[instanceId];
+        colorSubstrate.set(colorVal);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
         setClickedItem(null);
 
@@ -200,12 +171,8 @@ function Boxes({ model, group }) {
 
         writePanel(instanceId);
 
-        if ( itemColorGroups.includes(group) ) {
-          colorSubstrate.set(colorVals[instanceId]);
-        } else {
-          colorSubstrate.set(groupColors[colorVals[instanceId]]);
-        }
-
+        const colorVal = groupColors[colorVals[clickedItem]] || colorVals[clickedItem];
+        colorSubstrate.set(colorVal);
         colorSubstrate.toArray(colorBuffer, clickedItem * 3);
 
         colorSubstrate.set(highlightColor);
@@ -240,9 +207,11 @@ function Boxes({ model, group }) {
   )
 }
 
+/*App-------------------------------------------------------------------------*/
+
 export default function App() {
-  const [model, setModel] = useState('gr');
-  const [group, setGroup] = useState('b');
+  const [model, setModel] = useState('grid');
+  const [group, setGroup] = useState('colorGroupBinder');
 
   // key code constants
   const ALT_KEY = 18;
@@ -284,17 +253,17 @@ export default function App() {
       </div>
       <div className='controls' id='groupControls'>
         <div className='controlsLabel'>Groups</div>
-        <button onClick={() => setGroup('b')} className={group === 'b' ? 'active' : undefined}>BINDER</button>
-        <button onClick={() => setGroup('k')} className={group === 'k' ? 'active' : undefined}>KMEANS</button>
-        <button onClick={() => setGroup('cstr')} className={group === 'cstr' ? 'active' : undefined}>COLOR</button>
-        <button onClick={() => setGroup('cstrSat')} className={group === 'cstrSat' ? 'active' : undefined}>SAT</button>
-        <button onClick={() => setGroup('cstrHue')} className={group === 'cstrHue' ? 'active' : undefined}>HUE</button>
+        <button onClick={() => setGroup('colorGroupBinder')} className={group === 'colorGroupBinder' ? 'active' : undefined}>BINDER</button>
+        <button onClick={() => setGroup('colorGroupKmeans')} className={group === 'colorGroupKmeans' ? 'active' : undefined}>KMEANS</button>
+        <button onClick={() => setGroup('colorString')} className={group === 'colorString' ? 'active' : undefined}>COLOR</button>
+        <button onClick={() => setGroup('colorStringSat')} className={group === 'colorStringSat' ? 'active' : undefined}>SAT</button>
+        <button onClick={() => setGroup('colorStringHue')} className={group === 'colorStringHue' ? 'active' : undefined}>HUE</button>
       </div>
       <div className='controls' id='modelControls'>
         <div className='controlsLabel'>Models</div>
-        <button onClick={() => setModel('gr')} className={model === 'gr' ? 'active' : undefined}>GRID</button>
-        <button onClick={() => setModel('tn')} className={model === 'tn' ? 'active' : undefined}>t-SNE</button>
-        <button onClick={() => setModel('un')} className={model === 'un' ? 'active' : undefined}>UMAP</button>
+        <button onClick={() => setModel('grid')} className={model === 'grid' ? 'active' : undefined}>GRID</button>
+        <button onClick={() => setModel('tsne')} className={model === 'tsne' ? 'active' : undefined}>t-SNE</button>
+        <button onClick={() => setModel('umap')} className={model === 'umap' ? 'active' : undefined}>UMAP</button>
       </div>
     </div>
   )
