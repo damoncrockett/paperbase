@@ -41,6 +41,20 @@ function writePanel(instanceId) {
     .attr("class", (d, i) => "info " + pCatsInfo[i])
 }
 
+function clearInfoPanel() {
+  select("#catalog")
+    .selectAll("p")
+    .remove()
+
+  select("#infoBar")
+    .selectAll("p")
+    .remove()
+
+  select("#titleBar")
+    .selectAll("p")
+    .remove()
+}
+
 /*Models----------------------------------------------------------------------*/
 
 const numItems = data['grid'].length;
@@ -117,7 +131,6 @@ function updateColors({ group, clickedItem, invalidate }) {
 
 function Boxes({ model, group, clickedItem, onClickItem }) {
   const meshRef = useRef();
-
   const { invalidate } = useThree();
 
   useSpringAnimation({
@@ -137,52 +150,40 @@ function Boxes({ model, group, clickedItem, onClickItem }) {
 
     const { delta, instanceId } = e;
     const colorVals = data[group];
+    const newColorVal = groupColors[colorVals[instanceId]] || colorVals[instanceId];
+    const oldColorVal = groupColors[colorVals[clickedItem]] || colorVals[clickedItem];
 
     if ( delta <= 5 ) {
 
-      select("#catalog")
-        .selectAll("p")
-        .remove()
+      clearInfoPanel();
 
-      select("#infoBar")
-        .selectAll("p")
-        .remove()
-
-      select("#titleBar")
-        .selectAll("p")
-        .remove()
-
-      if ( clickedItem === null ) {
+      if ( clickedItem !== instanceId ) {
 
         writePanel(instanceId);
 
         colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
+
         onClickItem(instanceId);
 
-      } else if ( clickedItem === instanceId ) {
+        if ( clickedItem !== null ) {
 
-        const colorVal = groupColors[colorVals[instanceId]] || colorVals[instanceId];
-        colorSubstrate.set(colorVal);
-        colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        onClickItem(null);
+          colorSubstrate.set(oldColorVal);
+          colorSubstrate.toArray(colorBuffer, clickedItem * 3);
+
+        }
 
       } else {
 
-        writePanel(instanceId);
-
-        const colorVal = groupColors[colorVals[clickedItem]] || colorVals[clickedItem];
-        colorSubstrate.set(colorVal);
-        colorSubstrate.toArray(colorBuffer, clickedItem * 3);
-
-        colorSubstrate.set(highlightColor);
-        colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        onClickItem(instanceId)
+        colorSubstrate.set(oldColorVal); // also works with newColorVal
+        colorSubstrate.toArray(colorBuffer, clickedItem * 3); // also works with instanceId
+        onClickItem(null);
 
       }
 
       colorAttrib.current.needsUpdate = true;
       invalidate();
+
     }
   }
 
