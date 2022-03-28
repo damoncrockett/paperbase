@@ -115,9 +115,9 @@ function updateColors({ group, clickedItem, invalidate }) {
 
 /*instancedMesh---------------------------------------------------------------*/
 
-function Boxes({ model, group }) {
+function Boxes({ model, group, clickedItem, onClickItem }) {
   const meshRef = useRef();
-  const [clickedItem, setClickedItem] = useState(null);
+
   const { invalidate } = useThree();
 
   useSpringAnimation({
@@ -158,14 +158,14 @@ function Boxes({ model, group }) {
 
         colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        setClickedItem(instanceId);
+        onClickItem(instanceId);
 
       } else if ( clickedItem === instanceId ) {
 
         const colorVal = groupColors[colorVals[instanceId]] || colorVals[instanceId];
         colorSubstrate.set(colorVal);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        setClickedItem(null);
+        onClickItem(null);
 
       } else {
 
@@ -177,7 +177,7 @@ function Boxes({ model, group }) {
 
         colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
-        setClickedItem(instanceId)
+        onClickItem(instanceId)
 
       }
 
@@ -212,6 +212,7 @@ function Boxes({ model, group }) {
 export default function App() {
   const [model, setModel] = useState('grid');
   const [group, setGroup] = useState('colorGroupBinder');
+  const [clickedItem, setClickedItem] = useState(null);
 
   // key code constants
   const ALT_KEY = 18;
@@ -233,6 +234,8 @@ export default function App() {
           <Boxes
             model={model}
             group={group}
+            clickedItem={clickedItem}
+            onClickItem={setClickedItem}
           />
           <OrbitControls
             enablePan={true}
