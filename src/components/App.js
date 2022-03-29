@@ -6,14 +6,103 @@ import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
 
+/*MeshMap---------------------------------------------------------------------*/
+
+const meshGroupArray = ['0_0','1_0','2_0','3_0',
+                        '0_1','1_1','2_1','3_1',
+                        '0_2','1_2','2_2'];
+
+const meshAttributeArray = [
+  {z: 0.05, r: 1, m: 0},
+  {z: 0.25, r: 1, m: 0},
+  {z: 0.5, r: 1, m: 0},
+  {z: 0.75, r: 1, m: 0},
+  {z: 0.05, r: 0.5, m: 0.5},
+  {z: 0.25, r: 0.5, m: 0.5},
+  {z: 0.5, r: 0.5, m: 0.5},
+  {z: 0.75, r: 0.5, m: 0.5},
+  {z: 0.05, r: 0, m: 1},
+  {z: 0.25, r: 0, m: 1},
+  {z: 0.5, r: 0, m: 1},
+];
+
+const meshMap = {};
+
+meshGroupArray.forEach((item, i) => {
+  let globalIndexArray = [];
+
+  data['meshGroup'].forEach((meshGroup, j) => {
+    if ( meshGroup === item ) {
+      globalIndexArray.push(j)
+    }
+  });
+
+  meshMap[item] = globalIndexArray;
+
+});
+
+/*Meshes----------------------------------------------------------------------*/
+
+const animatedCoords00 = Array.from({ length: meshMap['0_0'].length }, () => [0, 0, 0]);
+const animatedCoords10 = Array.from({ length: meshMap['1_0'].length }, () => [0, 0, 0]);
+const animatedCoords20 = Array.from({ length: meshMap['2_0'].length }, () => [0, 0, 0]);
+const animatedCoords30 = Array.from({ length: meshMap['3_0'].length }, () => [0, 0, 0]);
+const animatedCoords01 = Array.from({ length: meshMap['0_1'].length }, () => [0, 0, 0]);
+const animatedCoords11 = Array.from({ length: meshMap['1_1'].length }, () => [0, 0, 0]);
+const animatedCoords21 = Array.from({ length: meshMap['2_1'].length }, () => [0, 0, 0]);
+const animatedCoords31 = Array.from({ length: meshMap['3_1'].length }, () => [0, 0, 0]);
+const animatedCoords02 = Array.from({ length: meshMap['0_2'].length }, () => [0, 0, 0]);
+const animatedCoords12 = Array.from({ length: meshMap['1_2'].length }, () => [0, 0, 0]);
+const animatedCoords22 = Array.from({ length: meshMap['2_2'].length }, () => [0, 0, 0]);
+
+const meshArray = [
+  animatedCoords00, animatedCoords10, animatedCoords20, animatedCoords30,
+  animatedCoords01, animatedCoords11, animatedCoords21, animatedCoords31,
+  animatedCoords02, animatedCoords12, animatedCoords22
+];
+
+const meshes = {};
+meshGroupArray.forEach((item, i) => {
+  meshes[item] = meshArray[i]
+});
+
+/*ColorBuffers----------------------------------------------------------------*/
+
+const colorBuffer00 = new Float32Array(meshMap['0_0'].length * 3);
+const colorBuffer10 = new Float32Array(meshMap['1_0'].length * 3);
+const colorBuffer20 = new Float32Array(meshMap['2_0'].length * 3);
+const colorBuffer30 = new Float32Array(meshMap['3_0'].length * 3);
+const colorBuffer01 = new Float32Array(meshMap['0_1'].length * 3);
+const colorBuffer11 = new Float32Array(meshMap['1_1'].length * 3);
+const colorBuffer21 = new Float32Array(meshMap['2_1'].length * 3);
+const colorBuffer31 = new Float32Array(meshMap['3_1'].length * 3);
+const colorBuffer02 = new Float32Array(meshMap['0_2'].length * 3);
+const colorBuffer12 = new Float32Array(meshMap['1_2'].length * 3);
+const colorBuffer22 = new Float32Array(meshMap['2_2'].length * 3);
+
+const colorBufferArray = [
+  colorBuffer00, colorBuffer10, colorBuffer20, colorBuffer30,
+  colorBuffer01, colorBuffer11, colorBuffer21, colorBuffer31,
+  colorBuffer02, colorBuffer12, colorBuffer22
+];
+
+const colorBuffers = {};
+meshGroupArray.forEach((item, i) => {
+  colorBuffers[item] = colorBufferArray[i]
+});
+
 /*Text------------------------------------------------------------------------*/
 
-function writeTitleArray(i) {
-  return [ data['man'][i], data['bran'][i], data['year'][i] ]
+function writeTitleArray(instanceId) {
+  return [
+    data['man'][instanceId],
+    data['bran'][instanceId],
+    data['year'][instanceId]
+  ]
 }
 
-function writeInfoArray(i) {
-  return [ data['textureWord'][i]==='_' ? '' : data['textureWord'][i] ]
+function writeInfoArray(instanceId) {
+  return [ data['textureWord'][instanceId]==='_' ? '' : data['textureWord'][instanceId] ]
 }
 
 const pCatsTitle = [ "man", "bran", "year" ];
@@ -57,18 +146,15 @@ function clearInfoPanel() {
 
 /*Models----------------------------------------------------------------------*/
 
-const numItems = data['grid'].length;
-const animatedCoords = Array.from({ length: numItems }, () => [0, 0, 0]);
-
-function interpolatePositions( animatedCoords, model, progress ) {
+function interpolatePositions({ animatedCoords, meshGroup, model }, progress ) {
   animatedCoords.forEach((item, i) => {
-    animatedCoords[i][0] = (1 - progress) * item[0] + progress * data[model][i][0];
-    animatedCoords[i][1] = (1 - progress) * item[1] + progress * data[model][i][1];
-    animatedCoords[i][2] = (1 - progress) * item[2] + progress * data[model][i][2];
+    animatedCoords[i][0] = (1 - progress) * item[0] + progress * data[model][meshMap[meshGroup][i]][0];
+    animatedCoords[i][1] = (1 - progress) * item[1] + progress * data[model][meshMap[meshGroup][i]][1];
+    animatedCoords[i][2] = (1 - progress) * item[2] + progress * data[model][meshMap[meshGroup][i]][2];
   });
 }
 
-function useSpringAnimation({ animatedCoords, model, onChange }) {
+function useSpringAnimation({ animatedCoords, meshGroup, model, onChange }) {
   useSpring({
     to: { animationProgress: 1 },
     from: { animationProgress: 0 },
@@ -79,7 +165,7 @@ function useSpringAnimation({ animatedCoords, model, onChange }) {
       mass: 100,
     },
     onChange: (_, ctrl) => {
-      interpolatePositions( animatedCoords, model, ctrl.get().animationProgress );
+      interpolatePositions({ animatedCoords, meshGroup, model }, ctrl.get().animationProgress );
       onChange();
     },
   }, [model]);
@@ -90,7 +176,7 @@ const substrate = new Object3D();
 function updatePositions({ animatedCoords, mesh }) {
   if (!mesh) return;
   animatedCoords.forEach((item, i) => {
-    substrate.position.set(item[0],item[1],item[2] * 0.35);
+    substrate.position.set(item[0],item[1],item[2]);
     substrate.updateMatrix();
     mesh.setMatrixAt(i, substrate.matrix);
   });
@@ -106,16 +192,15 @@ const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
 const highlightColor = 0xff00ff;
 
 const colorSubstrate = new Color();
-const colorBuffer = new Float32Array(numItems * 3);
 
-function updateColors({ group, clickedItem, invalidate }) {
+function updateColors({ meshGroup, colorBuffer, group, globalClickedItem, invalidate }) {
   const colorAttrib = useRef();
   const colorVals = data[group];
 
   useEffect(() => {
-    for (let i = 0; i < numItems; ++i) {
-      if ( i !== clickedItem ) { // so we don't recolor the clicked point
-        const colorVal = groupColors[colorVals[i]] || colorVals[i];
+    for (let i = 0; i < colorBuffer.length; ++i) {
+      if ( meshMap[meshGroup][i] !== globalClickedItem ) { // so we don't recolor the clicked point
+        const colorVal = groupColors[colorVals[meshMap[meshGroup][i]]] || colorVals[meshMap[meshGroup][i]];
         colorSubstrate.set(colorVal);
         colorSubstrate.toArray(colorBuffer, i * 3);
       }
@@ -129,12 +214,16 @@ function updateColors({ group, clickedItem, invalidate }) {
 
 /*instancedMesh---------------------------------------------------------------*/
 
-function Boxes({ model, group, clickedItem, onClickItem }) {
+function Boxes({ meshGroup, model, group, clickedItem, onClickItem, meshAttributes }) {
+  const globalClickedItem = clickedItem[1] === null ? null : meshMap[clickedItem[0]][clickedItem[1]];
   const meshRef = useRef();
   const { invalidate } = useThree();
 
+  const animatedCoords = meshes[meshGroup];
+
   useSpringAnimation({
     animatedCoords,
+    meshGroup,
     model,
     onChange: () => {
       updatePositions({ animatedCoords, mesh: meshRef.current });
@@ -142,58 +231,56 @@ function Boxes({ model, group, clickedItem, onClickItem }) {
     }
   });
 
-  const { colorAttrib } = updateColors({ group, clickedItem, invalidate });
+  const colorBuffer = colorBuffers[meshGroup];
+  const { colorAttrib } = updateColors({ meshGroup, colorBuffer, group, globalClickedItem, invalidate });
 
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
     e.stopPropagation();
 
     const { delta, instanceId } = e;
+    const globalInstanceId = meshMap[meshGroup][instanceId];
     const colorVals = data[group];
-    const newColorVal = groupColors[colorVals[instanceId]] || colorVals[instanceId];
-    const oldColorVal = groupColors[colorVals[clickedItem]] || colorVals[clickedItem];
+    const oldColorVal = groupColors[colorVals[globalClickedItem]] || colorVals[globalClickedItem];
 
     if ( delta <= 5 ) {
 
       clearInfoPanel();
 
-      if ( clickedItem !== instanceId ) {
+      if ( globalClickedItem !== globalInstanceId ) {
 
-        writePanel(instanceId);
+        writePanel(globalInstanceId);
 
         colorSubstrate.set(highlightColor);
         colorSubstrate.toArray(colorBuffer, instanceId * 3);
 
-        onClickItem(instanceId);
+        onClickItem([e.object.name,instanceId,colorAttrib.current]);
 
-        if ( clickedItem !== null ) {
-
+        if ( clickedItem[1] !== null ) { // I think bc globalClickedItem here would be undefined, not null
           colorSubstrate.set(oldColorVal);
-          colorSubstrate.toArray(colorBuffer, clickedItem * 3);
-
+          colorSubstrate.toArray(colorBuffers[clickedItem[0]], clickedItem[1] * 3);
+          clickedItem[2].needsUpdate = true; // previous colorAttrib
         }
 
-      } else {
-
+      } else if (globalClickedItem === globalInstanceId) {
         colorSubstrate.set(oldColorVal); // also works with newColorVal
-        colorSubstrate.toArray(colorBuffer, clickedItem * 3); // also works with instanceId
-        onClickItem(null);
-
+        colorSubstrate.toArray(colorBuffers[clickedItem[0]], clickedItem[1] * 3);
+        clickedItem[2].needsUpdate = true; // previous colorAttrib // also works with instanceId
+        onClickItem([null,null,null]);
       }
-
       colorAttrib.current.needsUpdate = true;
       invalidate();
-
     }
   }
 
   return (
     <instancedMesh
       ref={meshRef}
-      args={[null, null, numItems]}
+      args={[null, null, meshes[meshGroup].length]}
       onClick={handleClick}
+      name={meshGroup}
     >
-      <boxBufferGeometry args={[0.75, 0.75, 0.25]}>
+      <boxBufferGeometry args={[0.75, 0.75, meshAttributes['z']]}>
         <instancedBufferAttribute
             ref={colorAttrib}
             attachObject={['attributes', 'color']}
@@ -203,6 +290,8 @@ function Boxes({ model, group, clickedItem, onClickItem }) {
       <meshStandardMaterial
         attach="material"
         vertexColors={VertexColors}
+        roughness={meshAttributes['r']}
+        metalness={0.75}
       />
     </instancedMesh>
   )
@@ -213,7 +302,7 @@ function Boxes({ model, group, clickedItem, onClickItem }) {
 export default function App() {
   const [model, setModel] = useState('grid');
   const [group, setGroup] = useState('colorGroupBinder');
-  const [clickedItem, setClickedItem] = useState(null);
+  const [clickedItem, setClickedItem] = useState([null,null,null]);
 
   // key code constants
   const ALT_KEY = 18;
@@ -230,14 +319,11 @@ export default function App() {
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x505050]} />
-          <ambientLight intensity={0.75}/>
-          <pointLight position={[0, 0, 135]} intensity={1.0}/>
-          <Boxes
-            model={model}
-            group={group}
-            clickedItem={clickedItem}
-            onClickItem={setClickedItem}
-          />
+          <ambientLight intensity={0.5}/>
+          <pointLight position={[0, 0, 135]} intensity={0.5}/>
+          {meshGroupArray.map((d,i) => {
+            return <Boxes key={i} meshGroup={d} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} meshAttributes={meshAttributeArray[i]} />
+          })}
           <OrbitControls
             enablePan={true}
             enableZoom={true}
