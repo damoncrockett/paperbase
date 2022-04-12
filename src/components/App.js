@@ -6,12 +6,6 @@ import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
 
-const keys = Object.keys(data);
-keys.forEach((item, i) => {
-  console.log(item);
-  //console.log(data[item].slice(0,10));
-});
-
 /*MeshMap---------------------------------------------------------------------*/
 
 const meshGroupArray = Array.from(new Set(data['meshGroup']));
@@ -31,11 +25,6 @@ meshGroupArray.forEach((item, i) => {
   meshMap[item] = globalIndexArray;
 
 });
-
-/*Mesh Arrays-----------------------------------------------------------------*/
-
-const animatedCoords = Array.from({ length: data['meshGroup'].length }, () => [0, 0, 0]);
-const colorBuffer = new Float32Array(data['meshGroup'].length * 3);
 
 /*Text------------------------------------------------------------------------*/
 
@@ -92,6 +81,8 @@ function clearInfoPanel() {
 
 /*Models----------------------------------------------------------------------*/
 
+const animatedCoords = Array.from({ length: data['meshGroup'].length }, () => [0, 0, 0]);
+
 function interpolatePositions({ meshGroup, model }, progress ) {
   let globalIndicesForThisMesh = meshMap[meshGroup];
   globalIndicesForThisMesh.forEach((item, i) => {
@@ -141,31 +132,32 @@ const highlightColor = 0xff00ff;
 
 const colorSubstrate = new Color();
 
-function updateColors({ meshGroup, group, globalClickedItem, invalidate }) {
+function updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate }) {
   const colorAttrib = useRef();
   const colorVals = data[group];
   let globalIndicesForThisMesh = meshMap[meshGroup];
+  let meshColorBuffer = new Float32Array(globalIndicesForThisMesh.length * 3);
 
   useEffect(() => {
     globalIndicesForThisMesh.forEach((item, i) => {
-      if ( meshMap[meshGroup][i] !== globalClickedItem ) { // so we don't recolor the clicked point
-        const colorVal = groupColors[colorVals[globalIndicesForThisMesh[i]]] || colorVals[globalIndicesForThisMesh[i]];
+      if ( item !== clickedGlobalInstanceId ) { // so we don't recolor the clicked point
+        const colorVal = groupColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
-        colorSubstrate.toArray(colorBuffer, item * 3);
+        colorSubstrate.toArray(meshColorBuffer, i * 3);
       }
     });
     colorAttrib.current.needsUpdate = true;
     invalidate();
   }, [group]);
 
-  return { colorAttrib }
+  return { colorAttrib, meshColorBuffer }
 }
 
 /*instancedMesh---------------------------------------------------------------*/
 
 function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
   let globalIndicesForThisMesh = meshMap[meshGroup];
-  const clickedGlobalInstanceId = clickedItem[1];
+  let clickedGlobalInstanceId = clickedItem[1];
   const meshRef = useRef();
   const { invalidate } = useThree();
 
@@ -178,8 +170,9 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
     }
   });
 
-  const { colorAttrib } = updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate });
+  const { colorAttrib, meshColorBuffer } = updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate });
 
+/*
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
     e.stopPropagation();
@@ -198,7 +191,7 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
         writePanel(globalInstanceId);
 
         colorSubstrate.set(highlightColor);
-        colorSubstrate.toArray(colorBuffer, globalInstanceId * 3);
+        colorSubstrate.toArray(meshColorBuffer, instanceId * 3);
 
         onClickItem([e.object.name, globalInstanceId, colorAttrib.current]);
 
@@ -218,19 +211,18 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
       invalidate();
     }
   }
-
+*/
   return (
     <instancedMesh
       ref={meshRef}
       args={[null, null, meshMap[meshGroup].length]}
-      onClick={handleClick}
       name={meshGroup}
     >
       <boxBufferGeometry args={[0.75, 0.75, z]}>
         <instancedBufferAttribute
             ref={colorAttrib}
             attachObject={['attributes', 'color']}
-            args={[new Float32Array(globalIndicesForThisMesh.map(d => colorBuffer[d])), 3]}
+            args={[meshColorBuffer, 3]}
         />
       </boxBufferGeometry>
       <meshStandardMaterial
