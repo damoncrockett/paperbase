@@ -83,8 +83,7 @@ function clearInfoPanel() {
 
 const animatedCoords = Array.from({ length: data['meshGroup'].length }, () => [0, 0, 0]);
 
-function interpolatePositions({ meshGroup, model }, progress ) {
-  let globalIndicesForThisMesh = meshMap[meshGroup];
+function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
     animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * data[model][globalIndicesForThisMesh[i]][0];
     animatedCoords[item][1] = (1 - progress) * animatedCoords[item][1] + progress * data[model][globalIndicesForThisMesh[i]][1];
@@ -92,7 +91,7 @@ function interpolatePositions({ meshGroup, model }, progress ) {
   });
 }
 
-function useSpringAnimation({ meshGroup, model, onChange }) {
+function useSpringAnimation({ globalIndicesForThisMesh, model, onChange }) {
   useSpring({
     to: { animationProgress: 1 },
     from: { animationProgress: 0 },
@@ -103,7 +102,7 @@ function useSpringAnimation({ meshGroup, model, onChange }) {
       mass: 100,
     },
     onChange: (_, ctrl) => {
-      interpolatePositions({ meshGroup, model }, ctrl.get().animationProgress );
+      interpolatePositions({ globalIndicesForThisMesh, model }, ctrl.get().animationProgress );
       onChange();
     },
   }, [model]);
@@ -111,9 +110,8 @@ function useSpringAnimation({ meshGroup, model, onChange }) {
 
 const substrate = new Object3D();
 
-function updatePositions({ meshGroup, mesh }) {
+function updatePositions({ globalIndicesForThisMesh, mesh }) {
   if (!mesh) return;
-  let globalIndicesForThisMesh = meshMap[meshGroup];
   globalIndicesForThisMesh.forEach((item, i) => {
     substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],animatedCoords[item][2]);
     substrate.updateMatrix();
@@ -125,33 +123,9 @@ function updatePositions({ meshGroup, mesh }) {
 
 /*Colors----------------------------------------------------------------------*/
 
-const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
-                     0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
-
+const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7, 0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
 const highlightColor = 0xff00ff;
-
 const colorSubstrate = new Color();
-const colorBuffer = new Float32Array(data['meshGroup'].length * 3);
-
-function updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate }) {
-  const colorAttrib = useRef();
-  const colorVals = data[group];
-  let globalIndicesForThisMesh = meshMap[meshGroup];
-
-  useLayoutEffect(() => {
-    globalIndicesForThisMesh.forEach((item, i) => {
-      if ( item !== clickedGlobalInstanceId ) { // so we don't recolor the clicked point
-        const colorVal = groupColors[colorVals[item]] || colorVals[item];
-        colorSubstrate.set(colorVal);
-        colorSubstrate.toArray(colorBuffer, item * 3);
-      }
-    });
-    colorAttrib.current.needsUpdate = true;
-    invalidate();
-  }, [group]);
-
-  return { colorAttrib }
-}
 
 /*instancedMesh---------------------------------------------------------------*/
 
@@ -162,17 +136,29 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
   const { invalidate } = useThree();
 
   useSpringAnimation({
-    meshGroup,
+    globalIndicesForThisMesh,
     model,
     onChange: () => {
-      updatePositions({ meshGroup, mesh: meshRef.current });
+      updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
       invalidate();
     }
   });
 
-  const { colorAttrib } = updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate });
+  const colorVals = data[group];
 
-/*
+  useLayoutEffect(() => {
+    globalIndicesForThisMesh.forEach((item, i) => {
+      if ( item !== clickedGlobalInstanceId ) { // so we don't recolor the clicked point
+        const colorVal = groupColors[colorVals[item]] || colorVals[item];
+        colorSubstrate.set(colorVal);
+        meshRef.current.setColorAt(i, colorSubstrate);
+      }
+    });
+    meshRef.current.instanceColor.needsUpdate = true;
+    invalidate();
+  }, [group]);
+
+
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
     e.stopPropagation();
@@ -189,45 +175,38 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
       if ( clickedGlobalInstanceId !== globalInstanceId ) {
 
         writePanel(globalInstanceId);
-
         colorSubstrate.set(highlightColor);
-        colorSubstrate.toArray(meshColorBuffer, instanceId * 3);
-
-        onClickItem([e.object.name, globalInstanceId, colorAttrib.current]);
+        meshRef.current.setColorAt(instanceId, colorSubstrate);
+        onClickItem([instanceId, globalInstanceId, meshRef.current]);
 
         if ( clickedGlobalInstanceId !== null ) { // I think bc globalClickedItem here would be undefined, not null
           colorSubstrate.set(oldColorVal);
-          colorSubstrate.toArray(colorBuffer, clickedGlobalInstanceId * 3);
-          clickedItem[2].needsUpdate = true; // previous colorAttrib
+          clickedItem[2].setColorAt(clickedItem[0], colorSubstrate);
+          clickedItem[2].instanceColor.needsUpdate = true; // previous instanceColor
         }
 
       } else if (clickedGlobalInstanceId === globalInstanceId) {
         colorSubstrate.set(oldColorVal); // also works with newColorVal
-        colorSubstrate.toArray(colorBuffer, clickedGlobalInstanceId * 3);
-        clickedItem[2].needsUpdate = true; // previous colorAttrib
+        clickedItem[2].setColorAt(clickedItem[0], colorSubstrate);
+        clickedItem[2].instanceColor.needsUpdate = true; // previous instanceColor
         onClickItem([null,null,null]);
       }
-      colorAttrib.current.needsUpdate = true;
+      meshRef.current.instanceColor.needsUpdate = true;
       invalidate();
     }
   }
-*/
+
   return (
     <instancedMesh
       ref={meshRef}
       args={[null, null, meshMap[meshGroup].length]}
       name={meshGroup}
+      onClick={handleClick}
     >
       <boxBufferGeometry args={[0.75, 0.75, z]}>
-        <instancedBufferAttribute
-            ref={colorAttrib}
-            attachObject={['attributes', 'color']}
-            args={[new Float32Array(globalIndicesForThisMesh.map(d => [colorBuffer[d*3],colorBuffer[d*3+1],colorBuffer[d*3+2]]).flat()), 3]}
-        />
       </boxBufferGeometry>
       <meshStandardMaterial
         attach="material"
-        vertexColors={VertexColors}
       />
     </instancedMesh>
   )
