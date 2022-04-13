@@ -131,26 +131,26 @@ const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7,
 const highlightColor = 0xff00ff;
 
 const colorSubstrate = new Color();
+const colorBuffer = new Float32Array(data['meshGroup'].length * 3);
 
 function updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate }) {
   const colorAttrib = useRef();
   const colorVals = data[group];
   let globalIndicesForThisMesh = meshMap[meshGroup];
-  let meshColorBuffer = new Float32Array(globalIndicesForThisMesh.length * 3);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     globalIndicesForThisMesh.forEach((item, i) => {
       if ( item !== clickedGlobalInstanceId ) { // so we don't recolor the clicked point
         const colorVal = groupColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
-        colorSubstrate.toArray(meshColorBuffer, i * 3);
+        colorSubstrate.toArray(colorBuffer, item * 3);
       }
     });
     colorAttrib.current.needsUpdate = true;
     invalidate();
   }, [group]);
 
-  return { colorAttrib, meshColorBuffer }
+  return { colorAttrib }
 }
 
 /*instancedMesh---------------------------------------------------------------*/
@@ -170,7 +170,7 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
     }
   });
 
-  const { colorAttrib, meshColorBuffer } = updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate });
+  const { colorAttrib } = updateColors({ meshGroup, group, clickedGlobalInstanceId, invalidate });
 
 /*
   const handleClick = e => {
@@ -222,7 +222,7 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
         <instancedBufferAttribute
             ref={colorAttrib}
             attachObject={['attributes', 'color']}
-            args={[meshColorBuffer, 3]}
+            args={[new Float32Array(globalIndicesForThisMesh.map(d => [colorBuffer[d*3],colorBuffer[d*3+1],colorBuffer[d*3+2]]).flat()), 3]}
         />
       </boxBufferGeometry>
       <meshStandardMaterial
