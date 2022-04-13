@@ -103,6 +103,12 @@ button {
   right: 10vh;
 }
 
+#glyphControls {
+  position: fixed;
+  bottom: 6vh;
+  left: 10vh;
+}
+
 .controls > button {
   background-color: #FFFFFF;
   border: 0;

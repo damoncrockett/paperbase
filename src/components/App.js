@@ -6,24 +6,34 @@ import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
 
-/*MeshMap---------------------------------------------------------------------*/
+/*glyphMaps-------------------------------------------------------------------*/
 
-const meshGroupArray = Array.from(new Set(data['meshGroup']));
-const zArray = meshGroupArray.map(d => d.split("_")[0]==='0' ? 0.05 : d.split("_")[0]==='1' ? 0.25 : d.split("_")[0]==='2' ? 0.5 : 0.75);
+const isoGroupArray = Array.from(new Set(data['isoGroup']));
+const isoMap = {};
 
-const meshMap = {};
-
-meshGroupArray.forEach((item, i) => {
+isoGroupArray.forEach((item, i) => {
   let globalIndexArray = [];
-
-  data['meshGroup'].forEach((meshGroup, j) => {
-    if ( meshGroup === item ) {
+  data['isoGroup'].forEach((isoGroup, j) => {
+    if ( isoGroup === item ) {
       globalIndexArray.push(j)
     }
   });
+  isoMap[item] = globalIndexArray;
+});
 
-  meshMap[item] = globalIndexArray;
+const zArray = isoGroupArray.map(d => d===0 ? 0.05 : d===1 ? 0.25 : d===2 ? 0.5 : 0.75);
 
+const radarGroupArray = Array.from(new Set(data['radarGroup']));
+const radarMap = {};
+
+radarGroupArray.forEach((item, i) => {
+  let globalIndexArray = [];
+  data['radarGroup'].forEach((radarGroup, j) => {
+    if ( radarGroup === item ) {
+      globalIndexArray.push(j)
+    }
+  });
+  radarMap[item] = globalIndexArray;
 });
 
 /*Text------------------------------------------------------------------------*/
@@ -81,7 +91,7 @@ function clearInfoPanel() {
 
 /*Models----------------------------------------------------------------------*/
 
-const animatedCoords = Array.from({ length: data['meshGroup'].length }, () => [0, 0, 0]);
+const animatedCoords = Array.from({ length: data['isoGroup'].length }, () => [0, 0, 0]);
 
 function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
@@ -129,8 +139,8 @@ const colorSubstrate = new Color();
 
 /*instancedMesh---------------------------------------------------------------*/
 
-function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
-  let globalIndicesForThisMesh = meshMap[meshGroup];
+function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z }) {
+  let globalIndicesForThisMesh = glyphMap[glyphGroup];
   let clickedGlobalInstanceId = clickedItem[1];
   const meshRef = useRef();
   const { invalidate } = useThree();
@@ -197,17 +207,15 @@ function Boxes({ meshGroup, model, group, clickedItem, onClickItem, z }) {
   }
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[null, null, meshMap[meshGroup].length]}
-      name={meshGroup}
-      onClick={handleClick}
-    >
-      <boxBufferGeometry args={[0.75, 0.75, z]}>
-      </boxBufferGeometry>
-      <meshStandardMaterial
-        attach="material"
-      />
+    <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
+      {[0].map(() => {
+        if ( glyph === 'iso' ) {
+          return <boxBufferGeometry args={[0.75, 0.75, z]}></boxBufferGeometry>
+        } else if ( glyph === 'radar' ) {
+          return <boxBufferGeometry args={[0.25, 0.25, 0.25]}></boxBufferGeometry>
+        }
+      })}
+      <meshStandardMaterial attach="material"/>
     </instancedMesh>
   )
 }
@@ -218,6 +226,13 @@ export default function App() {
   const [model, setModel] = useState('grid');
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState([null,null,null]);
+  const [glyph, setGlyph] = useState('iso');
+
+  let glyphGroupArray;
+  glyphGroupArray = glyph === 'iso' ? isoGroupArray : radarGroupArray;
+
+  let glyphMap;
+  glyphMap = glyph === 'iso' ? isoMap : radarMap;
 
   // key code constants
   const ALT_KEY = 18;
@@ -236,8 +251,8 @@ export default function App() {
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
-          {meshGroupArray.map((d,i) => {
-            return <Boxes key={i} meshGroup={d} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
+          {glyphGroupArray.map((d,i) => {
+            return <Glyphs key={i} glyphMap={glyphMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
           })}
           <OrbitControls
             enablePan={true}
@@ -255,6 +270,11 @@ export default function App() {
             }}
           />
         </Canvas>
+      </div>
+      <div className='controls' id='glyphControls'>
+        <div className='controlsLabel'>Glyphs</div>
+        <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
+        <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RADAR</button>
       </div>
       <div className='controls' id='groupControls'>
         <div className='controlsLabel'>Groups</div>
