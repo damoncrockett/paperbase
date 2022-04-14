@@ -84,7 +84,7 @@ function radarNormals(glyphGroup) {
   rough = axisNotch(rough, 3) * -1;
   gloss = axisNotch(gloss, 3);
   color = axisNotch(color, 4);
-  
+
   const rawNormals = [
     [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom
     [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1], //top
@@ -98,17 +98,17 @@ function radarNormals(glyphGroup) {
 
 /*Text------------------------------------------------------------------------*/
 
-function writeTitleArray(instanceId) {
+function writeTitleArray(globalInstanceId) {
   return [
-    data['man'][instanceId],
-    data['bran'][instanceId],
-    data['year'][instanceId]
+    data['man'][globalInstanceId],
+    data['bran'][globalInstanceId],
+    data['year'][globalInstanceId]
   ]
 }
 
-function writeInfoArray(instanceId) {
-  let textureWord = data['textureWord'][instanceId];
-  let glossWord = data['glossWord'][instanceId];
+function writeInfoArray(globalInstanceId) {
+  let textureWord = data['textureWord'][globalInstanceId];
+  let glossWord = data['glossWord'][globalInstanceId];
 
   textureWord = textureWord === '_' ? '' : textureWord;
   glossWord = glossWord === '_' ? '' : glossWord;
@@ -119,14 +119,14 @@ function writeInfoArray(instanceId) {
 const pCatsTitle = [ "man", "bran", "year" ];
 const pCatsInfo = [ "textureWord" ];
 
-function writePanel(instanceId) {
+function writePanel(globalInstanceId) {
   select("#catalog")
     .append("p")
-    .text("#"+data['catalog'][instanceId])
+    .text("#"+data['catalog'][globalInstanceId])
 
   select("#titleBar")
     .selectAll("p.title")
-    .data(writeTitleArray(instanceId))
+    .data(writeTitleArray(globalInstanceId))
     .enter()
     .append("p")
     .text(d => d)
@@ -134,7 +134,7 @@ function writePanel(instanceId) {
 
   select("#infoBar")
     .selectAll("p.info")
-    .data(writeInfoArray(instanceId))
+    .data(writeInfoArray(globalInstanceId))
     .enter()
     .append("p")
     .text(d => d)
@@ -206,8 +206,11 @@ const colorSubstrate = new Color();
 /*instancedMesh---------------------------------------------------------------*/
 
 function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize }) {
-  let globalIndicesForThisMesh = glyphMap[glyphGroup];
-  let clickedGlobalInstanceId = clickedItem[1];
+  const globalIndicesForThisMesh = glyphMap[glyphGroup];
+  const clickedGlobalInstanceId = clickedItem[1];
+  const colorVals = data[group];
+  const oldColorVal = groupColors[colorVals[clickedGlobalInstanceId]] || colorVals[clickedGlobalInstanceId];
+
   const meshRef = useRef();
   const { invalidate } = useThree();
 
@@ -220,14 +223,17 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     }
   });
 
-  const colorVals = data[group];
-
   useLayoutEffect(() => {
     globalIndicesForThisMesh.forEach((item, i) => {
       if ( item !== clickedGlobalInstanceId ) { // so we don't recolor the clicked point
         const colorVal = groupColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
+      } else {
+        if ( clickedGlobalInstanceId !== null ) {
+          colorSubstrate.set(highlightColor);
+          meshRef.current.setColorAt(i, colorSubstrate); // recolor clicked if there is one
+        }
       }
     });
     meshRef.current.instanceColor.needsUpdate = true;
@@ -241,9 +247,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
     const { delta, instanceId } = e;
     const globalInstanceId = globalIndicesForThisMesh[instanceId];
-
-    const colorVals = data[group];
-    const oldColorVal = groupColors[colorVals[clickedGlobalInstanceId]] || colorVals[clickedGlobalInstanceId];
+    const clickedLocalInstanceId = globalIndicesForThisMesh.indexOf(clickedGlobalInstanceId); // new localInstanceId if new mesh
 
     if ( delta <= 5 ) {
 
@@ -258,15 +262,26 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
         if ( clickedGlobalInstanceId !== null ) { // I think bc globalClickedItem here would be undefined, not null
           colorSubstrate.set(oldColorVal);
+
+          // if we haven't just replaced the meshes
           clickedItem[2].setColorAt(clickedItem[0], colorSubstrate);
           clickedItem[2].instanceColor.needsUpdate = true; // previous instanceColor
+
+          // if we have just replaced the meshes
+          meshRef.current.setColorAt(clickedLocalInstanceId, colorSubstrate);
         }
 
       } else if (clickedGlobalInstanceId === globalInstanceId) {
+
         colorSubstrate.set(oldColorVal); // also works with newColorVal
+
+        // if we haven't just replaced the meshes
         clickedItem[2].setColorAt(clickedItem[0], colorSubstrate);
         clickedItem[2].instanceColor.needsUpdate = true; // previous instanceColor
         onClickItem([null,null,null]);
+
+        // if we have just replaced the meshes
+        meshRef.current.setColorAt(clickedLocalInstanceId, colorSubstrate);
       }
       meshRef.current.instanceColor.needsUpdate = true;
       invalidate();
