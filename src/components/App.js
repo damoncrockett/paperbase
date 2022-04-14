@@ -175,6 +175,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
     const { delta, instanceId } = e;
     const globalInstanceId = globalIndicesForThisMesh[instanceId];
+
     const colorVals = data[group];
     const oldColorVal = groupColors[colorVals[clickedGlobalInstanceId]] || colorVals[clickedGlobalInstanceId];
 
