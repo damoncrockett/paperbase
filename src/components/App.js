@@ -206,18 +206,21 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     }
   }
 
-  return (
-    <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
-      {[0].map(() => {
-        if ( glyph === 'iso' ) {
-          return <boxBufferGeometry args={[0.75, 0.75, z]}></boxBufferGeometry>
-        } else if ( glyph === 'radar' ) {
-          return <boxBufferGeometry args={[0.25, 0.25, 0.25]}></boxBufferGeometry>
-        }
-      })}
-      <meshStandardMaterial attach="material"/>
-    </instancedMesh>
-  )
+  if ( glyph === 'iso' ) {
+    return (
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
+        <boxBufferGeometry args={[0.75, 0.75, z]}></boxBufferGeometry>
+        <meshStandardMaterial attach="material"/>
+      </instancedMesh>
+    )
+  } else if ( glyph === 'radar' ) {
+    return (
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
+        <boxBufferGeometry args={[0.5, 0.5, 0.5]}></boxBufferGeometry>
+        <meshStandardMaterial attach="material"/>
+      </instancedMesh>
+    )
+  }
 }
 
 /*App-------------------------------------------------------------------------*/
@@ -227,12 +230,6 @@ export default function App() {
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState([null,null,null]);
   const [glyph, setGlyph] = useState('iso');
-
-  let glyphGroupArray;
-  glyphGroupArray = glyph === 'iso' ? isoGroupArray : radarGroupArray;
-
-  let glyphMap;
-  glyphMap = glyph === 'iso' ? isoMap : radarMap;
 
   // key code constants
   const ALT_KEY = 18;
@@ -251,8 +248,11 @@ export default function App() {
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
-          {glyphGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={glyphMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
+          {glyph==='iso' && isoGroupArray.map((d,i) => {
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
+          })}
+          {glyph==='radar' && radarGroupArray.map((d,i) => {
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
           })}
           <OrbitControls
             enablePan={true}
