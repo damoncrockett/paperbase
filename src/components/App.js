@@ -54,18 +54,38 @@ function radarVertices(glyphGroup) {
   gloss = axisNotch(gloss, 3);
   color = axisNotch(color, 4);
 
-  thick = [thick,0,0];
-  rough = [0,rough,0];
-  gloss = [gloss,0,0];
-  color = [0,color,0];
+  let glyphThickness = 0.1;
 
-  const rawVertices = [thick, gloss, color, rough, gloss, thick];
-  return new Float32Array(rawVertices.flat())
+  let thicktop = [thick,0,glyphThickness];
+  let thickbottom = [thick,0,0];
+  let roughtop = [0,rough,glyphThickness];
+  let roughbottom = [0,rough,0];
+  let glosstop = [gloss,0,glyphThickness];
+  let glossbottom = [gloss,0,0];
+  let colortop = [0,color,glyphThickness];
+  let colorbottom = [0,color,0];
+
+  let bottom = [thickbottom, glossbottom, colorbottom, roughbottom, glossbottom, thickbottom];
+  let top = [thicktop, glosstop, colortop, roughtop, glosstop, thicktop];
+  let upperLeft = [colorbottom, thicktop, colortop, colorbottom, thickbottom, thicktop];
+  let upperRight = [glossbottom, colortop, glosstop, glossbottom, colorbottom, colortop];
+  let lowerLeft = [thickbottom, roughtop, thicktop, thickbottom, roughbottom, roughtop];
+  let lowerRight = [roughbottom, glosstop, roughtop, roughbottom, glossbottom, glosstop];
+
+  const rawVertices = [bottom, top, upperLeft, upperRight, lowerLeft, lowerRight];
+  return new Float32Array(rawVertices.flat(2))
 
 }
 
 function radarNormals() {
-  const rawNormals = [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]];
+  const rawNormals = [
+    [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],
+    [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],
+    [-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],
+    [1,1,0],[1,1,0],[1,1,0],[1,1,0],[1,1,0],[1,1,0],
+    [-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],
+    [1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0]
+  ];
   return new Float32Array(rawNormals.flat())
 }
 
@@ -254,7 +274,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
       </instancedMesh>
     )
   } else if ( glyph === 'radar' ) {
-
     return (
       <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
         <bufferGeometry>
