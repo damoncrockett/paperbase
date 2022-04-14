@@ -77,14 +77,21 @@ function radarVertices(glyphGroup) {
 
 }
 
-function radarNormals() {
+function radarNormals(glyphGroup) {
+  let [thick, rough, gloss, color] = glyphGroup.split('_');
+
+  thick = axisNotch(thick, 4) * -1;
+  rough = axisNotch(rough, 3) * -1;
+  gloss = axisNotch(gloss, 3);
+  color = axisNotch(color, 4);
+  
   const rawNormals = [
-    [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],
-    [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],
-    [-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],[-1,1,0],
-    [1,1,0],[1,1,0],[1,1,0],[1,1,0],[1,1,0],[1,1,0],
-    [-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],[-1,-1,0],
-    [1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0],[1,-1,0]
+    [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom
+    [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1], //top
+    [-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0], //upperLeft
+    [color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0], //upperRight
+    [rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0], //lowerLeft
+    [rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0] //lowerRight
   ];
   return new Float32Array(rawNormals.flat())
 }
@@ -326,7 +333,7 @@ export default function App() {
             return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals()} itemSize={itemSize} />
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} />
           })}
           <OrbitControls
             enablePan={true}
