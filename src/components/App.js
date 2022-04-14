@@ -6,7 +6,7 @@ import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
 
-/*glyphMaps-------------------------------------------------------------------*/
+/*isoMap----------------------------------------------------------------------*/
 
 const isoGroupArray = Array.from(new Set(data['isoGroup']));
 const isoMap = {};
@@ -23,6 +23,8 @@ isoGroupArray.forEach((item, i) => {
 
 const zArray = isoGroupArray.map(d => d===0 ? 0.05 : d===1 ? 0.25 : d===2 ? 0.5 : 0.75);
 
+/*radarMap--------------------------------------------------------------------*/
+
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
 const radarMap = {};
 
@@ -36,6 +38,37 @@ radarGroupArray.forEach((item, i) => {
   radarMap[item] = globalIndexArray;
 });
 
+const axisNotch = (binNumber, numBins) => {
+  if ( numBins === 3 ) {
+    return binNumber === '0' ? 0.33/2 : binNumber === '1' ? 0.66/2 : 0.99/2
+  } else if ( numBins === 4 ) {
+    return binNumber === '0' ? 0.25/2 : binNumber === '1' ? 0.5/2 : binNumber === '2' ? 0.75/2 : 1.0/2
+  }
+}
+
+function radarVertices(glyphGroup) {
+  let [thick, rough, gloss, color] = glyphGroup.split('_');
+
+  thick = axisNotch(thick, 4) * -1;
+  rough = axisNotch(rough, 3) * -1;
+  gloss = axisNotch(gloss, 3);
+  color = axisNotch(color, 4);
+
+  thick = [thick,0,0];
+  rough = [0,rough,0];
+  gloss = [gloss,0,0];
+  color = [0,color,0];
+
+  const rawVertices = [thick, gloss, color, rough, gloss, thick];
+  return new Float32Array(rawVertices.flat())
+
+}
+
+function radarNormals() {
+  const rawNormals = [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]];
+  return new Float32Array(rawNormals.flat())
+}
+
 /*Text------------------------------------------------------------------------*/
 
 function writeTitleArray(instanceId) {
@@ -47,7 +80,13 @@ function writeTitleArray(instanceId) {
 }
 
 function writeInfoArray(instanceId) {
-  return [ data['textureWord'][instanceId]==='_' ? '' : data['textureWord'][instanceId] ]
+  let textureWord = data['textureWord'][instanceId];
+  let glossWord = data['glossWord'][instanceId];
+
+  textureWord = textureWord === '_' ? '' : textureWord;
+  glossWord = glossWord === '_' ? '' : glossWord;
+
+  return [textureWord + " " + glossWord]
 }
 
 const pCatsTitle = [ "man", "bran", "year" ];
@@ -139,7 +178,7 @@ const colorSubstrate = new Color();
 
 /*instancedMesh---------------------------------------------------------------*/
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize }) {
   let globalIndicesForThisMesh = glyphMap[glyphGroup];
   let clickedGlobalInstanceId = clickedItem[1];
   const meshRef = useRef();
@@ -215,9 +254,23 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
       </instancedMesh>
     )
   } else if ( glyph === 'radar' ) {
+
     return (
       <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick}>
-        <boxBufferGeometry args={[0.5, 0.5, 0.5]}></boxBufferGeometry>
+        <bufferGeometry>
+          <bufferAttribute
+            attachObject={["attributes", "position"]}
+            array={vertices}
+            count={vertices.length / itemSize}
+            itemSize={itemSize}
+          />
+          <bufferAttribute
+            attachObject={["attributes", "normal"]}
+            array={normals}
+            count={normals.length / itemSize}
+            itemSize={itemSize}
+          />
+        </bufferGeometry>
         <meshStandardMaterial attach="material"/>
       </instancedMesh>
     )
@@ -231,6 +284,7 @@ export default function App() {
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState([null,null,null]);
   const [glyph, setGlyph] = useState('iso');
+  const itemSize = 3;
 
   // key code constants
   const ALT_KEY = 18;
@@ -250,10 +304,10 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} />
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals()} itemSize={itemSize} />
           })}
           <OrbitControls
             enablePan={true}
