@@ -205,7 +205,7 @@ const colorSubstrate = new Color();
 
 /*instancedMesh---------------------------------------------------------------*/
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, newMeshWithClickedGlobalInstanceId, setNewMeshWithClickedGlobalInstanceId, z, vertices, normals, itemSize }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
   const clickedGlobalInstanceId = clickedItem[1];
   const colorVals = data[group];
@@ -230,10 +230,10 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
-        if ( clickedGlobalInstanceId !== null ) {
-          colorSubstrate.set(highlightColor);
-          meshRef.current.setColorAt(i, colorSubstrate); // recolor clicked if there is one
-        }
+        // clickedGlobalInstanceId is guaranteed non-null here
+        setNewMeshWithClickedGlobalInstanceId([meshRef.current, i, oldColorVal]); // oldColorVal at time of replacing meshes
+        colorSubstrate.set(highlightColor);
+        meshRef.current.setColorAt(i, colorSubstrate);
       }
     });
     meshRef.current.instanceColor.needsUpdate = true;
@@ -247,7 +247,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
     const { delta, instanceId } = e;
     const globalInstanceId = globalIndicesForThisMesh[instanceId];
-    const clickedLocalInstanceId = globalIndicesForThisMesh.indexOf(clickedGlobalInstanceId); // new localInstanceId if new mesh
 
     if ( delta <= 5 ) {
 
@@ -258,9 +257,8 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
         writePanel(globalInstanceId);
         colorSubstrate.set(highlightColor);
         meshRef.current.setColorAt(instanceId, colorSubstrate);
-        onClickItem([instanceId, globalInstanceId, meshRef.current]);
 
-        if ( clickedGlobalInstanceId !== null ) { // I think bc globalClickedItem here would be undefined, not null
+        if ( clickedGlobalInstanceId !== null ) {
           colorSubstrate.set(oldColorVal);
 
           // if we haven't just replaced the meshes
@@ -268,8 +266,13 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
           clickedItem[2].instanceColor.needsUpdate = true; // previous instanceColor
 
           // if we have just replaced the meshes
-          meshRef.current.setColorAt(clickedLocalInstanceId, colorSubstrate);
+          colorSubstrate.set(newMeshWithClickedGlobalInstanceId[2]);
+          newMeshWithClickedGlobalInstanceId[0].setColorAt(newMeshWithClickedGlobalInstanceId[1], colorSubstrate);
+          newMeshWithClickedGlobalInstanceId[0].instanceColor.needsUpdate = true;
+
         }
+
+        onClickItem([instanceId, globalInstanceId, meshRef.current]);
 
       } else if (clickedGlobalInstanceId === globalInstanceId) {
 
@@ -281,7 +284,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
         onClickItem([null,null,null]);
 
         // if we have just replaced the meshes
-        meshRef.current.setColorAt(clickedLocalInstanceId, colorSubstrate);
+        colorSubstrate.set(newMeshWithClickedGlobalInstanceId[2]);
+        newMeshWithClickedGlobalInstanceId[0].setColorAt(newMeshWithClickedGlobalInstanceId[1], colorSubstrate);
+        newMeshWithClickedGlobalInstanceId[0].instanceColor.needsUpdate = true;
       }
       meshRef.current.instanceColor.needsUpdate = true;
       invalidate();
@@ -324,6 +329,7 @@ export default function App() {
   const [model, setModel] = useState('grid');
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState([null,null,null]);
+  const [newMeshWithClickedGlobalInstanceId, setNewMeshWithClickedGlobalInstanceId] = useState([null,null]);
   const [glyph, setGlyph] = useState('iso');
   const itemSize = 3;
 
@@ -345,10 +351,10 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} />
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} newMeshWithClickedGlobalInstanceId={newMeshWithClickedGlobalInstanceId} setNewMeshWithClickedGlobalInstanceId={setNewMeshWithClickedGlobalInstanceId} z={zArray[i]} vertices={null} normals={null} itemSize={null} />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} />
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} newMeshWithClickedGlobalInstanceId={newMeshWithClickedGlobalInstanceId} setNewMeshWithClickedGlobalInstanceId={setNewMeshWithClickedGlobalInstanceId} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} />
           })}
           <OrbitControls
             enablePan={true}
