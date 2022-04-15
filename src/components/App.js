@@ -351,8 +351,8 @@ export default function App() {
       </div>
       <div className='controls' id='glyphControls'>
         <div className='controlsLabel'>Glyphs</div>
-        <button onClick={() => {meshList.length = 0; setGlyph('iso')}} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
-        <button onClick={() => {meshList.length = 0; setGlyph('radar')}} className={glyph === 'radar' ? 'active' : undefined}>RADAR</button>
+        <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
+        <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RADAR</button>
       </div>
       <div className='controls' id='groupControls'>
         <div className='controlsLabel'>Groups</div>
