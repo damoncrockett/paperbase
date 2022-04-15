@@ -193,7 +193,6 @@ const meshList = {};
 function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
   const colorVals = data[group];
-  const oldColorVal = groupColors[colorVals[clickedItem]] || colorVals[clickedItem];
 
   const meshRef = useRef();
   const { invalidate } = useThree();
