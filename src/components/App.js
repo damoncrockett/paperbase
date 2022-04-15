@@ -88,10 +88,10 @@ function radarNormals(glyphGroup) {
   const rawNormals = [
     [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom
     [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1], //top
-    [-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0],[-1 * color,thick,0], //upperLeft
+    [-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0], //upperLeft
     [color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0], //upperRight
     [rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0], //lowerLeft
-    [rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0],[rough * -1,gloss * -1,0] //lowerRight
+    [-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0] //lowerRight
   ];
   return new Float32Array(rawNormals.flat())
 }
@@ -167,23 +167,6 @@ function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
   });
 }
 
-function useSpringAnimation({ globalIndicesForThisMesh, model, onChange }) {
-  useSpring({
-    to: { animationProgress: 1 },
-    from: { animationProgress: 0 },
-    reset: true,
-    config: {
-      friction: 416,
-      tension: 170,
-      mass: 100,
-    },
-    onChange: (_, ctrl) => {
-      interpolatePositions({ globalIndicesForThisMesh, model }, ctrl.get().animationProgress );
-      onChange();
-    },
-  }, [model]);
-}
-
 const substrate = new Object3D();
 
 function updatePositions({ globalIndicesForThisMesh, mesh }) {
@@ -214,14 +197,21 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
   const meshRef = useRef();
   const { invalidate } = useThree();
 
-  useSpringAnimation({
-    globalIndicesForThisMesh,
-    model,
-    onChange: () => {
+  useSpring({
+    to: { animationProgress: 1 },
+    from: { animationProgress: 0 },
+    reset: true,
+    config: {
+      friction: 416,
+      tension: 170,
+      mass: 100,
+    },
+    onChange: (_, ctrl) => {
+      interpolatePositions({ globalIndicesForThisMesh, model }, ctrl.get().animationProgress );
       updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
       invalidate();
-    }
-  });
+    },
+  }, [model]);
 
   useLayoutEffect(() => {
     globalIndicesForThisMesh.forEach((item, i) => {
@@ -257,6 +247,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
         writePanel(globalInstanceId);
         colorSubstrate.set(highlightColor);
         meshRef.current.setColorAt(instanceId, colorSubstrate);
+        onClickItem([instanceId, globalInstanceId, meshRef.current]); // not sure why this should be here, but if after conditional below => bug
 
         if ( clickedGlobalInstanceId !== null ) {
           colorSubstrate.set(oldColorVal);
@@ -271,8 +262,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
           newMeshWithClickedGlobalInstanceId[0].instanceColor.needsUpdate = true;
 
         }
-
-        onClickItem([instanceId, globalInstanceId, meshRef.current]);
 
       } else if (clickedGlobalInstanceId === globalInstanceId) {
 
