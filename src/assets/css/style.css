@@ -109,6 +109,12 @@ button {
   left: 10vh;
 }
 
+#exprControls {
+  position: fixed;
+  bottom: 42vh;
+  left: 10vh;
+}
+
 .controls > button {
   background-color: #FFFFFF;
   border: 0;

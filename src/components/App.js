@@ -5,6 +5,38 @@ import { Object3D, Color, MOUSE, VertexColors } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
+const n = data['isoGroup'].length;
+
+/*boxMap----------------------------------------------------------------------*/
+
+data['boxGroup'] = Array(n).fill('b');
+const boxGroupArray = ['b'];
+const boxMap = {};
+
+boxGroupArray.forEach((item, i) => {
+  let globalIndexArray = [];
+  data['boxGroup'].forEach((boxGroup, j) => {
+    if ( boxGroup === item ) {
+      globalIndexArray.push(j)
+    }
+  });
+  boxMap[item] = globalIndexArray;
+});
+
+/*expMap----------------------------------------------------------------------*/
+
+const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
+const expressivenessMap = {};
+
+expressivenessGroupArray.forEach((item, i) => {
+  let globalIndexArray = [];
+  data['expressivenessGroup'].forEach((expressivenessGroup, j) => {
+    if ( expressivenessGroup === item ) {
+      globalIndexArray.push(j)
+    }
+  });
+  expressivenessMap[item] = globalIndexArray;
+});
 
 /*isoMap----------------------------------------------------------------------*/
 
@@ -157,7 +189,7 @@ function clearInfoPanel() {
 
 /*Models----------------------------------------------------------------------*/
 
-const animatedCoords = Array.from({ length: data['isoGroup'].length }, () => [0, 0, 0]);
+const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
 function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
@@ -190,7 +222,7 @@ const colorSubstrate = new Color();
 
 const meshList = {};
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
   const colorVals = data[group];
 
@@ -269,7 +301,21 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     }
   }
 
-  if ( glyph === 'iso' ) {
+  if ( glyph === 'box' ) {
+    return (
+      <instancedMesh ref={meshRef} args={[null, null, n]} onClick={handleClick} name={glyphGroup}>
+        <boxBufferGeometry args={[0.75, 0.75, 0.75]}></boxBufferGeometry>
+        <meshStandardMaterial attach="material"/>
+      </instancedMesh>
+    )
+  } else if ( glyph === 'exp' ) {
+    return (
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup}>
+        <boxBufferGeometry args={[s, s, s]}></boxBufferGeometry>
+        <meshStandardMaterial attach="material"/>
+      </instancedMesh>
+    )
+  } else if ( glyph === 'iso' ) {
     return (
       <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup}>
         <boxBufferGeometry args={[0.75, 0.75, z]}></boxBufferGeometry>
@@ -305,13 +351,19 @@ export default function App() {
   const [model, setModel] = useState('grid');
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
-  const [glyph, setGlyph] = useState('iso');
+  const [glyph, setGlyph] = useState('box');
   const itemSize = 3;
 
   // key code constants
   const ALT_KEY = 18;
   const CTRL_KEY = 17;
   const CMD_KEY = 91;
+
+  const exprStringToFloat = exprString => {
+    exprString = exprString.substring(1);
+    const s = Number(exprString) / 10;
+    return s
+  };
 
   return (
     <div id='app'>
@@ -325,11 +377,17 @@ export default function App() {
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
+          {glyph==='box' && boxGroupArray.map((d,i) => {
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
+          })}
+          {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
+          })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} />
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} />
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -350,6 +408,8 @@ export default function App() {
       </div>
       <div className='controls' id='glyphControls'>
         <div className='controlsLabel'>Glyphs</div>
+        <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'active' : undefined}>BOX</button>
+        <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'active' : undefined}>EXPR</button>
         <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
         <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RADAR</button>
       </div>
