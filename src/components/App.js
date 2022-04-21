@@ -1,7 +1,7 @@
-import React, { useState, useLayoutEffect, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, Color, MOUSE, VertexColors, DoubleSide } from 'three';
+import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
