@@ -7,68 +7,35 @@ import { select } from 'd3-selection';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
-/*boxMap----------------------------------------------------------------------*/
+/*groupMaps----------------------------------------------------------------------*/
+
+function makeMap(groupArray,glyphGroup) {
+  const groupMap = {};
+  groupArray.forEach((item, i) => {
+    const globalIndexArray = [];
+    data[glyphGroup].forEach((groupValue, j) => {
+      if ( groupValue === item ) {
+        globalIndexArray.push(j)
+      }
+    });
+    groupMap[item] = globalIndexArray;
+  });
+  return groupMap
+}
 
 data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
-const boxMap = {};
-
-boxGroupArray.forEach((item, i) => {
-  let globalIndexArray = [];
-  data['boxGroup'].forEach((boxGroup, j) => {
-    if ( boxGroup === item ) {
-      globalIndexArray.push(j)
-    }
-  });
-  boxMap[item] = globalIndexArray;
-});
-
-/*expMap----------------------------------------------------------------------*/
+const boxMap = makeMap(boxGroupArray,'boxGroup');
 
 const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
-const expressivenessMap = {};
-
-expressivenessGroupArray.forEach((item, i) => {
-  let globalIndexArray = [];
-  data['expressivenessGroup'].forEach((expressivenessGroup, j) => {
-    if ( expressivenessGroup === item ) {
-      globalIndexArray.push(j)
-    }
-  });
-  expressivenessMap[item] = globalIndexArray;
-});
-
-/*isoMap----------------------------------------------------------------------*/
+const expressivenessMap = makeMap(expressivenessGroupArray,'expressivenessGroup');
 
 const isoGroupArray = Array.from(new Set(data['isoGroup']));
-const isoMap = {};
-
-isoGroupArray.forEach((item, i) => {
-  let globalIndexArray = [];
-  data['isoGroup'].forEach((isoGroup, j) => {
-    if ( isoGroup === item ) {
-      globalIndexArray.push(j)
-    }
-  });
-  isoMap[item] = globalIndexArray;
-});
-
+const isoMap = makeMap(isoGroupArray,'isoGroup');
 const zArray = isoGroupArray.map(d => d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
 
-/*radarMap--------------------------------------------------------------------*/
-
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
-const radarMap = {};
-
-radarGroupArray.forEach((item, i) => {
-  let globalIndexArray = [];
-  data['radarGroup'].forEach((radarGroup, j) => {
-    if ( radarGroup === item ) {
-      globalIndexArray.push(j)
-    }
-  });
-  radarMap[item] = globalIndexArray;
-});
+const radarMap = makeMap(radarGroupArray,'radarGroup');
 
 const axisNotch = (binNumber, numBins) => {
   if ( numBins === 3 ) {
@@ -86,23 +53,23 @@ function radarVertices(glyphGroup) {
   gloss = axisNotch(gloss, 3);
   color = axisNotch(color, 4);
 
-  let glyphThickness = 0.1;
+  const glyphThickness = 0.1;
 
-  let thicktop = [thick,0,glyphThickness];
-  let thickbottom = [thick,0,0];
-  let roughtop = [0,rough,glyphThickness];
-  let roughbottom = [0,rough,0];
-  let glosstop = [gloss,0,glyphThickness];
-  let glossbottom = [gloss,0,0];
-  let colortop = [0,color,glyphThickness];
-  let colorbottom = [0,color,0];
+  const thicktop = [thick,0,glyphThickness];
+  const thickbottom = [thick,0,0];
+  const roughtop = [0,rough,glyphThickness];
+  const roughbottom = [0,rough,0];
+  const glosstop = [gloss,0,glyphThickness];
+  const glossbottom = [gloss,0,0];
+  const colortop = [0,color,glyphThickness];
+  const colorbottom = [0,color,0];
 
-  let bottom = [thickbottom, glossbottom, colorbottom, roughbottom, glossbottom, thickbottom];
-  let top = [thicktop, glosstop, colortop, roughtop, glosstop, thicktop];
-  let upperLeft = [colorbottom, thicktop, colortop, colorbottom, thickbottom, thicktop];
-  let upperRight = [glossbottom, colortop, glosstop, glossbottom, colorbottom, colortop];
-  let lowerLeft = [thickbottom, roughtop, thicktop, thickbottom, roughbottom, roughtop];
-  let lowerRight = [roughbottom, glosstop, roughtop, roughbottom, glossbottom, glosstop];
+  const bottom = [thickbottom, glossbottom, colorbottom, roughbottom, glossbottom, thickbottom];
+  const top = [thicktop, glosstop, colortop, roughtop, glosstop, thicktop];
+  const upperLeft = [colorbottom, thicktop, colortop, colorbottom, thickbottom, thicktop];
+  const upperRight = [glossbottom, colortop, glosstop, glossbottom, colorbottom, colortop];
+  const lowerLeft = [thickbottom, roughtop, thicktop, thickbottom, roughbottom, roughtop];
+  const lowerRight = [roughbottom, glosstop, roughtop, roughbottom, glossbottom, glosstop];
 
   const rawVertices = [bottom, top, upperLeft, upperRight, lowerLeft, lowerRight];
   return new Float32Array(rawVertices.flat(2))
