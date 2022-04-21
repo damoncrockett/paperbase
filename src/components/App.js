@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, Color, MOUSE, VertexColors } from 'three';
+import { Object3D, Color, MOUSE, VertexColors, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { data } from './data';
@@ -305,7 +305,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     return (
       <instancedMesh ref={meshRef} args={[null, null, n]} onClick={handleClick} name={glyphGroup}>
         <boxBufferGeometry args={[0.75, 0.75, 0.75]}></boxBufferGeometry>
-        <meshStandardMaterial attach="material"/>
+        <meshStandardMaterial attach="material" />
       </instancedMesh>
     )
   } else if ( glyph === 'exp' ) {
@@ -339,7 +339,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
             itemSize={itemSize}
           />
         </bufferGeometry>
-        <meshStandardMaterial attach="material"/>
+        <meshStandardMaterial attach="material" side={DoubleSide}/>
       </instancedMesh>
     )
   }
