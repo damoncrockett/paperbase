@@ -7,6 +7,8 @@ import { select } from 'd3-selection';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
+console.log(Object.keys(data));
+
 /*groupMaps----------------------------------------------------------------------*/
 
 function makeMap(groupArray,glyphGroup) {
@@ -344,7 +346,7 @@ export default function App() {
         <div id='infoBar'></div>
       </div>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 55], far: 20000 }} frameloop="demand">
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 60], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
@@ -377,26 +379,56 @@ export default function App() {
           />
         </Canvas>
       </div>
-      <div className='controls' id='glyphControls'>
-        <div className='controlsLabel'>Glyphs</div>
-        <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'active' : undefined}>BOX</button>
-        <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'active' : undefined}>EXPR</button>
-        <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
-        <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RADAR</button>
+      <div id='bottomControls'>
+        <div className='controls' id='glyphControls'>
+          <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'active' : undefined}>BOX</button>
+          <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'active' : undefined}>EXP</button>
+          <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
+          <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RAD</button>
+        </div>
+        <div className='controls' id='facetControls'>
+          <button className='controls' onClick={() => console.log('2D')} >FACET 2D</button>
+          <button className='controls' onClick={() => console.log('3D')} >FACET 3D</button>
+        </div>
+        <div className='controls' id='axisMenus'>
+          <select value={'x'} onChange={()=>console.log('x')} title='x'>
+            <option value='x'>thickness</option>
+            <option value='y'>gloss</option>
+            <option value='unit'>color</option>
+            <option value='z'>roughness</option>
+          </select>
+          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <select value={'y'} onChange={()=>console.log('y')} title='y'>
+            <option value='x'>thickness</option>
+            <option value='y'>gloss</option>
+            <option value='unit'>color</option>
+            <option value='z'>roughness</option>
+          </select>
+          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <select value={'z'} onChange={()=>console.log('z')} title='z'>
+            <option value='x'>thickness</option>
+            <option value='y'>gloss</option>
+            <option value='unit'>color</option>
+            <option value='z'>roughness</option>
+          </select>
+          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
+            <option value='x'>thickness</option>
+            <option value='y'>gloss</option>
+            <option value='facet'>color</option>
+            <option value='z'>roughness</option>
+          </select>
+          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <select value={'unit'} onChange={()=>console.log('unit')} title='unit'>
+            <option value='unit'>color</option>
+          </select>
+        </div>
       </div>
-      <div className='controls' id='groupControls'>
-        <div className='controlsLabel'>Groups</div>
-        <button onClick={() => setGroup('colorGroupBinder')} className={group === 'colorGroupBinder' ? 'active' : undefined}>BINDER</button>
-        <button onClick={() => setGroup('colorGroupKmeans')} className={group === 'colorGroupKmeans' ? 'active' : undefined}>KMEANS</button>
-        <button onClick={() => setGroup('colorString')} className={group === 'colorString' ? 'active' : undefined}>COLOR</button>
-        <button onClick={() => setGroup('colorStringSat')} className={group === 'colorStringSat' ? 'active' : undefined}>SAT</button>
-        <button onClick={() => setGroup('colorStringHue')} className={group === 'colorStringHue' ? 'active' : undefined}>HUE</button>
-      </div>
-      <div className='controls' id='modelControls'>
-        <div className='controlsLabel'>Models</div>
-        <button onClick={() => setModel('grid')} className={model === 'grid' ? 'active' : undefined}>GRID</button>
-        <button onClick={() => setModel('tsne')} className={model === 'tsne' ? 'active' : undefined}>t-SNE</button>
-        <button onClick={() => setModel('umap')} className={model === 'umap' ? 'active' : undefined}>UMAP</button>
+      <div className='controls' id='plottypeControls'>
+        <button className='controls' onClick={() => console.log('montage')} >MONTAGE</button>
+        <button className='controls' onClick={() => console.log('histogram')} >HISTOGRAM</button>
+        <button className='controls' onClick={() => console.log('scatter')} >SCATTER</button>
+        <button className='controls' onClick={() => console.log('entourage')} >ENTOURAGE</button>
       </div>
     </div>
   )

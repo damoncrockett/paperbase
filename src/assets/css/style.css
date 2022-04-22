@@ -15,7 +15,7 @@ p {
 }
 
 button {
-  display: block;
+  display: inline-block;
 }
 
 :root {
@@ -78,11 +78,9 @@ button {
 
 .controls {
   z-index: 1;
-  background: white;
-  padding: 2vh;
+  background: transparent;
   color: var(--grey);
   border-radius: 2vh;
-  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 #reset-button {
@@ -91,49 +89,68 @@ button {
   right: 10vh;
 }
 
-#groupControls {
-  position: fixed;
-  top: 10vh;
-  right: 10vh;
-}
-
-#modelControls {
-  position: fixed;
-  bottom: 6vh;
-  right: 10vh;
-}
-
 #glyphControls {
-  position: fixed;
-  bottom: 6vh;
-  left: 10vh;
+  float: right;
 }
 
-#exprControls {
+#facetControls {
+  float: right;
+}
+
+#axisMenus {
+  float: right;
+}
+
+#bottomControls {
   position: fixed;
-  bottom: 42vh;
-  left: 10vh;
+  left: 0vw;
+  bottom: 0vh;
+  margin: 1vh;
+}
+
+#plottypeControls {
+  position: fixed;
+  right: 0vw;
+  top: 20vh;
+  width: 1vw;
+}
+
+#plottypeControls > button {
+  float: right;
+  font-size: 2vh;
+  padding: 2vh;
+}
+
+select, select:focus, select:active {
+  font-family: 'Archivo';
+  font-size: 1.5vh;
+  border-radius: 0.5rem;
+  border-color: white;
+  padding: 1vh;
+  margin: 0.25vh;
+  outline: none;
+  width: 16vw;
+  background-color: transparent;
+  color: white;
 }
 
 .controls > button {
-  background-color: #FFFFFF;
-  border: 0;
+  background-color: transparent;
+  border-color: white;
   border-radius: .5rem;
-  box-sizing: border-box;
+  border-width: 1px;
+  border-style: solid;
+  outline: none;
   color: var(--grey);
-  font-size: .875rem;
+  font-size: 1,5vh;
   font-weight: 400;
-  line-height: 1.25rem;
-  padding: .75rem 1rem;
   text-align: center;
-  text-decoration: none #D1D5DB solid;
-  text-decoration-thickness: auto;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  margin: 1vh;
+  margin: 0.25vh;
+  padding: 1vh;
 }
 
 .controls > button:hover {
@@ -141,7 +158,7 @@ button {
 }
 
 .controls > button.active {
-  background-color: var(--darkgrey);
+  background-color: black;
   color: white;
 }
 
