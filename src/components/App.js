@@ -340,7 +340,7 @@ export default function App() {
         <div id='infoBar'></div>
       </div>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 135], far: 20000 }} frameloop="demand">
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 55], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
