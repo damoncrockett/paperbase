@@ -168,10 +168,14 @@ function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
 
 const substrate = new Object3D();
 
-function updatePositions({ globalIndicesForThisMesh, mesh }) {
+function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
   if (!mesh) return;
   globalIndicesForThisMesh.forEach((item, i) => {
-    substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],animatedCoords[item][2]);
+    if ( glyph === 'radar') {
+      substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],0.25 * animatedCoords[item][2]);
+    } else {
+      substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],animatedCoords[item][2]);
+    }
     substrate.updateMatrix();
     mesh.setMatrixAt(i, substrate.matrix);
   });
@@ -207,7 +211,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     },
     onChange: (_, ctrl) => {
       interpolatePositions({ globalIndicesForThisMesh, model }, ctrl.get().animationProgress );
-      updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
+      updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
   }, [model]);
