@@ -16,8 +16,6 @@ function valueCounts(col) {
   return occurrences
 }
 
-console.log(valueCounts('man'));
-
 /*groupMaps----------------------------------------------------------------------*/
 
 function makeMap(groupArray,glyphGroup) {
@@ -197,11 +195,22 @@ function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
 /*Colors----------------------------------------------------------------------*/
 
 // Kodak, Agfa, Dupont, Ilford, Defender, Ansco, Darko, Forte, Luminos, Haloid, Oriental, Gevaert
-// yellow, red, blue, white, ?, ?, black, gold, ?, maroon, ?, purple
+// yellow, red, blue, white, green, lightblue, black, gold, palered, maroon, orange, purple
 const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
-
 const highlightColor = 0xff00ff;
 const colorSubstrate = new Color();
+
+function valToColor(arr) {
+  arr = arr.map(d => parseFloat(d));
+  const arrfiltered = arr.filter(d => d)
+  const arrmax = Math.max(...arrfiltered);
+  const arrmin = Math.min(...arrfiltered);
+  const arrrange = arrmax - arrmin;
+  const arrnorm = arr.map(d => (d - arrmin) / arrrange);
+  const arrhsl = arrnorm.map(d => d ? "hsl(0,0%," + parseInt(d*100).toString() + "%)" : 0xbd590f);
+
+  return arrhsl
+}
 
 /*instancedMesh---------------------------------------------------------------*/
 
@@ -209,7 +218,15 @@ const meshList = {};
 
 function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
-  const colorVals = data[group];
+
+  let colorVals;
+  const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
+  if ( continuousColorCols.includes(group) ) {
+    const baseData = data[group];
+    colorVals = valToColor(baseData);
+  } else {
+    colorVals = data[group];
+  }
 
   const meshRef = useRef();
   const { invalidate } = useThree();
@@ -437,6 +454,11 @@ export default function App() {
             <option value='colorString'>color</option>
             <option value='colorStringSat'>saturation</option>
             <option value='colorStringHue'>hue</option>
+            <option value='thickness'>thickness</option>
+            <option value='gloss'>gloss</option>
+            <option value='roughness'>roughness</option>
+            <option value='expressiveness'>expressiveness</option>
+            <option value='year'>year</option>
           </select>
         </div>
       </div>
