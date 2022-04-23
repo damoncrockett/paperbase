@@ -471,7 +471,7 @@ export default function App() {
         <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
         <button className={model === 'hist' ? 'active' : undefined} onClick={() => setModel('hist')} >HISTOGRAM</button>
         <button className={model === 'tsne' ? 'active' : undefined} onClick={() => setModel('tsne')} >SCATTER</button>
-        <button className={model === 'entourage' ? 'active' : undefined} onClick={() => console.log('entourage')} >ENTOURAGE</button>
+        <button className={model === 'entourage' ? 'active' : undefined} onClick={() => setModel('gep')} >ENTOURAGE</button>
       </div>
     </div>
   )
