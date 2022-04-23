@@ -110,7 +110,7 @@ button {
 
 #plottypeControls {
   position: fixed;
-  right: 0vw;
+  right: -1vw;
   top: 20vh;
   width: 1vw;
 }
@@ -119,6 +119,7 @@ button {
   float: right;
   font-size: 2vh;
   padding: 2vh;
+  padding-right: 4vh;
 }
 
 select, select:focus, select:active {

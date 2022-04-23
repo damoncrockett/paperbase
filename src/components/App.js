@@ -199,6 +199,8 @@ function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
 const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
 const highlightColor = 0xff00ff;
 const colorSubstrate = new Color();
+const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
+let colorVals;
 
 function valToColor(arr) {
   arr = arr.map(d => parseFloat(d));
@@ -218,15 +220,6 @@ const meshList = {};
 
 function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
-
-  let colorVals;
-  const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
-  if ( continuousColorCols.includes(group) ) {
-    const baseData = data[group];
-    colorVals = valToColor(baseData);
-  } else {
-    colorVals = data[group];
-  }
 
   const meshRef = useRef();
   const { invalidate } = useThree();
@@ -249,6 +242,14 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
+
+    if ( continuousColorCols.includes(group) ) {
+      const baseData = data[group];
+      colorVals = valToColor(baseData);
+    } else {
+      colorVals = data[group];
+    }
+
     globalIndicesForThisMesh.forEach((item, i) => {
       if ( item !== clickedItem ) { // so we don't recolor the clicked point
         const colorVal = manColors[colorVals[item]] || colorVals[item];
