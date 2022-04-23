@@ -376,7 +376,7 @@ export default function App() {
         <div id='infoBar'></div>
       </div>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 60], far: 20000 }} frameloop="demand">
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x505050]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
@@ -469,7 +469,7 @@ export default function App() {
       </div>
       <div className='controls' id='plottypeControls'>
         <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
-        <button className={model === 'histogram' ? 'active' : undefined} onClick={() => console.log('histogram')} >HISTOGRAM</button>
+        <button className={model === 'hist' ? 'active' : undefined} onClick={() => setModel('hist')} >HISTOGRAM</button>
         <button className={model === 'tsne' ? 'active' : undefined} onClick={() => setModel('tsne')} >SCATTER</button>
         <button className={model === 'entourage' ? 'active' : undefined} onClick={() => console.log('entourage')} >ENTOURAGE</button>
       </div>
