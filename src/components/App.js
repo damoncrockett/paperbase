@@ -467,10 +467,10 @@ export default function App() {
         </div>
       </div>
       <div className='controls' id='plottypeControls'>
-        <button className='controls' onClick={() => console.log('montage')} >MONTAGE</button>
-        <button className='controls' onClick={() => console.log('histogram')} >HISTOGRAM</button>
-        <button className='controls' onClick={() => console.log('scatter')} >SCATTER</button>
-        <button className='controls' onClick={() => console.log('entourage')} >ENTOURAGE</button>
+        <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
+        <button className={model === 'histogram' ? 'active' : undefined} onClick={() => console.log('histogram')} >HISTOGRAM</button>
+        <button className={model === 'tsne' ? 'active' : undefined} onClick={() => setModel('tsne')} >SCATTER</button>
+        <button className={model === 'entourage' ? 'active' : undefined} onClick={() => console.log('entourage')} >ENTOURAGE</button>
       </div>
     </div>
   )
