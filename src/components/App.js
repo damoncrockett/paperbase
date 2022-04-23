@@ -9,6 +9,15 @@ const n = data['isoGroup'].length;
 
 console.log(Object.keys(data));
 
+function valueCounts(col) {
+  const occurrences = data[col].reduce(function (acc, curr) {
+    return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
+  }, {});
+  return occurrences
+}
+
+console.log(valueCounts('man'));
+
 /*groupMaps----------------------------------------------------------------------*/
 
 function makeMap(groupArray,glyphGroup) {
@@ -187,7 +196,10 @@ function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
 
 /*Colors----------------------------------------------------------------------*/
 
-const groupColors = [0x79eb99, 0x513eb4, 0xfe7dda, 0x208eb7, 0xe3a6d5, 0x6c3357, 0x7487fb, 0x5f8138];
+// Kodak, Agfa, Dupont, Ilford, Defender, Ansco, Darko, Forte, Luminos, Haloid, Oriental, Gevaert
+// yellow, red, blue, white, ?, ?, black, gold, ?, maroon, ?, purple
+const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
+
 const highlightColor = 0xff00ff;
 const colorSubstrate = new Color();
 
@@ -222,7 +234,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
     meshList[glyphGroup] = meshRef.current;
     globalIndicesForThisMesh.forEach((item, i) => {
       if ( item !== clickedItem ) { // so we don't recolor the clicked point
-        const colorVal = groupColors[colorVals[item]] || colorVals[item];
+        const colorVal = manColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
@@ -251,7 +263,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
-          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          const colorVal = manColors[colorVals[globalIndex]] || colorVals[globalIndex];
           if ( globalIndex !== globalInstanceId ) {
             colorSubstrate.set(colorVal);
             mesh.setColorAt(j, colorSubstrate);
@@ -392,7 +404,7 @@ export default function App() {
         </div>
         <div className='controls' id='axisMenus'>
           <select value={'x'} onChange={()=>console.log('x')} title='x'>
-            <option value='x'>thickness</option>
+            <option value='x'>x</option>
             <option value='y'>gloss</option>
             <option value='unit'>color</option>
             <option value='z'>roughness</option>
@@ -400,7 +412,7 @@ export default function App() {
           <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
           <select value={'y'} onChange={()=>console.log('y')} title='y'>
             <option value='x'>thickness</option>
-            <option value='y'>gloss</option>
+            <option value='y'>y</option>
             <option value='unit'>color</option>
             <option value='z'>roughness</option>
           </select>
@@ -409,18 +421,22 @@ export default function App() {
             <option value='x'>thickness</option>
             <option value='y'>gloss</option>
             <option value='unit'>color</option>
-            <option value='z'>roughness</option>
+            <option value='z'>z</option>
           </select>
           <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
           <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
             <option value='x'>thickness</option>
             <option value='y'>gloss</option>
-            <option value='facet'>color</option>
+            <option value='facet'>facet</option>
             <option value='z'>roughness</option>
           </select>
           <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
-          <select value={'unit'} onChange={()=>console.log('unit')} title='unit'>
-            <option value='unit'>color</option>
+          <select value={group} onChange={e => setGroup(e.target.value)} title='color'>
+            <option value='colorGroupBinder'>binder</option>
+            <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorString'>color</option>
+            <option value='colorStringSat'>saturation</option>
+            <option value='colorStringHue'>hue</option>
           </select>
         </div>
       </div>

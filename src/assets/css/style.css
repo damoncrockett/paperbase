@@ -125,7 +125,7 @@ select, select:focus, select:active {
   font-family: 'Archivo';
   font-size: 1.5vh;
   border-radius: 0.5rem;
-  border-color: white;
+  border-color: var(--grey);
   padding: 1vh;
   margin: 0.25vh;
   outline: none;
@@ -136,7 +136,7 @@ select, select:focus, select:active {
 
 .controls > button {
   background-color: transparent;
-  border-color: white;
+  border-color: var(--grey);
   border-radius: .5rem;
   border-width: 1px;
   border-style: solid;
@@ -155,6 +155,7 @@ select, select:focus, select:active {
 
 .controls > button:hover {
   background-color: rgb(249,250,251);
+  border-color: white;
 }
 
 .controls > button.active {
