@@ -451,6 +451,10 @@ export default function App() {
           <select value={group} onChange={e => setGroup(e.target.value)} title='color'>
             <option value='colorGroupBinder'>binder</option>
             <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorGroupTextureWord'>texture description</option>
+            <option value='colorGroupColorWord'>base color description</option>
+            <option value='colorGroupGlossWord'>gloss description</option>
+            <option value='colorGroupThickWord'>weight description</option>
             <option value='colorString'>color</option>
             <option value='colorStringSat'>saturation</option>
             <option value='colorStringHue'>hue</option>
