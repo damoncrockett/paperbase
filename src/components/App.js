@@ -7,7 +7,20 @@ import { select } from 'd3-selection';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
-console.log(Object.keys(data));
+const randomRGB = () => {
+  const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
+  return rgbString
+};
+
+const radarGroups = new Set(data['radarGroup']);
+const radarColors = {};
+radarGroups.forEach((item, i) => {
+  radarColors[item] = randomRGB()
+});
+
+data['radarColor'] = data['radarGroup'].map(d => radarColors[d])
+
+console.log(data['radarColor']);
 
 function valueCounts(col) {
   const occurrences = data[col].reduce(function (acc, curr) {
@@ -464,6 +477,7 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
             <option value='year'>year</option>
+            <option value='radarColor'>radar group</option>
           </select>
         </div>
       </div>
@@ -471,7 +485,11 @@ export default function App() {
         <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
         <button className={model === 'hist' ? 'active' : undefined} onClick={() => setModel('hist')} >HISTOGRAM</button>
         <button className={model === 'tsne' ? 'active' : undefined} onClick={() => setModel('tsne')} >SCATTER</button>
-        <button className={model === 'entourage' ? 'active' : undefined} onClick={() => setModel('gep')} >ENTOURAGE</button>
+        <button className={model === 'gep150' ? 'active' : undefined} onClick={() => setModel('gep150')} >ENTOURAGE</button>
+        <button className={model === 'gep125' ? 'active' : undefined} onClick={() => setModel('gep125')} >ENTOURAGE</button>
+        <button className={model === 'gep' ? 'active' : undefined} onClick={() => setModel('gep')} >ENTOURAGE</button>
+        <button className={model === 'gep75' ? 'active' : undefined} onClick={() => setModel('gep75')} >ENTOURAGE</button>
+        <button className={model === 'gep50' ? 'active' : undefined} onClick={() => setModel('gep50')} >ENTOURAGE</button>
       </div>
     </div>
   )
