@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
+import { orderBy } from 'lodash';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
@@ -19,8 +20,6 @@ radarGroups.forEach((item, i) => {
 });
 
 data['radarColor'] = data['radarGroup'].map(d => radarColors[d])
-
-console.log(data['radarColor']);
 
 function valueCounts(col) {
   const occurrences = data[col].reduce(function (acc, curr) {
@@ -180,11 +179,24 @@ function clearInfoPanel() {
 
 const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
-function interpolatePositions({ globalIndicesForThisMesh, model }, progress ) {
+function sortGrid(xcol,xcolAsc) {
+  let sortingArray = [];
+  data[xcol].forEach((item, i) => {
+    sortingArray[i] = { 'idx': i, 'val': item }
+  });
+  sortingArray = orderBy(sortingArray,['val'],[xcolAsc ? 'asc' : 'desc']);
+  sortingArray.forEach((item, i) => {
+    sortingArray[i]['pos'] = data['grid'][i]
+  });
+
+  return orderBy(sortingArray,['idx'],['asc']).map(d => d.pos);
+}
+
+function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
-    animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * data[model][globalIndicesForThisMesh[i]][0];
-    animatedCoords[item][1] = (1 - progress) * animatedCoords[item][1] + progress * data[model][globalIndicesForThisMesh[i]][1];
-    animatedCoords[item][2] = (1 - progress) * animatedCoords[item][2] + progress * data[model][globalIndicesForThisMesh[i]][2];
+    animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * targetCoords[globalIndicesForThisMesh[i]][0];
+    animatedCoords[item][1] = (1 - progress) * animatedCoords[item][1] + progress * targetCoords[globalIndicesForThisMesh[i]][1];
+    animatedCoords[item][2] = (1 - progress) * animatedCoords[item][2] + progress * targetCoords[globalIndicesForThisMesh[i]][2];
   });
 }
 
@@ -230,12 +242,21 @@ function valToColor(arr) {
 /*instancedMesh---------------------------------------------------------------*/
 
 const meshList = {};
+let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
   const { invalidate } = useThree();
+
+  useLayoutEffect(() => {
+    if ( model === 'grid' ) {
+      targetCoords = sortGrid(xcol,xcolAsc);
+    } else {
+      targetCoords = data[model];
+    }
+  }, [model, xcol, xcolAsc])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -247,11 +268,11 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
       mass: 100,
     },
     onChange: (_, ctrl) => {
-      interpolatePositions({ globalIndicesForThisMesh, model }, ctrl.get().animationProgress );
+      interpolatePositions({ globalIndicesForThisMesh, targetCoords }, ctrl.get().animationProgress );
       updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
-  }, [model]);
+  }, [model, xcol, xcolAsc]);
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
@@ -365,6 +386,8 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, group, clickedItem, onClic
 
 export default function App() {
   const [model, setModel] = useState('grid');
+  const [xcol, setXcol] = useState('year');
+  const [xcolAsc, setXcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
@@ -394,16 +417,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -434,14 +457,16 @@ export default function App() {
           <button className='controls' onClick={() => console.log('3D')} >FACET 3D</button>
         </div>
         <div className='controls' id='axisMenus'>
-          <select value={'x'} onChange={()=>console.log('x')} title='x'>
-            <option value='x'>x</option>
-            <option value='y'>gloss</option>
-            <option value='unit'>color</option>
-            <option value='z'>roughness</option>
+          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x'>
+            <option value='year'>year</option>
+            <option value='thickness'>thickness</option>
+            <option value='gloss'>gloss</option>
+            <option value='color'>color</option>
+            <option value='roughness'>roughness</option>
+            <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
-          <select value={'y'} onChange={()=>console.log('y')} title='y'>
+          <button className={xcolAsc ? 'active' : undefined} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >ASC</button>
+          <select value={'y'} onChange={() => console.log('y')} title='y'>
             <option value='x'>thickness</option>
             <option value='y'>y</option>
             <option value='unit'>color</option>

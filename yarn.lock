@@ -3928,6 +3928,7 @@ __metadata:
     dat.gui: ^0.7.9
     html-webpack-plugin: ^5.5.0
     leva: ^0.9.23
+    lodash: ^4.17.21
     react: ^17.0.2
     react-dom: ^17.0.2
     style-loader: ^3.3.1
