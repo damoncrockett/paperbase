@@ -4,9 +4,12 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
-import { orderBy } from 'lodash';
+import { bin } from 'd3-array';
+import { orderBy, compact, max } from 'lodash';
 import { data } from './data';
 const n = data['isoGroup'].length;
+
+const histbins = 200;
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -192,6 +195,45 @@ function sortGrid(xcol,xcolAsc) {
   return orderBy(sortingArray,['idx'],['asc']).map(d => d.pos);
 }
 
+function getStandardDeviation (array) {
+  array = compact(array);
+  const n = array.length;
+  const mean = array.reduce((a, b) => a + b) / n;
+  return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+}
+
+function makeHist(xcol,xcolAsc,ycol,ycolAsc) {
+  let scratchArray = [];
+
+  data[xcol].forEach((item, i) => {
+    scratchArray[i] = { 'idx': i, 'val': parseFloat(item), 'ycol': parseFloat(data[ycol][i]) }
+  });
+
+  const std = getStandardDeviation(scratchArray.map(d => d.val));
+  const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
+  const binner = bin().thresholds(histbins).value(d => d.val ? d.val : arrmax + std);
+  const binnedData = binner(scratchArray);
+
+  if ( xcolAsc === false ) {
+    binnedData.reverse();
+  }
+
+  scratchArray = [];
+  binnedData.forEach((bin, binidx) => {
+    if (bin.length > 0) {
+      bin = orderBy(bin,['ycol'],[ycolAsc ? 'asc' : 'desc'])
+      bin.forEach((item, itemidx) => {
+        const x = binidx - binnedData.length / 2; // we need negative x and y positions too
+        const y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2);
+        scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
+      });
+    }
+  });
+
+  scratchArray = orderBy(scratchArray,['idx'],['asc']);
+  return scratchArray.map(d => d.pos)
+}
+
 function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
     animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * targetCoords[globalIndicesForThisMesh[i]][0];
@@ -244,7 +286,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -253,10 +295,12 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, group, clic
   useLayoutEffect(() => {
     if ( model === 'grid' ) {
       targetCoords = sortGrid(xcol,xcolAsc);
+    } else if ( model === 'hist' ) {
+      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc);
     } else {
       targetCoords = data[model];
     }
-  }, [model, xcol, xcolAsc])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -272,7 +316,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, group, clic
       updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc]);
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
@@ -387,7 +431,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, group, clic
 export default function App() {
   const [model, setModel] = useState('grid');
   const [xcol, setXcol] = useState('year');
+  const [ycol, setYcol] = useState('expressiveness');
   const [xcolAsc, setXcolAsc] = useState(true);
+  const [ycolAsc, setYcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
@@ -417,16 +463,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -466,13 +512,15 @@ export default function App() {
             <option value='expressiveness'>expressiveness</option>
           </select>
           <button className={xcolAsc ? 'active' : undefined} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >ASC</button>
-          <select value={'y'} onChange={() => console.log('y')} title='y'>
-            <option value='x'>thickness</option>
-            <option value='y'>y</option>
-            <option value='unit'>color</option>
-            <option value='z'>roughness</option>
+          <select value={ycol} onChange={e => setYcol(e.target.value)} title='y'>
+            <option value='year'>year</option>
+            <option value='thickness'>thickness</option>
+            <option value='gloss'>gloss</option>
+            <option value='color'>color</option>
+            <option value='roughness'>roughness</option>
+            <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <button className={ycolAsc ? 'active' : undefined} title='asc' onClick={() => setYcolAsc(!ycolAsc)} >ASC</button>
           <select value={'z'} onChange={()=>console.log('z')} title='z'>
             <option value='x'>thickness</option>
             <option value='y'>gloss</option>
