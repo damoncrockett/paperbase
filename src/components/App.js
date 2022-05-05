@@ -5,11 +5,12 @@ import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
-import { orderBy, compact, max } from 'lodash';
+import { orderBy, compact, max, min } from 'lodash';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
 const histbins = 200;
+const scatterFactor = 200;
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -234,6 +235,43 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc) {
   return scratchArray.map(d => d.pos)
 }
 
+const featureScale = col => {
+  const colmin = min(col);
+  const colmax = max(col);
+  const colrange = colmax - colmin;
+  const std = getStandardDeviation(col);
+  return col.map(d => d ? (d - colmin) / colrange : colmax + std)
+}
+
+function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc) {
+  let xArray = featureScale(data[xcol]);
+  let yArray = featureScale(data[ycol]);
+  let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
+
+  if ( xcolAsc === false ) {
+    xArray = xArray.map(d => 1 - d);
+  }
+
+  if ( ycolAsc === false ) {
+    yArray = yArray.map(d => 1 - d);
+  }
+
+  if ( zArray !== null && zcolAsc === false ) {
+    zArray = zArray.map(d => 1 - d);
+  }
+
+  const scratchArray = [];
+  xArray.forEach((item, i) => {
+    const x = item * scatterFactor - scatterFactor / 2;
+    const y = yArray[i] * scatterFactor - scatterFactor / 2;
+    const z = zArray === null ? 0 : zArray[i] * scatterFactor - scatterFactor / 2;
+    scratchArray.push([x,y,z])
+  });
+
+  return scratchArray
+
+}
+
 function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
     animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * targetCoords[globalIndicesForThisMesh[i]][0];
@@ -286,7 +324,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -297,10 +335,12 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords = sortGrid(xcol,xcolAsc);
     } else if ( model === 'hist' ) {
       targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc);
+    } else if ( model === 'scatter' ) {
+      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc);
     } else {
       targetCoords = data[model];
     }
-  }, [model, xcol, xcolAsc, ycol, ycolAsc])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -316,7 +356,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc]);
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
@@ -430,10 +470,12 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
 export default function App() {
   const [model, setModel] = useState('grid');
-  const [xcol, setXcol] = useState('year');
-  const [ycol, setYcol] = useState('expressiveness');
+  const [xcol, setXcol] = useState('colorGroupBinder');
+  const [ycol, setYcol] = useState('colorGroupBinder');
+  const [zcol, setZcol] = useState('none');
   const [xcolAsc, setXcolAsc] = useState(true);
   const [ycolAsc, setYcolAsc] = useState(true);
+  const [zcolAsc, setZcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
@@ -463,16 +505,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -504,6 +546,7 @@ export default function App() {
         </div>
         <div className='controls' id='axisMenus'>
           <select value={xcol} onChange={e => setXcol(e.target.value)} title='x'>
+            <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
@@ -513,6 +556,7 @@ export default function App() {
           </select>
           <button className={xcolAsc ? 'active' : undefined} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >ASC</button>
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y'>
+            <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
@@ -521,13 +565,17 @@ export default function App() {
             <option value='expressiveness'>expressiveness</option>
           </select>
           <button className={ycolAsc ? 'active' : undefined} title='asc' onClick={() => setYcolAsc(!ycolAsc)} >ASC</button>
-          <select value={'z'} onChange={()=>console.log('z')} title='z'>
-            <option value='x'>thickness</option>
-            <option value='y'>gloss</option>
-            <option value='unit'>color</option>
-            <option value='z'>z</option>
+          <select value={zcol} onChange={e => setZcol(e.target.value)} title='z'>
+            <option value='none'>no z-axis</option>
+            <option value='colorGroupBinder'>binder</option>
+            <option value='year'>year</option>
+            <option value='thickness'>thickness</option>
+            <option value='gloss'>gloss</option>
+            <option value='color'>color</option>
+            <option value='roughness'>roughness</option>
+            <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <button className={zcolAsc ? 'active' : undefined} title='asc' onClick={() => setZcolAsc(!zcolAsc)} >ASC</button>
           <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
             <option value='x'>thickness</option>
             <option value='y'>gloss</option>
@@ -557,7 +605,7 @@ export default function App() {
       <div className='controls' id='plottypeControls'>
         <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
         <button className={model === 'hist' ? 'active' : undefined} onClick={() => setModel('hist')} >HISTOGRAM</button>
-        <button className={model === 'tsne' ? 'active' : undefined} onClick={() => setModel('tsne')} >SCATTER</button>
+        <button className={model === 'scatter' ? 'active' : undefined} onClick={() => setModel('scatter')} >SCATTER</button>
         <button className={model === 'gep150' ? 'active' : undefined} onClick={() => setModel('gep150')} >ENTOURAGE</button>
         <button className={model === 'gep125' ? 'active' : undefined} onClick={() => setModel('gep125')} >ENTOURAGE</button>
         <button className={model === 'gep' ? 'active' : undefined} onClick={() => setModel('gep')} >ENTOURAGE</button>
