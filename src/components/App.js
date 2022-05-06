@@ -9,6 +9,8 @@ import { orderBy, compact, max, min } from 'lodash';
 import { data } from './data';
 const n = data['isoGroup'].length;
 
+console.log(Object.keys(data));
+
 const histbins = 200;
 const scatterFactor = 100;
 
@@ -133,15 +135,21 @@ function writeTitleArray(globalInstanceId) {
 function writeInfoArray(globalInstanceId) {
   let textureWord = data['textureWord'][globalInstanceId];
   let glossWord = data['glossWord'][globalInstanceId];
+  let colorWord = data['colorWord'][globalInstanceId];
+  let thicknessWord = data['thicknessWord'][globalInstanceId];
+
 
   textureWord = textureWord === '_' ? '' : textureWord;
   glossWord = glossWord === '_' ? '' : glossWord;
+  colorWord = colorWord === '_' ? '' : colorWord;
+  thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
 
-  return [textureWord + " " + glossWord]
+  const infoList = [textureWord, glossWord, colorWord, thicknessWord];
+
+  return [infoList.filter(d => d !== '').join(' • ')];
 }
 
 const pCatsTitle = [ "man", "bran", "year" ];
-const pCatsInfo = [ "textureWord" ];
 
 function writePanel(globalInstanceId) {
   select("#catalog")
@@ -162,7 +170,7 @@ function writePanel(globalInstanceId) {
     .enter()
     .append("p")
     .text(d => d)
-    .attr("class", (d, i) => "info " + pCatsInfo[i])
+    .attr("class", (d, i) => "info boxWord")
 }
 
 function clearInfoPanel() {
