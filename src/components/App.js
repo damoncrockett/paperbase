@@ -10,7 +10,7 @@ import { data } from './data';
 const n = data['isoGroup'].length;
 
 const histbins = 200;
-const scatterFactor = 200;
+const scatterFactor = 100;
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -236,10 +236,12 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc) {
 }
 
 const featureScale = col => {
+  col = col.map(d => parseFloat(d));
   const colmin = min(col);
   const colmax = max(col);
   const colrange = colmax - colmin;
   const std = getStandardDeviation(col);
+  console.log(colrange,std);
   return col.map(d => d ? (d - colmin) / colrange : colmax + std)
 }
 
