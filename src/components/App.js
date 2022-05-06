@@ -566,17 +566,17 @@ export default function App() {
       </div>
       <div id='bottomControls'>
         <div className='controls' id='glyphControls'>
-          <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'material-icons active' : 'material-icons' }>square</button>
-          <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
-          <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
-          <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
+          <button title='box glyph' onClick={() => setGlyph('box')} className={glyph === 'box' ? 'material-icons active' : 'material-icons' }>square</button>
+          <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
+          <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
+          <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
         </div>
         <div className='controls' id='facetControls'>
-          <button className={facet === '2d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('2d')} >dashboard</button>
-          <button className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>
+          <button title='facet 2D' className={facet === '2d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('2d')} >dashboard</button>
+          <button title='facet 3D' className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>
         </div>
         <div className='controls' id='axisMenus'>
-          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x'>
+          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
             <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
@@ -585,8 +585,8 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={xcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >swap_vert</button>
-          <select value={ycol} onChange={e => setYcol(e.target.value)} title='y'>
+          <button className={xcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setXcolAsc(!xcolAsc)} >swap_vert</button>
+          <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
             <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
@@ -595,8 +595,8 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={ycolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setYcolAsc(!ycolAsc)} >swap_vert</button>
-          <select value={zcol} onChange={e => setZcol(e.target.value)} title='z'>
+          <button className={ycolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setYcolAsc(!ycolAsc)} >swap_vert</button>
+          <select value={zcol} onChange={e => setZcol(e.target.value)} title='z-axis'>
             <option value='none'>no z-axis</option>
             <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
@@ -606,8 +606,8 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={zcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setZcolAsc(!zcolAsc)} >swap_vert</button>
-          <select value={group} onChange={e => setGroup(e.target.value)} title='color'>
+          <button className={zcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setZcolAsc(!zcolAsc)} >swap_vert</button>
+          <select value={group} onChange={e => setGroup(e.target.value)} title='glyph color'>
             <option value='colorGroupBinder'>binder</option>
             <option value='colorGroupMan'>manufacturer</option>
             <option value='colorGroupTextureWord'>texture description</option>
@@ -624,20 +624,20 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
-          <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
+          <select value={'facet'} onChange={()=>console.log('facet')} title='facet group'>
             <option value='x'>thickness</option>
             <option value='y'>gloss</option>
             <option value='facet'>facet</option>
             <option value='z'>roughness</option>
           </select>
-          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setFacetcolAsc(!xcolAsc)} >swap_vert</button>
+          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setFacetcolAsc(!xcolAsc)} >swap_vert</button>
         </div>
       </div>
       <div className='controls' id='plottypeControls'>
-        <button className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
-        <button className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
-        <button className={model === 'scaßtter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
-        <button className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
+        <button title='grid montage' className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
+        <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
+        <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
+        <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
       </div>
     </div>
   )
