@@ -25,6 +25,7 @@ radarGroups.forEach((item, i) => {
   radarColors[item] = randomRGB()
 });
 
+// not necessary with most groups because they have integer group labels
 data['radarColor'] = data['radarGroup'].map(d => radarColors[d])
 
 function valueCounts(col) {
@@ -191,24 +192,43 @@ function clearInfoPanel() {
 
 const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
-function sortGrid(xcol,xcolAsc) {
+const ncol = Math.ceil(Math.sqrt(n));
+//const ncol = 100;
+
+function gridCoords(n,ncol) {
+
+  const nrow = Math.ceil( n / ncol )
+  const xgrid = Array(nrow).fill(Array.from(Array(ncol).keys())).flat().slice(0,n);
+  const ygrid = Array.from(Array(nrow).keys()).map(d => Array(ncol).fill(d)).flat().slice(0,n);
+
+  const coords = [];
+  xgrid.forEach((item, i) => {
+    coords[i] = [item - ncol / 2, ygrid[i] - nrow / 2, 0]
+  });
+
+  return coords;
+}
+
+function makeGrid(xcol,xcolAsc) {
   let sortingArray = [];
+  const gridArray = gridCoords(n,ncol);
+
   data[xcol].forEach((item, i) => {
     sortingArray[i] = { 'idx': i, 'val': item }
   });
   sortingArray = orderBy(sortingArray,['val'],[xcolAsc ? 'asc' : 'desc']);
   sortingArray.forEach((item, i) => {
-    sortingArray[i]['pos'] = data['grid'][i]
+    sortingArray[i]['pos'] = gridArray[i]
   });
 
   return orderBy(sortingArray,['idx'],['asc']).map(d => d.pos);
 }
 
-function getStandardDeviation (array) {
-  array = compact(array);
-  const n = array.length;
-  const mean = array.reduce((a, b) => a + b) / n;
-  return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+function getStandardDeviation(arr) {
+  arr = compact(arr);
+  const n = arr.length;
+  const mean = arr.reduce((a, b) => a + b) / n;
+  return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
 }
 
 function makeHist(xcol,xcolAsc,ycol,ycolAsc) {
@@ -319,9 +339,8 @@ let colorVals;
 
 function valToColor(arr) {
   arr = arr.map(d => parseFloat(d));
-  const arrfiltered = arr.filter(d => d)
-  const arrmax = Math.max(...arrfiltered);
-  const arrmin = Math.min(...arrfiltered);
+  const arrmax = max(arr);
+  const arrmin = min(arr);
   const arrrange = arrmax - arrmin;
   const arrnorm = arr.map(d => (d - arrmin) / arrrange);
   const arrhsl = arrnorm.map(d => d ? "hsl(0,0%," + parseInt(d*100).toString() + "%)" : 0xbd590f);
@@ -342,7 +361,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
   useLayoutEffect(() => {
     if ( model === 'grid' ) {
-      targetCoords = sortGrid(xcol,xcolAsc);
+      targetCoords = makeGrid(xcol,xcolAsc);
     } else if ( model === 'hist' ) {
       targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc);
     } else if ( model === 'scatter' ) {
@@ -483,9 +502,11 @@ export default function App() {
   const [xcol, setXcol] = useState('colorGroupBinder');
   const [ycol, setYcol] = useState('colorGroupBinder');
   const [zcol, setZcol] = useState('none');
+  const [facet, setFacet] = useState('2d');
   const [xcolAsc, setXcolAsc] = useState(true);
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
+  const [facetcolAsc, setFacetcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
@@ -545,14 +566,14 @@ export default function App() {
       </div>
       <div id='bottomControls'>
         <div className='controls' id='glyphControls'>
-          <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'active' : undefined}>BOX</button>
-          <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'active' : undefined}>EXP</button>
-          <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'active' : undefined}>ISO</button>
-          <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'active' : undefined}>RAD</button>
+          <button onClick={() => setGlyph('box')} className={glyph === 'box' ? 'material-icons active' : 'material-icons' }>square</button>
+          <button onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
+          <button onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
+          <button onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
         </div>
         <div className='controls' id='facetControls'>
-          <button className='controls' onClick={() => console.log('2D')} >FACET 2D</button>
-          <button className='controls' onClick={() => console.log('3D')} >FACET 3D</button>
+          <button className={facet === '2d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('2d')} >dashboard</button>
+          <button className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>
         </div>
         <div className='controls' id='axisMenus'>
           <select value={xcol} onChange={e => setXcol(e.target.value)} title='x'>
@@ -564,7 +585,7 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={xcolAsc ? 'active' : undefined} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >ASC</button>
+          <button className={xcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setXcolAsc(!xcolAsc)} >swap_vert</button>
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y'>
             <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
@@ -574,7 +595,7 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={ycolAsc ? 'active' : undefined} title='asc' onClick={() => setYcolAsc(!ycolAsc)} >ASC</button>
+          <button className={ycolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setYcolAsc(!ycolAsc)} >swap_vert</button>
           <select value={zcol} onChange={e => setZcol(e.target.value)} title='z'>
             <option value='none'>no z-axis</option>
             <option value='colorGroupBinder'>binder</option>
@@ -585,14 +606,7 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={zcolAsc ? 'active' : undefined} title='asc' onClick={() => setZcolAsc(!zcolAsc)} >ASC</button>
-          <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
-            <option value='x'>thickness</option>
-            <option value='y'>gloss</option>
-            <option value='facet'>facet</option>
-            <option value='z'>roughness</option>
-          </select>
-          <button className='controls' title='asc' onClick={()=>console.log('asc')} >ASC</button>
+          <button className={zcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setZcolAsc(!zcolAsc)} >swap_vert</button>
           <select value={group} onChange={e => setGroup(e.target.value)} title='color'>
             <option value='colorGroupBinder'>binder</option>
             <option value='colorGroupMan'>manufacturer</option>
@@ -610,17 +624,20 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
+          <select value={'facet'} onChange={()=>console.log('facet')} title='facet'>
+            <option value='x'>thickness</option>
+            <option value='y'>gloss</option>
+            <option value='facet'>facet</option>
+            <option value='z'>roughness</option>
+          </select>
+          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='asc' onClick={() => setFacetcolAsc(!xcolAsc)} >swap_vert</button>
         </div>
       </div>
       <div className='controls' id='plottypeControls'>
-        <button className={model === 'grid' ? 'active' : undefined} onClick={() => setModel('grid')} >MONTAGE</button>
-        <button className={model === 'hist' ? 'active' : undefined} onClick={() => setModel('hist')} >HISTOGRAM</button>
-        <button className={model === 'scatter' ? 'active' : undefined} onClick={() => setModel('scatter')} >SCATTER</button>
-        <button className={model === 'gep150' ? 'active' : undefined} onClick={() => setModel('gep150')} >ENTOURAGE</button>
-        <button className={model === 'gep125' ? 'active' : undefined} onClick={() => setModel('gep125')} >ENTOURAGE</button>
-        <button className={model === 'gep' ? 'active' : undefined} onClick={() => setModel('gep')} >ENTOURAGE</button>
-        <button className={model === 'gep75' ? 'active' : undefined} onClick={() => setModel('gep75')} >ENTOURAGE</button>
-        <button className={model === 'gep50' ? 'active' : undefined} onClick={() => setModel('gep50')} >ENTOURAGE</button>
+        <button className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
+        <button className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
+        <button className={model === 'scaßtter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
+        <button className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
       </div>
     </div>
   )

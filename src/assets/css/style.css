@@ -2,6 +2,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700&display=swap');
 
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
 body {
   margin: 0;
   font-family: 'Archivo';
@@ -90,7 +116,13 @@ button {
 }
 
 #glyphControls {
-  float: right;
+  position: fixed;
+  top: 4vh;
+  right: 4vh;
+}
+
+#glyphControls > button {
+  font-size: 3vh;
 }
 
 #facetControls {
@@ -111,20 +143,20 @@ button {
 #plottypeControls {
   position: fixed;
   right: -1vw;
-  top: 20vh;
+  top: 25vh;
   width: 1vw;
 }
 
 #plottypeControls > button {
   float: right;
-  font-size: 2vh;
+  font-size: 4vh;
   padding: 2vh;
   padding-right: 4vh;
 }
 
 select, select:focus, select:active {
   font-family: 'Archivo';
-  font-size: 1.5vh;
+  font-size: 2vh;
   border-radius: 0.5rem;
   border-color: var(--grey);
   padding: 1vh;
@@ -143,7 +175,7 @@ select, select:focus, select:active {
   border-style: solid;
   outline: none;
   color: var(--grey);
-  font-size: 1,5vh;
+  font-size: 2vh;
   font-weight: 400;
   text-align: center;
   cursor: pointer;
