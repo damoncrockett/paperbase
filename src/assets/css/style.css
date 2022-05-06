@@ -116,9 +116,13 @@ button {
 }
 
 #glyphControls {
-  position: fixed;
-  top: 4vh;
-  right: 4vh;
+  display: inline-block;
+}
+
+#spreadControls {
+  display: inline-block;
+  width: 10vw;;
+  margin-right: 2vw;
 }
 
 #glyphControls > button {
@@ -138,6 +142,12 @@ button {
   left: 0vw;
   bottom: 0vh;
   margin: 1vh;
+}
+
+#topControls {
+  position: fixed;
+  right: 2vw;
+  top: 2vw;
 }
 
 #plottypeControls {

@@ -3,16 +3,12 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
+import { Slider } from '@mui/material';
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { orderBy, compact, max, min } from 'lodash';
 import { data } from './data';
 const n = data['isoGroup'].length;
-
-console.log(Object.keys(data));
-
-const histbins = 200;
-const scatterFactor = 100;
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -192,9 +188,6 @@ function clearInfoPanel() {
 
 const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
-const ncol = Math.ceil(Math.sqrt(n));
-//const ncol = 100;
-
 function gridCoords(n,ncol) {
 
   const nrow = Math.ceil( n / ncol )
@@ -209,9 +202,12 @@ function gridCoords(n,ncol) {
   return coords;
 }
 
-function makeGrid(xcol,xcolAsc) {
+function makeGrid(xcol,xcolAsc,slide) {
   let sortingArray = [];
-  const gridArray = gridCoords(n,ncol);
+  const ncolsSquare = Math.ceil(Math.sqrt(n));
+  const ncolsIncrement = Math.ceil(ncolsSquare / 5);
+  const ncols = slide === -2 ? ncolsSquare - ncolsIncrement * 2 : slide === -1 ? ncolsSquare - ncolsIncrement : slide === 0 ? ncolsSquare : slide === 1 ? ncolsSquare + ncolsIncrement : ncolsSquare + ncolsIncrement * 2;
+  const gridArray = gridCoords(n,ncols);
 
   data[xcol].forEach((item, i) => {
     sortingArray[i] = { 'idx': i, 'val': item }
@@ -231,16 +227,21 @@ function getStandardDeviation(arr) {
   return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
 }
 
-function makeHist(xcol,xcolAsc,ycol,ycolAsc) {
+function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide) {
+
   let scratchArray = [];
 
   data[xcol].forEach((item, i) => {
     scratchArray[i] = { 'idx': i, 'val': parseFloat(item), 'ycol': parseFloat(data[ycol][i]) }
   });
 
+  const histBinsMid = 200;
+  const histBinsIncrement = 50;
+  const histBins = slide === -2 ? histBinsMid - histBinsIncrement * 2 : slide === -1 ? histBinsMid - histBinsIncrement : slide === 0 ? histBinsMid : slide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
+
   const std = getStandardDeviation(scratchArray.map(d => d.val));
   const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
-  const binner = bin().thresholds(histbins).value(d => d.val ? d.val : arrmax + std);
+  const binner = bin().thresholds(histBins).value(d => d.val ? d.val : arrmax + std);
   const binnedData = binner(scratchArray);
 
   if ( xcolAsc === false ) {
@@ -273,7 +274,7 @@ const featureScale = col => {
   return col.map(d => d ? (d - colmin) / colrange : colmax + std)
 }
 
-function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc) {
+function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide) {
   let xArray = featureScale(data[xcol]);
   let yArray = featureScale(data[ycol]);
   let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
@@ -289,6 +290,10 @@ function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc) {
   if ( zArray !== null && zcolAsc === false ) {
     zArray = zArray.map(d => 1 - d);
   }
+
+  const scatterFactorMid = 250;
+  const scatterFactorIncrement = 50;
+  const scatterFactor = slide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : slide === -1 ? scatterFactorMid - scatterFactorIncrement : slide === 0 ? scatterFactorMid : slide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
 
   const scratchArray = [];
   xArray.forEach((item, i) => {
@@ -353,7 +358,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -361,15 +366,16 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
   useLayoutEffect(() => {
     if ( model === 'grid' ) {
-      targetCoords = makeGrid(xcol,xcolAsc);
+      targetCoords = makeGrid(xcol,xcolAsc,slide);
     } else if ( model === 'hist' ) {
-      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc);
+      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,slide);
     } else if ( model === 'scatter' ) {
-      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc);
+      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
     } else {
-      targetCoords = data[model];
+      const gepCoords = slide === -2 ? 'gep50' : slide === -1 ? 'gep75' : slide === 0 ? 'gep' : slide === 1 ? 'gep125' : 'gep150';
+      targetCoords = data[gepCoords];
     }
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, slide])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -385,7 +391,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, slide]);
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
@@ -510,6 +516,7 @@ export default function App() {
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
+  const [slide, setSlide] = useState(0);
   const itemSize = 3;
 
   // key code constants
@@ -532,20 +539,20 @@ export default function App() {
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">
-          <color attach="background" args={[0x505050]} />
+          <color attach="background" args={[0x494949]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -564,13 +571,27 @@ export default function App() {
           />
         </Canvas>
       </div>
-      <div id='bottomControls'>
+      <div id='topControls'>
+        <div className='controls' id='spreadControls'>
+          <Slider
+            color='primary'
+            onChange={e => setSlide(e.target.value)}
+            defaultValue={0}
+            valueLabelDisplay="auto"
+            step={1}
+            marks
+            min={-2}
+            max={2}
+          />
+        </div>
         <div className='controls' id='glyphControls'>
           <button title='box glyph' onClick={() => setGlyph('box')} className={glyph === 'box' ? 'material-icons active' : 'material-icons' }>square</button>
           <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
           <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
         </div>
+      </div>
+      <div id='bottomControls'>
         <div className='controls' id='facetControls'>
           <button title='facet 2D' className={facet === '2d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('2d')} >dashboard</button>
           <button title='facet 3D' className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>

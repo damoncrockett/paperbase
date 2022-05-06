@@ -33,6 +33,9 @@
   },
   "homepage": "https://github.com/damoncrockett/phenome#readme",
   "dependencies": {
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
+    "@mui/material": "^5.6.4",
     "@react-spring/three": "^9.4.4",
     "@react-three/drei": "^8.16.4",
     "@react-three/fiber": "^7.0.26",
