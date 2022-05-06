@@ -146,8 +146,8 @@ button {
 
 #topControls {
   position: fixed;
-  right: 2vw;
-  top: 2vw;
+  right: 4vh;
+  top: 8vh;
 }
 
 #plottypeControls {
