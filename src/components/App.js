@@ -8,6 +8,9 @@ import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { orderBy, compact, max, min } from 'lodash';
 import { data } from './data';
+
+console.log(Object.keys(data));
+
 const n = data['isoGroup'].length;
 
 const randomRGB = () => {
@@ -23,7 +26,7 @@ function makeColorArray(k) {
 const radarGroups = Array.from(new Set(data['radarGroup']));
 const radarColors = {};
 radarGroups.forEach((item, i) => {
-  radarColors[item] = parseInt(i)
+  radarColors[item] = i
 });
 
 // not necessary with most groups because they already have integer group labels
@@ -363,7 +366,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -380,7 +383,26 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       const gepCoords = slide === -2 ? 'gep50' : slide === -1 ? 'gep75' : slide === 0 ? 'gep' : slide === 1 ? 'gep125' : 'gep150';
       targetCoords = data[gepCoords];
     }
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, slide])
+
+    if ( facetcol !== 'none' ) {
+      // update z dims for 3d facet
+      const facetData = data[facetcol];
+      const facetGroups = Array.from(new Set(facetData));
+      const facetZs = {};
+
+      facetGroups.forEach((item, i) => {
+        if ( facetcolAsc ) {
+          i = Math.abs( facetGroups.length - i );
+        }
+        facetZs[item] = i
+      });
+
+      facetData.forEach((item, i) => {
+        targetCoords[i][2] = facetZs[item] * 2
+      });
+    }
+
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -396,7 +418,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, slide]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide]);
 
   useLayoutEffect(() => {
     meshList[glyphGroup] = meshRef.current;
@@ -513,11 +535,12 @@ export default function App() {
   const [xcol, setXcol] = useState('colorGroupBinder');
   const [ycol, setYcol] = useState('colorGroupBinder');
   const [zcol, setZcol] = useState('none');
-  const [facet, setFacet] = useState('2d');
+  const [facet, setFacet] = useState('3d');
+  const [facetcol, setFacetCol] = useState('none');
+  const [facetcolAsc, setFacetcolAsc] = useState(true);
   const [xcolAsc, setXcolAsc] = useState(true);
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
-  const [facetcolAsc, setFacetcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
@@ -551,16 +574,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
           })}
           <OrbitControls
             ref={orbitRef}
@@ -660,13 +683,19 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
-          <select value={'facet'} onChange={()=>console.log('facet')} title='facet group'>
-            <option value='x'>thickness</option>
-            <option value='y'>gloss</option>
-            <option value='facet'>facet</option>
-            <option value='z'>roughness</option>
+          <select value={facetcol} onChange={e => setFacetCol(e.target.value)} title='facet group'>
+            <option value='none'>no facet axis</option>
+            <option value='expressivenessGroup'>expressiveness</option>
+            <option value='isoGroup'>color and thickness</option>
+            <option value='radarGroup'>radar group</option>
+            <option value='colorGroupBinder'>binder</option>
+            <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorGroupTextureWord'>texture description</option>
+            <option value='colorGroupColorWord'>base color description</option>
+            <option value='colorGroupGlossWord'>gloss description</option>
+            <option value='colorGroupThickWord'>weight description</option>
           </select>
-          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setFacetcolAsc(!xcolAsc)} >swap_vert</button>
+          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setFacetcolAsc(!facetcolAsc)} >swap_vert</button>
         </div>
       </div>
       <div className='controls' id='plottypeControls'>
