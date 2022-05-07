@@ -15,13 +15,18 @@ const randomRGB = () => {
   return rgbString
 };
 
-const radarGroups = new Set(data['radarGroup']);
+function makeColorArray(k) {
+  const colorArray = Array.from({length: k}, () => randomRGB());
+  return colorArray
+}
+
+const radarGroups = Array.from(new Set(data['radarGroup']));
 const radarColors = {};
 radarGroups.forEach((item, i) => {
-  radarColors[item] = randomRGB()
+  radarColors[item] = parseInt(i)
 });
 
-// not necessary with most groups because they have integer group labels
+// not necessary with most groups because they already have integer group labels
 data['radarColor'] = data['radarGroup'].map(d => radarColors[d])
 
 function valueCounts(col) {
@@ -270,7 +275,6 @@ const featureScale = col => {
   const colmax = max(col);
   const colrange = colmax - colmin;
   const std = getStandardDeviation(col);
-  console.log(colrange,std);
   return col.map(d => d ? (d - colmin) / colrange : colmax + std)
 }
 
@@ -336,7 +340,8 @@ function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
 
 // Kodak, Agfa, Dupont, Ilford, Defender, Ansco, Darko, Forte, Luminos, Haloid, Oriental, Gevaert
 // yellow, red, blue, white, green, lightblue, black, gold, palered, maroon, orange, purple
-const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
+//const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
+
 const highlightColor = 0xff00ff;
 const colorSubstrate = new Color();
 const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
@@ -358,7 +363,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -405,7 +410,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
     globalIndicesForThisMesh.forEach((item, i) => {
       if ( item !== clickedItem ) { // so we don't recolor the clicked point
-        const colorVal = manColors[colorVals[item]] || colorVals[item];
+        const colorVal = groupColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
@@ -416,7 +421,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     });
     meshRef.current.instanceColor.needsUpdate = true;
     invalidate();
-  }, [group]);
+  }, [group, groupColors]);
 
 
   const handleClick = e => {
@@ -434,7 +439,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
-          const colorVal = manColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
           if ( globalIndex !== globalInstanceId ) {
             colorSubstrate.set(colorVal);
             mesh.setColorAt(j, colorSubstrate);
@@ -517,6 +522,7 @@ export default function App() {
   const [clickedItem, setClickedItem] = useState(null);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
+  const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
   const itemSize = 3;
 
   // key code constants
@@ -543,16 +549,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
           })}
           <OrbitControls
             enablePan={true}
@@ -589,6 +595,9 @@ export default function App() {
           <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
           <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
+        </div>
+        <div className='controls' id='colorControls'>
+          <button title='group color shuffle' onClick={() => shuffleGroupColors(makeColorArray(50))} className={'material-icons'}>shuffle</button>
         </div>
       </div>
       <div id='bottomControls'>

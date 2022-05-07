@@ -125,6 +125,14 @@ button {
   margin-right: 2vw;
 }
 
+#colorControls {
+  display: inline-block;
+}
+
+#colorControls > button {
+  font-size: 3vh;
+}
+
 #glyphControls > button {
   font-size: 3vh;
 }
