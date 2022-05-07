@@ -109,10 +109,14 @@ button {
   border-radius: 2vh;
 }
 
-#reset-button {
+#cameraReset {
   position: fixed;
-  top: 6vh;
-  right: 10vh;
+  top: 8vh;
+  right: 50vw;
+}
+
+#cameraReset > button {
+  font-size: 3vh;
 }
 
 #glyphControls {

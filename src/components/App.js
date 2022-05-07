@@ -536,6 +536,8 @@ export default function App() {
     return s
   };
 
+  const orbitRef = useRef();
+
   return (
     <div id='app'>
       <div id='infoPanel'>
@@ -561,6 +563,7 @@ export default function App() {
             return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
           })}
           <OrbitControls
+            ref={orbitRef}
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
@@ -576,6 +579,9 @@ export default function App() {
             }}
           />
         </Canvas>
+      </div>
+      <div className='controls' id='cameraReset'>
+        <button title='reset camera' className={'material-icons'} onClick={() => orbitRef.current.reset()} >flip_camera_ios</button>
       </div>
       <div id='topControls'>
         <div className='controls' id='spreadControls'>
