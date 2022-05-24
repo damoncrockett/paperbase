@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
@@ -6,10 +6,18 @@ import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
+import { transition } from 'd3-transition';
 import { orderBy, compact, max, min } from 'lodash';
 import { data } from './data';
 
-console.log(Object.keys(data));
+function returnDomain() {
+  const production = process.env.NODE_ENV === 'production';
+  return production ? '' : 'http://localhost:8888/'
+}
+
+const svgSide = window.innerHeight * 0.15;
+
+//console.log(Object.keys(data));
 
 const n = data['isoGroup'].length;
 
@@ -125,6 +133,57 @@ function radarNormals(glyphGroup) {
     [-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0] //lowerRight
   ];
   return new Float32Array(rawNormals.flat())
+}
+
+function getUniverse(dataU) {
+  return [
+    min(dataU['color']),
+    max(dataU['color']),
+    min(dataU['thickness']),
+    max(dataU['thickness']),
+    min(dataU['roughness']),
+    max(dataU['roughness']),
+    min(dataU['gloss']),
+    max(dataU['gloss'])
+  ]
+}
+
+function uScale(uMin,uMax,val) {
+  const uRange = uMax - uMin;
+  return (val - uMin) / uRange
+}
+
+function polygonPoints(dataU, clickedItem) {
+
+    const universe = getUniverse(dataU);
+    let p1 = data['color'][clickedItem];
+    let p2 = data['thickness'][clickedItem];
+    let p3 = data['roughness'][clickedItem];
+    let p4 = data['gloss'][clickedItem];
+
+    p1 = uScale(universe[0],universe[1],p1);
+    p2 = uScale(universe[2],universe[3],p2);
+    p3 = uScale(universe[4],universe[5],p3);
+    p4 = 1 - uScale(universe[6],universe[7],p4);
+
+    const zeroPoint = svgSide / 2;
+
+    // top (color)
+    const p1x = zeroPoint;
+    const p1y = zeroPoint - zeroPoint * p1;
+    // left (thickness)
+    const p2x = zeroPoint - zeroPoint * p2 ;
+    const p2y = zeroPoint;
+    // bottom (roughness)
+    const p3x = zeroPoint;
+    const p3y = zeroPoint + zeroPoint * p3;
+    // right (matte-ness)
+    const p4x = zeroPoint + zeroPoint * p4;
+    const p4y = zeroPoint;
+
+    const s = p1x.toString()+','+p1y.toString()+' '+p2x.toString()+','+p2y.toString()+' '+p3x.toString()+','+p3y.toString()+' '+p4x.toString()+','+p4y.toString();
+
+    return s
 }
 
 /*Text------------------------------------------------------------------------*/
@@ -272,7 +331,7 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide) {
   return scratchArray.map(d => d.pos)
 }
 
-const featureScale = col => {
+function featureScale(col) {
   col = col.map(d => parseFloat(d));
   const colmin = min(col);
   const colmax = max(col);
@@ -436,7 +495,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
-        // clickedGlobalInstanceId is guaranteed non-null here
         colorSubstrate.set(highlightColor);
         meshRef.current.setColorAt(i, colorSubstrate);
       }
@@ -546,6 +604,7 @@ export default function App() {
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
+  const [visBar, setVisBar] = useState(false);
   const itemSize = 3;
 
   // key code constants
@@ -560,6 +619,58 @@ export default function App() {
   };
 
   const orbitRef = useRef();
+  const svgRef = useRef();
+
+  useEffect(() => {
+    if (visBar && clickedItem) {
+
+      const dataU = data;
+
+      select(svgRef.current)
+        .selectAll('line.yaxis')
+        .data([0])
+        .enter()
+        .append('line')
+        .attr('class', 'yaxis')
+        .attr('id', 'yaxis')
+        .attr('x1', svgSide / 2 )
+        .attr('y1', 0 )
+        .attr('x2', svgSide / 2 )
+        .attr('y2', svgSide )
+        .attr('stroke', '#494949')
+
+      select(svgRef.current)
+        .selectAll('line.xaxis')
+        .data([0])
+        .enter()
+        .append('line')
+        .attr('class', 'xaxis')
+        .attr('id', 'xaxis')
+        .attr('x1', 0 )
+        .attr('y1', svgSide / 2 )
+        .attr('x2', svgSide )
+        .attr('y2', svgSide / 2 )
+        .attr('stroke', '#494949')
+
+      select(svgRef.current)
+        .selectAll('polygon.radar')
+        .data([0])
+        .enter()
+        .append('polygon')
+        .attr('class', 'radar')
+        .attr('id', 'radar')
+        .attr('points', polygonPoints(dataU,clickedItem))
+        .attr('stroke', '#494949')
+        .attr('fill', '#989898')
+        .attr('fill-opacity', '0.5')
+
+      select(svgRef.current)
+        .selectAll('polygon.radar')
+        .transition().duration(500)
+          .attr('points', polygonPoints(dataU,clickedItem))
+
+    }
+  }, [visBar, clickedItem])
 
   return (
     <div id='app'>
@@ -567,6 +678,24 @@ export default function App() {
         <div id='catalog'></div>
         <div id='titleBar'></div>
         <div id='infoBar'></div>
+        {visBar && clickedItem &&
+          <div id='visBar'>
+            <div className='imgmat' id='pgkimg'>
+              <img src={returnDomain() + 'package.jpg'} />
+            </div>
+            <svg
+              ref={svgRef}
+              width={svgSide}
+              height={svgSide}
+            />
+            <div className='imgmat' id='txtimg'>
+              <img src={returnDomain() + 'texture.jpg'} />
+            </div>
+          </div>
+        }
+        {visBar ? <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_less</button>
+                : <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_more</button>
+        }
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">

@@ -44,6 +44,29 @@ button {
   display: inline-block;
 }
 
+img {
+  height: 100%;
+  width: auto;
+}
+
+.imgmat {
+  width: 15vh;
+  height: 15vh;
+  display: inline-block;
+}
+
+#pgkimg {
+  margin-right: 2vw;
+}
+
+#txtimg {
+
+}
+
+svg {
+  margin-right: 2vw;
+}
+
 :root {
   --grey: #989898;
   --darkgrey: #494949;
@@ -71,6 +94,24 @@ button {
 }
 
 #infoBar {
+  margin-bottom: 4vh;
+}
+
+#visBar {
+
+}
+
+#visBarExpander {
+  border-radius: .5rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white;
+  margin: 0 auto;
+  display: block;
+}
+
+#visBarExpander:hover {
+  border-color: var(--grey);
 }
 
 #catalog {
