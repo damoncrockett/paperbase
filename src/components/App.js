@@ -682,7 +682,7 @@ export default function App() {
         {visBar && clickedItem &&
           <div id='visBar'>
             <div className='imgmat' id='pgkimg'>
-              <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} />
+              <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
             </div>
             <svg
               ref={svgRef}
