@@ -17,7 +17,8 @@ function returnDomain() {
 
 const svgSide = window.innerHeight * 0.15;
 
-//console.log(Object.keys(data));
+console.log(Object.keys(data));
+console.log(data['catalog']);
 
 const n = data['isoGroup'].length;
 
@@ -681,7 +682,7 @@ export default function App() {
         {visBar && clickedItem &&
           <div id='visBar'>
             <div className='imgmat' id='pgkimg'>
-              <img src={returnDomain() + 'package.jpg'} />
+              <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} />
             </div>
             <svg
               ref={svgRef}
@@ -689,7 +690,7 @@ export default function App() {
               height={svgSide}
             />
             <div className='imgmat' id='txtimg'>
-              <img src={returnDomain() + 'texture.jpg'} />
+              <img src={returnDomain() + 'img/texture.jpg'} />
             </div>
           </div>
         }
