@@ -17,9 +17,6 @@ function returnDomain() {
 
 const svgSide = window.innerHeight * 0.15;
 
-console.log(Object.keys(data));
-console.log(data['catalog']);
-
 const n = data['isoGroup'].length;
 
 const randomRGB = () => {
@@ -32,21 +29,35 @@ function makeColorArray(k) {
   return colorArray
 }
 
-const radarGroups = Array.from(new Set(data['radarGroup']));
-const radarColors = {};
-radarGroups.forEach((item, i) => {
-  radarColors[item] = i
-});
+// for making integer labels for character-variable groups, used in glyph group colors
+function makeGroupLabels(groupCol) {
+  const valGroups = Array.from(new Set(data[groupCol]));
+  const groupDict = {};
+  valGroups.forEach((item, i) => {
+    groupDict[item] = i
+  });
 
-// not necessary with most groups because they already have integer group labels
-data['radarColor'] = data['radarGroup'].map(d => radarColors[d])
+  return data[groupCol].map(d => groupDict[d])
+}
 
+data['radarColor'] = makeGroupLabels('radarGroup');
+data['colorGroupColorWord'] = makeGroupLabels('colorWord');
+data['colorGroupThickWord'] = makeGroupLabels('thicknessWord');
+data['colorGroupTextureWord'] = makeGroupLabels('textureWord');
+data['colorGroupGlossWord'] = makeGroupLabels('glossWord');
+data['colorGroupMan'] = makeGroupLabels('man');
+
+//console.log(Object.keys(data));
+console.log(data);
+
+/*
 function valueCounts(col) {
   const occurrences = data[col].reduce(function (acc, curr) {
     return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
   }, {});
   return occurrences
 }
+*/
 
 /*groupMaps----------------------------------------------------------------------*/
 
@@ -136,17 +147,30 @@ function radarNormals(glyphGroup) {
   return new Float32Array(rawNormals.flat())
 }
 
-function getUniverse(dataU) {
-  return [
-    min(dataU['color']),
-    max(dataU['color']),
-    min(dataU['thickness']),
-    max(dataU['thickness']),
-    min(dataU['roughness']),
-    max(dataU['roughness']),
-    min(dataU['gloss']),
-    max(dataU['gloss'])
-  ]
+function getUniverse(dataU,scaleTransform) {
+  if ( scaleTransform ) {
+    return [
+      min(dataU['color']),
+      max(dataU['color']),
+      min(dataU['thickness']),
+      max(dataU['thickness']),
+      min(dataU['roughness']),
+      max(dataU['roughness']),
+      min(dataU['gloss']),
+      max(dataU['gloss'])
+    ]
+  } else {
+    return [
+      min(rankTransform(dataU['color'])),
+      max(rankTransform(dataU['color'])),
+      min(rankTransform(dataU['thickness'])),
+      max(rankTransform(dataU['thickness'])),
+      min(rankTransform(dataU['roughness'])),
+      max(rankTransform(dataU['roughness'])),
+      min(rankTransform(dataU['gloss'])),
+      max(rankTransform(dataU['gloss']))
+    ]
+  }
 }
 
 function uScale(uMin,uMax,val) {
@@ -154,13 +178,27 @@ function uScale(uMin,uMax,val) {
   return (val - uMin) / uRange
 }
 
-function polygonPoints(dataU, clickedItem) {
+function rankTransform(arr) {
+  const sorted = [...arr].sort((a, b) => a - b);
+  return arr.map((x) => sorted.indexOf(x) + 1)
+}
 
-    const universe = getUniverse(dataU);
-    let p1 = data['color'][clickedItem];
-    let p2 = data['thickness'][clickedItem];
-    let p3 = data['roughness'][clickedItem];
-    let p4 = data['gloss'][clickedItem];
+function polygonPoints(dataU, clickedItem, scaleTransform) {
+
+    const universe = getUniverse(dataU,scaleTransform);
+    let p1,p2,p3,p4;
+
+    if ( scaleTransform ) {
+      p1 = data['color'][clickedItem];
+      p2 = data['thickness'][clickedItem];
+      p3 = data['roughness'][clickedItem];
+      p4 = data['gloss'][clickedItem];
+    } else {
+      p1 = rankTransform(data['color'])[clickedItem];
+      p2 = rankTransform(data['thickness'])[clickedItem];
+      p3 = rankTransform(data['roughness'])[clickedItem];
+      p4 = rankTransform(data['gloss'])[clickedItem];
+    }
 
     p1 = uScale(universe[0],universe[1],p1);
     p2 = uScale(universe[2],universe[3],p2);
@@ -209,7 +247,17 @@ function writeInfoArray(globalInstanceId) {
   colorWord = colorWord === '_' ? '' : colorWord;
   thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
 
-  const infoList = [textureWord, glossWord, colorWord, thicknessWord];
+  let infoList = [textureWord, glossWord, colorWord, thicknessWord];
+
+  // to preserve infoPanel height in the absence of any boxWords
+  if ( infoList.filter(d => d !== '').length === 0 ) {
+    infoList = ['Placeholder'];
+    select('#infoBar')
+      .style('color', 'white')
+  } else {
+    select('#infoBar')
+      .style('color', '#989898')
+  }
 
   return [infoList.filter(d => d !== '').join(' • ')];
 }
@@ -606,6 +654,7 @@ export default function App() {
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
   const [visBar, setVisBar] = useState(false);
+  const [scaleTransform, setScaleTransform] = useState(true);
   const itemSize = 3;
 
   // key code constants
@@ -660,7 +709,7 @@ export default function App() {
         .append('polygon')
         .attr('class', 'radar')
         .attr('id', 'radar')
-        .attr('points', polygonPoints(dataU,clickedItem))
+        .attr('points', polygonPoints(dataU,clickedItem,scaleTransform))
         .attr('stroke', '#494949')
         .attr('fill', '#989898')
         .attr('fill-opacity', '0.5')
@@ -668,10 +717,10 @@ export default function App() {
       select(svgRef.current)
         .selectAll('polygon.radar')
         .transition().duration(500)
-          .attr('points', polygonPoints(dataU,clickedItem))
+          .attr('points', polygonPoints(dataU,clickedItem,scaleTransform))
 
     }
-  }, [visBar, clickedItem])
+  }, [visBar, clickedItem, scaleTransform])
 
   return (
     <div id='app'>
@@ -690,7 +739,10 @@ export default function App() {
               height={svgSide}
             />
             <div className='imgmat' id='txtimg'>
-              <img src={returnDomain() + 'img/texture.jpg'} />
+              <img src={returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
+            </div>
+            <div id='panelButtons'>
+              <button title='rank scale' onClick={() => setScaleTransform(!scaleTransform)} className={scaleTransform ? 'material-icons active' : 'material-icons'}>sort</button>
             </div>
           </div>
         }
@@ -765,15 +817,33 @@ export default function App() {
           <button title='facet 3D' className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>
         </div>
         <div className='controls' id='axisMenus'>
-          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-            <option value='colorGroupBinder'>binder</option>
-            <option value='year'>year</option>
-            <option value='thickness'>thickness</option>
-            <option value='gloss'>gloss</option>
-            <option value='color'>color</option>
-            <option value='roughness'>roughness</option>
-            <option value='expressiveness'>expressiveness</option>
-          </select>
+          {model==='grid' &&
+            <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
+              <option value='colorGroupBinder'>binder</option>
+              <option value='year'>year</option>
+              <option value='thickness'>thickness</option>
+              <option value='gloss'>gloss</option>
+              <option value='color'>color</option>
+              <option value='roughness'>roughness</option>
+              <option value='expressiveness'>expressiveness</option>
+              <option value='colorGroupMan'>manufacturer</option>
+              <option value='colorGroupTextureWord'>texture description</option>
+              <option value='colorGroupColorWord'>base color description</option>
+              <option value='colorGroupGlossWord'>gloss description</option>
+              <option value='colorGroupThickWord'>weight description</option>
+            </select>
+          }
+          {model!=='grid' &&
+            <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
+              <option value='colorGroupBinder'>binder</option>
+              <option value='year'>year</option>
+              <option value='thickness'>thickness</option>
+              <option value='gloss'>gloss</option>
+              <option value='color'>color</option>
+              <option value='roughness'>roughness</option>
+              <option value='expressiveness'>expressiveness</option>
+            </select>
+          }
           <button className={xcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setXcolAsc(!xcolAsc)} >swap_vert</button>
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
             <option value='colorGroupBinder'>binder</option>
