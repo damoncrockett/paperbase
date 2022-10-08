@@ -7,7 +7,9 @@ function returnDomain() {
   return production ? '' : 'http://localhost:8888/'
 }
 
-
+//const tileColor = 0x4b2f3b;
+const tileColor = 0x00356b;
+const tileColorPop = 0xbd5319;
 
 export default function Landing({ setPage }) {
 
@@ -20,26 +22,19 @@ export default function Landing({ setPage }) {
         <button onClick={() => setPage('app')}>Explore the collection</button>
       </div>
       <div id='canvasContainer'>
-        <Canvas camera={{ fov: 75, position: [0, 0, 10] }}>
+        <Canvas camera={{ fov: 75, position: [0, 0, 15] }}>
           <ambientLight intensity={0.5} />
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
           <pointLight position={[-10, -10, -10]} />
-          <Box position={[2.5, 8, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[7.5, 8, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-2.5, 8, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-7.5, 8, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[2.5, 3, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[7.5, 3, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-2.5, 3, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-7.5, 3, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[2.5, -2, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[7.5, -2, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-2.5, -2, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-7.5, -2, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[2.5, -7, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[7.5, -7, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-2.5, -7, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
-          <Box position={[-7.5, -7, -8]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={0x4b2f3b} isrot={true}/>
+          <Box position={[-5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[0, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[-5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[0, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[-5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[0, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <Box position={[5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
         </Canvas>
       </div>
       <div id='landingFooter'>

@@ -2,11 +2,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&display=swap');
-
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
+:root {
+  --grey: #989898;
+  --darkgrey: #494949;
+  --yaleblue: #00356b;
+  --yaledark: #000a14;
+  --yalelightgray: #dddddd;
+  --yalewhite: #f9f9f9;
+  --rippling: #4b2f3b;
+  --ripplingdark: #140c10;
+  --ripplinglightgrey: #c9c0c4;
+  --ripplingyellow: #f4bb46;
+  --yalelightblue: #63aaff;
+  --yaleorange: #bd5319;
+}
+
 #landing {
-  background-color: rgb(75,47,59);
+  background-color: var(--yaleblue);
   width: 100vw;
   height: 100vh;
 }
@@ -19,7 +33,7 @@
 
 .menubutton {
   background-color: transparent;
-  color: rgb(254,254,254);
+  color: var(--yalewhite);
   border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
@@ -28,7 +42,7 @@
 }
 
 .menubutton:hover {
-  border-color: rgb(254,254,254);
+  border-color: var(--yalewhite);
 }
 
 #landingFooter {
@@ -51,7 +65,7 @@
 }
 
 #landingText {
-  color: rgb(201,192,196);
+  color: var(--yalelightgray);
   font-size: 3vh;
   text-align: center;
   margin-top: 4vh;
@@ -59,7 +73,7 @@
 }
 
 #landingTitle {
-  color: rgb(254,254,254);
+  color: var(--yalewhite);
   font-size: 12vh;
   text-align: center;
   font-family: "Goudy Bookletter 1911";
@@ -69,10 +83,10 @@
   border-radius: 5vh;
   border-width: 3px;
   border-style: solid;
-  border-color: rgb(20,12,16);
+  border-color: var(--yaledark);
   display: block;
   color: black;
-  background-color: rgb(244,187,70);
+  background-color: var(--yalelightblue);
   padding-top: 3vh;
   padding-bottom: 3vh;
   padding-left: 7vh;
@@ -84,7 +98,7 @@
 }
 
 #landingContent > button:hover {
-  border-color: rgb(201,192,196);
+  background-color: var(--yaleorange);
 }
 
 #canvasContainer {
@@ -180,11 +194,6 @@ svg {
 
 #panelButtons > button.active {
   color: var(--grey);
-}
-
-:root {
-  --grey: #989898;
-  --darkgrey: #494949;
 }
 
 #viewpane {
