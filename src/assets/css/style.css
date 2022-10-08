@@ -33,7 +33,7 @@
 
 #landingFooter {
   position: fixed;
-  bottom: 5vh;
+  bottom: 3vh;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -91,8 +91,8 @@
   position: fixed;
   left: 0;
   width: 100vw;
-  height: 20vh;
-  bottom: 20vh;
+  height: 30vh;
+  bottom: 10vh;
 }
 
 .material-icons {
