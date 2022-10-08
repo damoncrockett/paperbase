@@ -11,6 +11,26 @@
   height: 100vh;
 }
 
+#navmenu {
+  position: fixed;
+  top: 4vh;
+  right: 4vh;
+}
+
+.menubutton {
+  background-color: transparent;
+  color: rgb(254,254,254);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  font-size: 7vh;
+}
+
+.menubutton:hover {
+  border-color: rgb(254,254,254);
+}
+
 #landingFooter {
   position: fixed;
   bottom: 5vh;

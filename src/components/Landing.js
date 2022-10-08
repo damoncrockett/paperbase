@@ -13,6 +13,7 @@ export default function Landing({ setPage }) {
 
   return (
     <div id='landing'>
+    <button id='navmenu' className='material-icons menubutton'>menu</button>
       <div id='landingContent'>
         <p id='landingTitle'>Paperbase.</p>
         <p id='landingText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the Lens Media Lab at Yale University.</p>
