@@ -1,8 +1,79 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@100&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&display=swap');
 
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+#landing {
+  background-color: rgb(75,47,59);
+  width: 100vw;
+  height: 100vh;
+}
+
+#landingFooter {
+  position: fixed;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#jpffLogo {
+  width: 25vw;
+  height: auto;
+}
+
+#landingContent {
+  position: fixed;
+  top: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#landingText {
+  color: rgb(201,192,196);
+  font-size: 3vh;
+  text-align: center;
+  margin-top: 4vh;
+  font-weight: 100;
+}
+
+#landingTitle {
+  color: rgb(254,254,254);
+  font-size: 12vh;
+  text-align: center;
+  font-family: "Goudy Bookletter 1911";
+}
+
+#landingContent > button {
+  border-radius: 5vh;
+  border-width: 3px;
+  border-style: solid;
+  border-color: rgb(20,12,16);
+  display: block;
+  color: black;
+  background-color: rgb(244,187,70);
+  padding-top: 3vh;
+  padding-bottom: 3vh;
+  padding-left: 7vh;
+  padding-right: 7vh;
+  margin: 0 auto;
+  margin-top: 8vh;
+  font-weight: 700;
+  font-size: 2vh;
+}
+
+#landingContent > button:hover {
+  border-color: rgb(201,192,196);
+}
+
+#canvasContainer {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: 20vh;
+  bottom: 20vh;
+}
 
 .material-icons {
   font-family: 'Material Icons' !important;
