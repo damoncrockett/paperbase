@@ -39,7 +39,7 @@ export default function Landing({ setPage }) {
         </Canvas>
       </div>
       <div id='landingFooter'>
-        <img id='jpffLogo' src={returnDomain() + 'jpff_light.png'} onError={(e) => e.target.style.display = 'none'} />
+        <img id='jpffLogo' src={returnDomain() + 'jpff_white.png'} onError={(e) => e.target.style.display = 'none'} />
       </div>
     </div>
   )
