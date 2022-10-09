@@ -7,8 +7,9 @@ function returnDomain() {
   return production ? '' : 'http://localhost:8888/'
 }
 
+const tileColor = 0xf9f9f9;
 //const tileColor = 0x4b2f3b;
-const tileColor = 0x00356b;
+//const tileColor = 0x00356b;
 const tileColorPop = 0xbd5319;
 
 export default function Landing({ setPage }) {
@@ -22,7 +23,7 @@ export default function Landing({ setPage }) {
         <button onClick={() => setPage('app')}>Explore the collection</button>
       </div>
       <div id='canvasContainer'>
-        <Canvas camera={{ fov: 75, position: [0, 0, 15] }}>
+        <Canvas camera={{ fov: 90, position: [0, 0, 10] }}>
           <ambientLight intensity={0.5} />
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
           <pointLight position={[-10, -10, -10]} />
@@ -38,7 +39,7 @@ export default function Landing({ setPage }) {
         </Canvas>
       </div>
       <div id='landingFooter'>
-        <img id='jpffLogo' src={returnDomain() + 'jpff.png'} onError={(e) => e.target.style.display = 'none'} />
+        <img id='jpffLogo' src={returnDomain() + 'jpff_light.png'} onError={(e) => e.target.style.display = 'none'} />
       </div>
     </div>
   )
