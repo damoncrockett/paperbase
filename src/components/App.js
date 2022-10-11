@@ -640,7 +640,10 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 export default function App() {
   const [model, setModel] = useState('grid');
   const [filter, setFilter] = useState(false);
-  const [toggle, setToggle] = useState([0,0,0,0]);
+  const [toggleMR, setToggleMR] = useState(false);
+  const [toggleAS, setToggleAS] = useState(false);
+  const [toggleHC, setToggleHC] = useState(false);
+  const [toggleLAB, setToggleLAB] = useState(false);
   const [toggleExpand, setToggleExpand] = useState(false);
   const [xcol, setXcol] = useState('colorGroupBinder');
   const [ycol, setYcol] = useState('colorGroupBinder');
@@ -912,13 +915,13 @@ export default function App() {
       </div>
       <div id='toggleControls' className={toggleExpand ? 'toggleExpand' : 'toggleCollapse'}>
         <div id='checkboxes'>
-          <label><input type="checkbox" />Lola Alvarez-Bravo</label>
-          <label><input type="checkbox" />Harry Callahan</label>
-          <label><input type="checkbox" />August Sander</label>
-          <label><input type="checkbox" />Man Ray</label>
+          <label><input type="checkbox" checked={toggleLAB} onChange={() => setToggleLAB(!toggleLAB)}/>Lola Alvarez-Bravo</label>
+          <label><input type="checkbox" checked={toggleHC} onChange={() => setToggleHC(!toggleHC)}/>Harry Callahan</label>
+          <label><input type="checkbox" checked={toggleAS} onChange={() => setToggleAS(!toggleAS)}/>August Sander</label>
+          <label><input type="checkbox" checked={toggleMR} onChange={() => setToggleMR(!toggleMR)}/>Man Ray</label>
         </div>
-        {!toggleExpand && <button title='toggle' className={isEqual(toggle,[0,0,0,0]) ? 'material-icons' : 'material-icons active'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
-        {toggleExpand && <button title='toggle' className={isEqual(toggle,[0,0,0,0]) ? 'material-icons' : 'material-icons active'} onClick={() => setToggleExpand(false)} >close</button>}
+        {!toggleExpand && <button title='toggle' className={( toggleMR | toggleAS | toggleHC | toggleLAB ) ? 'material-icons active' : 'material-icons'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
+        {toggleExpand && <button title='toggle' className={( toggleMR | toggleAS | toggleHC | toggleLAB ) ? 'material-icons active' : 'material-icons'} onClick={() => setToggleExpand(false)} >close</button>}
       </div>
     </div>
   )
