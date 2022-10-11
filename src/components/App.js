@@ -7,7 +7,7 @@ import { Slider } from '@mui/material';
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { transition } from 'd3-transition';
-import { orderBy, compact, max, min } from 'lodash';
+import { orderBy, compact, max, min, isEqual } from 'lodash';
 import { data } from './data';
 
 function returnDomain() {
@@ -639,6 +639,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
 export default function App() {
   const [model, setModel] = useState('grid');
+  const [filter, setFilter] = useState(false);
+  const [toggle, setToggle] = useState([0,0,0,0]);
+  const [toggleExpand, setToggleExpand] = useState(false);
   const [xcol, setXcol] = useState('colorGroupBinder');
   const [ycol, setYcol] = useState('colorGroupBinder');
   const [zcol, setZcol] = useState('none');
@@ -903,6 +906,19 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
+      </div>
+      <div className='controls' id='filterControls'>
+        <button title='filter' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilter(!filter)} >filter_alt</button>
+      </div>
+      <div id='toggleControls' className={toggleExpand ? 'toggleExpand' : 'toggleCollapse'}>
+        <div id='checkboxes'>
+          <label><input type="checkbox" />Lola Alvarez-Bravo</label>
+          <label><input type="checkbox" />Harry Callahan</label>
+          <label><input type="checkbox" />August Sander</label>
+          <label><input type="checkbox" />Man Ray</label>
+        </div>
+        {!toggleExpand && <button title='toggle' className={isEqual(toggle,[0,0,0,0]) ? 'material-icons' : 'material-icons active'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
+        {toggleExpand && <button title='toggle' className={isEqual(toggle,[0,0,0,0]) ? 'material-icons' : 'material-icons active'} onClick={() => setToggleExpand(false)} >close</button>}
       </div>
     </div>
   )

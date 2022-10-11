@@ -266,13 +266,6 @@ svg {
   font-size: 2vh;
 }
 
-.controls {
-  z-index: 1;
-  background: transparent;
-  color: var(--grey);
-  border-radius: 2vh;
-}
-
 #cameraReset {
   position: fixed;
   top: 8vh;
@@ -281,6 +274,13 @@ svg {
 
 #cameraReset > button {
   font-size: 3vh;
+}
+
+.controls {
+  z-index: 1;
+  background: transparent;
+  color: var(--grey);
+  border-radius: 1vh;
 }
 
 #glyphControls {
@@ -340,10 +340,101 @@ svg {
   padding-right: 4vh;
 }
 
+#filterControls {
+  position: fixed;
+  bottom: 25vh;
+  width: 1vw;
+  right: -1vw;
+}
+
+#filterControls > button {
+  float: right;
+  font-size: 4vh;
+  padding: 2vh;
+  padding-right: 4vh;
+}
+
+#toggleControls {
+  position: fixed;
+  bottom: 16vh;
+  display: inline-block;
+  background-color: var(--darkgrey);
+  border-color: var(--grey);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-style: solid;
+  outline: none;
+  color: var(--grey);
+}
+
+#toggleControls > button {
+  float: right;
+  font-size: 4vh;
+  padding: 2vh;
+  margin-right: 2vh;
+  display: inline-block;
+  outline: none;
+  background-color: transparent;
+  border-color: var(--darkgrey);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-style: solid;
+  color: var(--grey);
+}
+
+#toggleControls > button:hover {
+  background-color: rgb(249,250,251);
+  border-color: rgb(249,250,251);
+}
+
+#toggleControls > button.active {
+  background-color: black;
+  color: white;
+}
+
+#checkboxes {
+  float: right;
+  font-size: 4vh;
+  padding: 2vh;
+  height: 100%;
+  margin-top: 1vh;
+  margin-right: 4vh;
+}
+
+input[type=checkbox] {
+  transform: scale(1.5);
+  margin-right: 1vh;
+}
+
+#checkboxes > label {
+  font-size: 2vh;
+  display: inline-block;
+  float: right;
+  margin-right: 4vh;
+}
+
+.toggleCollapse {
+  right: -51.3vw;
+  transition: right 0.2s linear;
+  -webkit-transition: right 0.2s linear;
+  -moz-transition: right 0.2s linear;
+  -ms-transition: right 0.2s linear;
+  -o-transition: right 0.2s linear;
+}
+
+.toggleExpand {
+  right: -1vw;
+  transition: right 0.2s linear;
+  -webkit-transition: right 0.2s linear;
+  -moz-transition: right 0.2s linear;
+  -ms-transition: right 0.2s linear;
+  -o-transition: right 0.2s linear;
+}
+
 select {
   font-family: 'Archivo';
   font-size: 2vh;
-  border-radius: 0.5rem;
+  border-radius: 1vh;
   border-color: var(--grey);
   padding: 1vh;
   margin: 0.25vh;
@@ -356,7 +447,7 @@ select {
 .controls > button {
   background-color: transparent;
   border-color: var(--grey);
-  border-radius: .5rem;
+  border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
   outline: none;
@@ -374,7 +465,7 @@ select {
 
 .controls > button:hover {
   background-color: rgb(249,250,251);
-  border-color: white;
+  border-color: rgb(249,250,251);
 }
 
 .controls > button.active {
