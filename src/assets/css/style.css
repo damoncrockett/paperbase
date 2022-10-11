@@ -356,7 +356,7 @@ svg {
 
 #toggleControls {
   position: fixed;
-  bottom: 16vh;
+  bottom: 16.3vh;
   display: inline-block;
   background-color: var(--darkgrey);
   border-color: var(--grey);

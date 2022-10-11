@@ -10,6 +10,8 @@ import { transition } from 'd3-transition';
 import { orderBy, compact, max, min, isEqual } from 'lodash';
 import { data } from './data';
 
+/*Misc functions--------------------------------------------------------------*/
+
 function returnDomain() {
   const production = process.env.NODE_ENV === 'production';
   return production ? '' : 'http://localhost:8888/'
@@ -17,7 +19,7 @@ function returnDomain() {
 
 const svgSide = window.innerHeight * 0.15;
 
-const n = data['isoGroup'].length;
+const n = data['isoGroup'].length; // nrows in data; 'isgoGroup' could be any col
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -28,6 +30,8 @@ function makeColorArray(k) {
   const colorArray = Array.from({length: k}, () => randomRGB());
   return colorArray
 }
+
+/*Color groups----------------------------------------------------------------*/
 
 // for making integer labels for character-variable groups, used in glyph group colors
 function makeGroupLabels(groupCol) {
@@ -48,7 +52,7 @@ data['colorGroupGlossWord'] = makeGroupLabels('glossWord');
 data['colorGroupMan'] = makeGroupLabels('man');
 
 //console.log(Object.keys(data));
-console.log(data);
+//console.log(data);
 
 /*
 function valueCounts(col) {
@@ -89,7 +93,10 @@ const zArray = isoGroupArray.map(d => d.split('_')[0]==='0' ? 0.05 : d.split('_'
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
 const radarMap = makeMap(radarGroupArray,'radarGroup');
 
-const axisNotch = (binNumber, numBins) => {
+/*Radar-----------------------------------------------------------------------*/
+
+// Some dimensions have 3 obvious bins, some have 4
+const axisSteps = (binNumber, numBins) => {
   if ( numBins === 3 ) {
     return binNumber === '0' ? 0.33/2 : binNumber === '1' ? 0.66/2 : 0.99/2
   } else if ( numBins === 4 ) {
@@ -100,10 +107,10 @@ const axisNotch = (binNumber, numBins) => {
 function radarVertices(glyphGroup) {
   let [thick, rough, gloss, color] = glyphGroup.split('_');
 
-  thick = axisNotch(thick, 4) * -1;
-  rough = axisNotch(rough, 3) * -1;
-  gloss = axisNotch(gloss, 3);
-  color = axisNotch(color, 4);
+  thick = axisSteps(thick, 4) * -1;
+  rough = axisSteps(rough, 3) * -1;
+  gloss = axisSteps(gloss, 3);
+  color = axisSteps(color, 4);
 
   const glyphThickness = 0.1;
 
@@ -131,10 +138,10 @@ function radarVertices(glyphGroup) {
 function radarNormals(glyphGroup) {
   let [thick, rough, gloss, color] = glyphGroup.split('_');
 
-  thick = axisNotch(thick, 4) * -1;
-  rough = axisNotch(rough, 3) * -1;
-  gloss = axisNotch(gloss, 3);
-  color = axisNotch(color, 4);
+  thick = axisSteps(thick, 4) * -1;
+  rough = axisSteps(rough, 3) * -1;
+  gloss = axisSteps(gloss, 3);
+  color = axisSteps(color, 4);
 
   const rawNormals = [
     [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom
@@ -146,6 +153,8 @@ function radarNormals(glyphGroup) {
   ];
   return new Float32Array(rawNormals.flat())
 }
+
+// Radar used in InfoPanel, drawn by d3 instead of webGL
 
 function getUniverse(dataU,scaleTransform) {
   if ( scaleTransform ) {
@@ -223,81 +232,6 @@ function polygonPoints(dataU, clickedItem, scaleTransform) {
     const s = p1x.toString()+','+p1y.toString()+' '+p2x.toString()+','+p2y.toString()+' '+p3x.toString()+','+p3y.toString()+' '+p4x.toString()+','+p4y.toString();
 
     return s
-}
-
-/*Text------------------------------------------------------------------------*/
-
-function writeTitleArray(globalInstanceId) {
-  return [
-    data['man'][globalInstanceId],
-    data['bran'][globalInstanceId],
-    data['year'][globalInstanceId]
-  ]
-}
-
-function writeInfoArray(globalInstanceId) {
-  let textureWord = data['textureWord'][globalInstanceId];
-  let glossWord = data['glossWord'][globalInstanceId];
-  let colorWord = data['colorWord'][globalInstanceId];
-  let thicknessWord = data['thicknessWord'][globalInstanceId];
-
-
-  textureWord = textureWord === '_' ? '' : textureWord;
-  glossWord = glossWord === '_' ? '' : glossWord;
-  colorWord = colorWord === '_' ? '' : colorWord;
-  thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
-
-  let infoList = [textureWord, glossWord, colorWord, thicknessWord];
-
-  // to preserve infoPanel height in the absence of any boxWords
-  if ( infoList.filter(d => d !== '').length === 0 ) {
-    infoList = ['Placeholder'];
-    select('#infoBar')
-      .style('color', 'white')
-  } else {
-    select('#infoBar')
-      .style('color', '#989898')
-  }
-
-  return [infoList.filter(d => d !== '').join(' • ')];
-}
-
-const pCatsTitle = [ "man", "bran", "year" ];
-
-function writePanel(globalInstanceId) {
-  select("#catalog")
-    .append("p")
-    .text("#"+data['catalog'][globalInstanceId])
-
-  select("#titleBar")
-    .selectAll("p.title")
-    .data(writeTitleArray(globalInstanceId))
-    .enter()
-    .append("p")
-    .text(d => d)
-    .attr("class", (d, i) => "title " + pCatsTitle[i])
-
-  select("#infoBar")
-    .selectAll("p.info")
-    .data(writeInfoArray(globalInstanceId))
-    .enter()
-    .append("p")
-    .text(d => d)
-    .attr("class", (d, i) => "info boxWord")
-}
-
-function clearInfoPanel() {
-  select("#catalog")
-    .selectAll("p")
-    .remove()
-
-  select("#infoBar")
-    .selectAll("p")
-    .remove()
-
-  select("#titleBar")
-    .selectAll("p")
-    .remove()
 }
 
 /*Models----------------------------------------------------------------------*/
@@ -386,7 +320,7 @@ function featureScale(col) {
   const colmax = max(col);
   const colrange = colmax - colmin;
   const std = getStandardDeviation(col);
-  return col.map(d => d ? (d - colmin) / colrange : colmax + std)
+  return col.map(d => d ? (d - colmin) / colrange : colmax + std) // if d is null, we add sigma to the max to send it to the right, off screen
 }
 
 function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide) {
@@ -474,7 +408,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, clickedItem, onClickItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, clickedItem, setClickedItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -577,11 +511,11 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
               writePanel(globalInstanceId)
               colorSubstrate.set(highlightColor);
               mesh.setColorAt(j, colorSubstrate);
-              onClickItem(globalInstanceId);
+              setClickedItem(globalInstanceId);
             } else {
               colorSubstrate.set(colorVal);
               mesh.setColorAt(j, colorSubstrate);
-              onClickItem(null);
+              setClickedItem(null);
             }
           }
           mesh.instanceColor.needsUpdate = true;
@@ -635,46 +569,85 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
   }
 }
 
-/*App-------------------------------------------------------------------------*/
+/*Text------------------------------------------------------------------------*/
 
-export default function App() {
-  const [model, setModel] = useState('grid');
-  const [filter, setFilter] = useState(false);
-  const [toggleMR, setToggleMR] = useState(false);
-  const [toggleAS, setToggleAS] = useState(false);
-  const [toggleHC, setToggleHC] = useState(false);
-  const [toggleLAB, setToggleLAB] = useState(false);
-  const [toggleExpand, setToggleExpand] = useState(false);
-  const [xcol, setXcol] = useState('colorGroupBinder');
-  const [ycol, setYcol] = useState('colorGroupBinder');
-  const [zcol, setZcol] = useState('none');
-  const [facet, setFacet] = useState('3d');
-  const [facetcol, setFacetCol] = useState('none');
-  const [facetcolAsc, setFacetcolAsc] = useState(true);
-  const [xcolAsc, setXcolAsc] = useState(true);
-  const [ycolAsc, setYcolAsc] = useState(true);
-  const [zcolAsc, setZcolAsc] = useState(true);
-  const [group, setGroup] = useState('colorGroupBinder');
-  const [clickedItem, setClickedItem] = useState(null);
-  const [glyph, setGlyph] = useState('box');
-  const [slide, setSlide] = useState(0);
-  const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
+function writeTitleArray(globalInstanceId) {
+  return [
+    data['man'][globalInstanceId],
+    data['bran'][globalInstanceId],
+    data['year'][globalInstanceId]
+  ]
+}
+
+function writeInfoArray(globalInstanceId) {
+  let textureWord = data['textureWord'][globalInstanceId];
+  let glossWord = data['glossWord'][globalInstanceId];
+  let colorWord = data['colorWord'][globalInstanceId];
+  let thicknessWord = data['thicknessWord'][globalInstanceId];
+
+
+  textureWord = textureWord === '_' ? '' : textureWord;
+  glossWord = glossWord === '_' ? '' : glossWord;
+  colorWord = colorWord === '_' ? '' : colorWord;
+  thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
+
+  let infoList = [textureWord, glossWord, colorWord, thicknessWord];
+
+  // to preserve infoPanel height in the absence of any boxWords
+  if ( infoList.filter(d => d !== '').length === 0 ) {
+    infoList = ['Placeholder'];
+    select('#infoBar')
+      .style('color', 'white')
+  } else {
+    select('#infoBar')
+      .style('color', '#989898')
+  }
+
+  return [infoList.filter(d => d !== '').join(' • ')];
+}
+
+const pCatsTitle = [ "man", "bran", "year" ];
+
+function writePanel(globalInstanceId) {
+  select("#catalog")
+    .append("p")
+    .text("#"+data['catalog'][globalInstanceId])
+
+  select("#titleBar")
+    .selectAll("p.title")
+    .data(writeTitleArray(globalInstanceId))
+    .enter()
+    .append("p")
+    .text(d => d)
+    .attr("class", (d, i) => "title " + pCatsTitle[i])
+
+  select("#infoBar")
+    .selectAll("p.info")
+    .data(writeInfoArray(globalInstanceId))
+    .enter()
+    .append("p")
+    .text(d => d)
+    .attr("class", (d, i) => "info boxWord")
+}
+
+function clearInfoPanel() {
+  select("#catalog")
+    .selectAll("p")
+    .remove()
+
+  select("#infoBar")
+    .selectAll("p")
+    .remove()
+
+  select("#titleBar")
+    .selectAll("p")
+    .remove()
+}
+
+function PanelItem({ clickedItem }) {
   const [visBar, setVisBar] = useState(false);
   const [scaleTransform, setScaleTransform] = useState(true);
-  const itemSize = 3;
 
-  // key code constants
-  const ALT_KEY = 18;
-  const CTRL_KEY = 17;
-  const CMD_KEY = 91;
-
-  const exprStringToFloat = exprString => {
-    exprString = exprString.substring(1);
-    const s = Number(exprString) / 10;
-    return s
-  };
-
-  const orbitRef = useRef();
   const svgRef = useRef();
 
   useEffect(() => {
@@ -729,32 +702,78 @@ export default function App() {
   }, [visBar, clickedItem, scaleTransform])
 
   return (
+    <div className='panelItem'>
+      <div id='catalog'></div>
+      <div id='titleBar'></div>
+      <div id='infoBar'></div>
+      {visBar && clickedItem &&
+        <div id='visBar'>
+          <div className='imgmat' id='pgkimg'>
+            <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
+          </div>
+          <svg
+            ref={svgRef}
+            width={svgSide}
+            height={svgSide}
+          />
+          <div className='imgmat' id='txtimg'>
+            <img src={returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
+          </div>
+          <div id='panelButtons'>
+            <button title='rank scale' onClick={() => setScaleTransform(!scaleTransform)} className={scaleTransform ? 'material-icons active' : 'material-icons'}>sort</button>
+          </div>
+        </div>
+      }
+      {visBar ? <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_less</button>
+              : <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_more</button>
+      }
+    </div>
+  )
+}
+
+/*App-------------------------------------------------------------------------*/
+
+export default function App() {
+  const [model, setModel] = useState('grid');
+  const [filter, setFilter] = useState(false);
+  const [toggleMR, setToggleMR] = useState(false);
+  const [toggleAS, setToggleAS] = useState(false);
+  const [toggleHC, setToggleHC] = useState(false);
+  const [toggleLAB, setToggleLAB] = useState(false);
+  const [toggleExpand, setToggleExpand] = useState(false);
+  const [xcol, setXcol] = useState('colorGroupBinder');
+  const [ycol, setYcol] = useState('colorGroupBinder');
+  const [zcol, setZcol] = useState('none');
+  const [facet, setFacet] = useState('3d');
+  const [facetcol, setFacetCol] = useState('none');
+  const [facetcolAsc, setFacetcolAsc] = useState(true);
+  const [xcolAsc, setXcolAsc] = useState(true);
+  const [ycolAsc, setYcolAsc] = useState(true);
+  const [zcolAsc, setZcolAsc] = useState(true);
+  const [group, setGroup] = useState('colorGroupBinder');
+  const [clickedItem, setClickedItem] = useState(null);
+  const [glyph, setGlyph] = useState('box');
+  const [slide, setSlide] = useState(0);
+  const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
+  const itemSize = 3;
+
+  // key code constants
+  const ALT_KEY = 18;
+  const CTRL_KEY = 17;
+  const CMD_KEY = 91;
+
+  const exprStringToFloat = exprString => {
+    exprString = exprString.substring(1);
+    const s = Number(exprString) / 10;
+    return s
+  };
+
+  const orbitRef = useRef();
+
+  return (
     <div id='app'>
       <div id='infoPanel'>
-        <div id='catalog'></div>
-        <div id='titleBar'></div>
-        <div id='infoBar'></div>
-        {visBar && clickedItem &&
-          <div id='visBar'>
-            <div className='imgmat' id='pgkimg'>
-              <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
-            </div>
-            <svg
-              ref={svgRef}
-              width={svgSide}
-              height={svgSide}
-            />
-            <div className='imgmat' id='txtimg'>
-              <img src={returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
-            </div>
-            <div id='panelButtons'>
-              <button title='rank scale' onClick={() => setScaleTransform(!scaleTransform)} className={scaleTransform ? 'material-icons active' : 'material-icons'}>sort</button>
-            </div>
-          </div>
-        }
-        {visBar ? <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_less</button>
-                : <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_more</button>
-        }
+        <PanelItem clickedItem={clickedItem} />
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">
@@ -762,16 +781,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} onClickItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
           })}
           <OrbitControls
             ref={orbitRef}
