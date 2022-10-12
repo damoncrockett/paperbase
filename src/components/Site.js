@@ -4,7 +4,7 @@ import Landing from './Landing';
 
 export default function Site() {
 
-  const [page, setPage] = useState('landing');
+  const [page, setPage] = useState('app');
 
   return (
     <div>

@@ -63,7 +63,11 @@ function valueCounts(col) {
 }
 */
 
-/*groupMaps----------------------------------------------------------------------*/
+/*groupMaps-------------------------------------------------------------------*/
+
+/* These maps are dictionaries where the keys are groups and the values are
+lists of global indices (i.e., positions in the `data` arrays)
+*/
 
 function makeMap(groupArray,glyphGroup) {
   const groupMap = {};
@@ -408,7 +412,17 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, clickedItem, setClickedItem, z, vertices, normals, itemSize, s, slide, groupColors }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors }) {
+
+  /*
+  Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
+  a glyph group (for the box glyph, all are in one mesh). I had to do this
+  because all items in a mesh must have the same geometry, and I wanted to be
+  able to vary geometries in a scene.
+  */
+
+  // This is simply a list of global indices for this particular group, the
+  // same-geometried items that form this mesh
   const globalIndicesForThisMesh = glyphMap[glyphGroup];
 
   const meshRef = useRef();
@@ -463,6 +477,14 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
   }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide]);
 
   useLayoutEffect(() => {
+
+    /*
+    This somewhat unassuming line is pretty important. `meshList` is really a
+    dictionary where the keys are glyph groups (really, values like '1_0_1' or
+    whatever) and the values are direct references to the meshes themselves. We
+    need this dictionary in order to reset all the color values below in
+    `handleClick`, which we do every single time we click.
+    */
     meshList[glyphGroup] = meshRef.current;
 
     if ( continuousColorCols.includes(group) ) {
@@ -473,7 +495,13 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     }
 
     globalIndicesForThisMesh.forEach((item, i) => {
-      if ( item !== clickedItem ) { // so we don't recolor the clicked point
+      if ( !clickedItems.includes(item) ) { // so we don't recolor the clicked point
+        /*
+        `colorVals[item]` returns either a color or a group index. If the former,
+        then `groupColors[colorVals[item]]` fails, and we get `colorVals[item]`,
+        which again is a color. If the latter, then we get a groupColor, and
+        these are generated randomly.
+        */
         const colorVal = groupColors[colorVals[item]] || colorVals[item];
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
@@ -491,37 +519,75 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     // this appears to select first raycast intersection, but not sure
     e.stopPropagation();
 
+    // instanceId here is an index LOCAL TO THIS MESH of the item we just clicked
+    // But we also need the global index of the item we just clicked, hence below
     const { delta, instanceId } = e;
     const globalInstanceId = globalIndicesForThisMesh[instanceId];
 
+    // If the click is followed by mouse movement of sufficient duration, it is
+    // not interpreted as a click
     if ( delta <= 5 ) {
 
-      clearInfoPanel();
-
-      // full color update every click
-      Object.keys(glyphMap).forEach((item, i) => {
-        const mesh = meshList[item];
-        glyphMap[item].forEach((globalIndex, j) => {
-          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
-          if ( globalIndex !== globalInstanceId ) {
-            colorSubstrate.set(colorVal);
-            mesh.setColorAt(j, colorSubstrate);
-          } else if ( globalIndex === globalInstanceId ) {
-            if ( globalIndex !== clickedItem ) {
-              writePanel(globalInstanceId)
-              colorSubstrate.set(highlightColor);
-              mesh.setColorAt(j, colorSubstrate);
-              setClickedItem(globalInstanceId);
-            } else {
+      if ( !multiClick ) {
+        clearInfoPanel();
+        // full color update every click
+        Object.keys(glyphMap).forEach((item, i) => {
+          const mesh = meshList[item];
+          glyphMap[item].forEach((globalIndex, j) => {
+            const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+            // if the item we are considering in this loop iteration is not identical to the item we just clicked
+            // basically, this case handles items that need to be set to whatever color they had before
+            if ( globalInstanceId !== globalIndex ) {
               colorSubstrate.set(colorVal);
               mesh.setColorAt(j, colorSubstrate);
-              setClickedItem(null);
+            } else if ( globalInstanceId === globalIndex ) { // loop iteration item IS ALSO the item we just clicked
+              if ( !clickedItems.includes(globalInstanceId) ) { // if this item not already clicked, highlight it
+                colorSubstrate.set(highlightColor);
+                mesh.setColorAt(j, colorSubstrate);
+                setClickedItems([globalInstanceId]);
+              } else { // if already clicked, unclick
+                colorSubstrate.set(colorVal);
+                mesh.setColorAt(j, colorSubstrate);
+                setClickedItems([]);
+              }
             }
-          }
+          });
           mesh.instanceColor.needsUpdate = true;
           invalidate();
         });
-      });
+      } else {
+        // full color update every click
+        Object.keys(glyphMap).forEach((item, i) => {
+          const mesh = meshList[item];
+          glyphMap[item].forEach((globalIndex, j) => {
+            const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+            // if the item we are considering in this loop iteration is not identical to the item we just clicked
+            // basically, this case handles items that need to be set to whatever color they had before
+            if ( globalInstanceId !== globalIndex ) {
+              // if the item we're considering in this loop iteration is not already clicked, set to its normal color
+              if ( !clickedItems.includes(globalIndex) ) {
+                colorSubstrate.set(colorVal);
+                mesh.setColorAt(j, colorSubstrate);
+              } else { // but if it is clicked, set to highlight color
+                colorSubstrate.set(highlightColor);
+                mesh.setColorAt(j, colorSubstrate);
+              }
+            } else if ( globalInstanceId === globalIndex ) { // loop iteration item IS ALSO the item we just clicked
+              if ( !clickedItems.includes(globalInstanceId) ) { // if this item not already clicked, highlight it
+                colorSubstrate.set(highlightColor);
+                mesh.setColorAt(j, colorSubstrate);
+                setClickedItems([...clickedItems, globalInstanceId]);
+              } else { // if already clicked, unclick
+                colorSubstrate.set(colorVal);
+                mesh.setColorAt(j, colorSubstrate);
+                setClickedItems(clickedItems.filter(d => d !== globalInstanceId));
+              }
+            }
+          });
+          mesh.instanceColor.needsUpdate = true;
+          invalidate();
+        });
+      }
     }
   }
 
@@ -571,76 +637,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
 /*Text------------------------------------------------------------------------*/
 
-function writeTitleArray(globalInstanceId) {
-  return [
-    data['man'][globalInstanceId],
-    data['bran'][globalInstanceId],
-    data['year'][globalInstanceId]
-  ]
-}
-
-function writeInfoArray(globalInstanceId) {
-  let textureWord = data['textureWord'][globalInstanceId];
-  let glossWord = data['glossWord'][globalInstanceId];
-  let colorWord = data['colorWord'][globalInstanceId];
-  let thicknessWord = data['thicknessWord'][globalInstanceId];
-
-
-  textureWord = textureWord === '_' ? '' : textureWord;
-  glossWord = glossWord === '_' ? '' : glossWord;
-  colorWord = colorWord === '_' ? '' : colorWord;
-  thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
-
-  let infoList = [textureWord, glossWord, colorWord, thicknessWord];
-
-  // to preserve infoPanel height in the absence of any boxWords
-  if ( infoList.filter(d => d !== '').length === 0 ) {
-    infoList = ['Placeholder'];
-    select('#infoBar')
-      .style('color', 'white')
-  } else {
-    select('#infoBar')
-      .style('color', '#989898')
-  }
-
-  return [infoList.filter(d => d !== '').join(' • ')];
-}
-
-const pCatsTitle = [ "man", "bran", "year" ];
-
-function writePanel(globalInstanceId) {
-  select("#catalog")
-    .append("p")
-    .text("#"+data['catalog'][globalInstanceId])
-
-  select("#titleBar")
-    .selectAll("p.title")
-    .data(writeTitleArray(globalInstanceId))
-    .enter()
-    .append("p")
-    .text(d => d)
-    .attr("class", (d, i) => "title " + pCatsTitle[i])
-
-  select("#infoBar")
-    .selectAll("p.info")
-    .data(writeInfoArray(globalInstanceId))
-    .enter()
-    .append("p")
-    .text(d => d)
-    .attr("class", (d, i) => "info boxWord")
-}
-
 function clearInfoPanel() {
-  select("#catalog")
-    .selectAll("p")
-    .remove()
-
-  select("#infoBar")
-    .selectAll("p")
-    .remove()
-
-  select("#titleBar")
-    .selectAll("p")
+  select("#infoPanel")
+    .selectAll("panelItem")
     .remove()
 }
 
@@ -650,8 +649,32 @@ function PanelItem({ clickedItem }) {
 
   const svgRef = useRef();
 
+  let blankInfo;
+  const writeInfoArray = globalInstanceId => {
+    let textureWord = data['textureWord'][globalInstanceId];
+    let glossWord = data['glossWord'][globalInstanceId];
+    let colorWord = data['colorWord'][globalInstanceId];
+    let thicknessWord = data['thicknessWord'][globalInstanceId];
+
+    textureWord = textureWord === '_' ? '' : textureWord;
+    glossWord = glossWord === '_' ? '' : glossWord;
+    colorWord = colorWord === '_' ? '' : colorWord;
+    thicknessWord = thicknessWord === '_' ? '' : thicknessWord;
+
+    let infoList = [textureWord, glossWord, colorWord, thicknessWord];
+
+    // to preserve infoPanel height in the absence of any boxWords
+    if ( infoList.filter(d => d !== '').length === 0 ) {
+      infoList = ['Placeholder'];
+      blankInfo = true;
+    } else {
+      blankInfo = false;
+    }
+    return [infoList.filter(d => d !== '').join(' • ')];
+  }
+
   useEffect(() => {
-    if (visBar && clickedItem) {
+    if ( visBar ) {
 
       const dataU = data;
 
@@ -703,12 +726,20 @@ function PanelItem({ clickedItem }) {
 
   return (
     <div className='panelItem'>
-      <div id='catalog'></div>
-      <div id='titleBar'></div>
-      <div id='infoBar'></div>
-      {visBar && clickedItem &&
-        <div id='visBar'>
-          <div className='imgmat' id='pgkimg'>
+      <div className='catalog'>
+        <p>{'#'+data['catalog'][clickedItem]}</p>
+      </div>
+      <div className='titleBar'>
+        <p className='title man'>{data['man'][clickedItem]}</p>
+        <p className='title bran'>{data['bran'][clickedItem]}</p>
+        <p className='title year'>{data['year'][clickedItem]}</p>
+      </div>
+      <div className={blankInfo ? 'infoBar dead' : 'infoBar live'}>
+        {writeInfoArray(clickedItem).map((d,i) => <p className='info boxWord' key={i}>{d}</p>)}
+      </div>
+      {visBar &&
+        <div className='visBar'>
+          <div className='imgmat pgkimg'>
             <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
           </div>
           <svg
@@ -716,16 +747,16 @@ function PanelItem({ clickedItem }) {
             width={svgSide}
             height={svgSide}
           />
-          <div className='imgmat' id='txtimg'>
+          <div className='imgmat txtimg'>
             <img src={returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
           </div>
-          <div id='panelButtons'>
+          <div className='panelButtons'>
             <button title='rank scale' onClick={() => setScaleTransform(!scaleTransform)} className={scaleTransform ? 'material-icons active' : 'material-icons'}>sort</button>
           </div>
         </div>
       }
-      {visBar ? <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_less</button>
-              : <button title='expand panel' id='visBarExpander' onClick={() => setVisBar(!visBar)} className={'controls material-icons'}>expand_more</button>
+      {visBar ? <button title='expand panel' onClick={() => setVisBar(!visBar)} className={'controls material-icons visBarExpander'}>expand_less</button>
+              : <button title='expand panel' onClick={() => setVisBar(!visBar)} className={'controls material-icons visBarExpander'}>expand_more</button>
       }
     </div>
   )
@@ -751,7 +782,8 @@ export default function App() {
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
   const [group, setGroup] = useState('colorGroupBinder');
-  const [clickedItem, setClickedItem] = useState(null);
+  const [clickedItems, setClickedItems] = useState([]);
+  const [multiClick, setMultiClick] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
@@ -772,8 +804,11 @@ export default function App() {
 
   return (
     <div id='app'>
+      <div className='controls' id='multiClick'>
+        <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
+      </div>
       <div id='infoPanel'>
-        <PanelItem clickedItem={clickedItem} />
+        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} key={i} />)}
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">
@@ -781,16 +816,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setclickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} clickedItem={clickedItem} setClickedItem={setClickedItem} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
           })}
           <OrbitControls
             ref={orbitRef}
@@ -939,8 +974,8 @@ export default function App() {
           <label><input type="checkbox" checked={toggleAS} onChange={() => setToggleAS(!toggleAS)}/>August Sander</label>
           <label><input type="checkbox" checked={toggleMR} onChange={() => setToggleMR(!toggleMR)}/>Man Ray</label>
         </div>
-        {!toggleExpand && <button title='toggle' className={( toggleMR | toggleAS | toggleHC | toggleLAB ) ? 'material-icons active' : 'material-icons'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
-        {toggleExpand && <button title='toggle' className={( toggleMR | toggleAS | toggleHC | toggleLAB ) ? 'material-icons active' : 'material-icons'} onClick={() => setToggleExpand(false)} >close</button>}
+        {!toggleExpand && <button title='toggle' className={( toggleMR || toggleAS || toggleHC || toggleLAB ) ? 'material-icons active' : 'material-icons'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
+        {toggleExpand && <button title='toggle' className={( toggleMR || toggleAS || toggleHC || toggleLAB ) ? 'material-icons active' : 'material-icons'} onClick={() => setToggleExpand(false)} >close</button>}
       </div>
     </div>
   )

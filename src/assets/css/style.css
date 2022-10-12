@@ -159,11 +159,11 @@ img {
   display: inline-block;
 }
 
-#pgkimg {
+.pgkimg {
   margin-right: 5vw;
 }
 
-#txtimg {
+.txtimg {
 
 }
 
@@ -171,13 +171,13 @@ svg {
   margin-right: 5vw;
 }
 
-#panelButtons {
+.panelButtons {
   margin-top: 2vh;
   margin-left: 20vh;
   display: block;
 }
 
-#panelButtons > button {
+.panelButtons > button {
   border-radius: .5rem;
   border-width: 1px;
   border-style: solid;
@@ -187,11 +187,11 @@ svg {
   background-color: transparent;
 }
 
-#panelButtons > button:hover {
+.panelButtons > button:hover {
   border-color: var(--grey);
 }
 
-#panelButtons > button.active {
+.panelButtons > button.active {
   color: var(--grey);
 }
 
@@ -200,10 +200,24 @@ svg {
   height: 100vh;
 }
 
+#multiClick {
+  position: fixed;
+  top: -1vh;
+  left: 10vw;
+}
+
+#multiClick > button {
+  font-size: 3vh;
+}
+
 #infoPanel {
   position: fixed;
-  top: 5vh;
+  top: 8vh;
   left: 5vh;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: none; /* hides scrollbar in Firefox */
+  -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
   z-index: 1;
   background: white;
   padding: 2vh;
@@ -212,19 +226,32 @@ svg {
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
-#titleBar {
+#infoPanel::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
+    width: 0;
+    height: 0;
+}
+
+.titleBar {
   display: inline-block;
 }
 
-#infoBar {
+.infoBar {
   margin-bottom: 4vh;
 }
 
-#visBar {
+.live {
+  color: #989898;
+}
+
+.dead {
+  color: 'white'
+}
+
+.visBar {
 
 }
 
-#visBarExpander {
+.visBarExpander {
   border-radius: .5rem;
   border-width: 1px;
   border-style: solid;
@@ -233,11 +260,11 @@ svg {
   display: block;
 }
 
-#visBarExpander:hover {
+.visBarExpander:hover {
   border-color: var(--grey);
 }
 
-#catalog {
+.catalog {
   font-size: 1.5vh;
 }
 
@@ -358,7 +385,6 @@ svg {
   position: fixed;
   bottom: 16.3vh;
   display: inline-block;
-  background-color: var(--darkgrey);
   border-color: var(--grey);
   border-radius: 1vh;
   border-width: 1px;
@@ -375,7 +401,7 @@ svg {
   display: inline-block;
   outline: none;
   background-color: transparent;
-  border-color: var(--darkgrey);
+  border-color: transparent;
   border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
@@ -414,6 +440,7 @@ input[type=checkbox] {
 }
 
 .toggleCollapse {
+  background: transparent;
   right: -50.6vw;
   transition: right 0.2s linear;
   -webkit-transition: right 0.2s linear;
@@ -423,6 +450,7 @@ input[type=checkbox] {
 }
 
 .toggleExpand {
+  background-color: var(--darkgrey);
   right: -1vw;
   transition: right 0.2s linear;
   -webkit-transition: right 0.2s linear;
