@@ -529,7 +529,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     if ( delta <= 5 ) {
 
       if ( !multiClick ) {
-        clearInfoPanel();
         // full color update every click
         Object.keys(glyphMap).forEach((item, i) => {
           const mesh = meshList[item];
@@ -636,12 +635,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 }
 
 /*Text------------------------------------------------------------------------*/
-
-function clearInfoPanel() {
-  select("#infoPanel")
-    .selectAll("panelItem")
-    .remove()
-}
 
 const glyphToMap = {
   'box':boxMap,
@@ -872,7 +865,7 @@ export default function App() {
         {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
         {!lightMode && <button title='switch to light mode' className={'material-icons'} onClick={() => setLightMode(true)} >light_mode</button>}
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
-        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >clear_all</button>
+        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >delete_sweep</button>
       </div>
       <div id='infoPanel' className={lightMode ? 'lightMode' : 'darkMode'}>
         {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} briefMode={briefMode} key={i} />)}
@@ -886,7 +879,7 @@ export default function App() {
             return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setclickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
             return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
