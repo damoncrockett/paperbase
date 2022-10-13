@@ -225,7 +225,7 @@ svg {
 }
 
 .lightMode {
-  background-color: white;
+  background-color: transparent;
 }
 
 .darkMode {
@@ -240,17 +240,15 @@ svg {
 .selectionRemove {
   font-size: 2vh;
   position: absolute;
-  top: 0rem;
-  right: 0rem;
+  top: 0.4rem;
+  right: 0.25rem;
   border: none;
-  background-color: transparent;
+  background: none;
   color: transparent;
-  padding-left: 4vw;
-  padding-bottom: 2vw;
 }
 
-.selectionRemove:hover {
-  color: var(--grey);
+.panelItem:hover > .selectionRemove {
+  color: var(--darkgrey);
 }
 
 .panelItem {
