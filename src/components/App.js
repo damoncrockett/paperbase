@@ -849,10 +849,24 @@ export default function App() {
   const orbitRef = useRef();
   //const setPosition = useStore(state => state.setPosition);
 
+  const glyphMap = glyphToMap[glyph];
+  const clearSelection = () => {
+    Object.keys(glyphMap).forEach((item, i) => {
+      const mesh = meshList[item];
+      glyphMap[item].forEach((globalIndex, j) => {
+        const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+        colorSubstrate.set(colorVal);
+        mesh.setColorAt(j, colorSubstrate);
+      });
+      mesh.instanceColor.needsUpdate = true;
+    });
+  }
+
   return (
     <div id='app'>
       <div className='controls' id='multiClick'>
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
+        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >clear_all</button>
       </div>
       <div id='infoPanel'>
         {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} key={i} />)}
