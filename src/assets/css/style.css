@@ -231,12 +231,42 @@ svg {
     height: 0;
 }
 
+.selectionRemove {
+  font-size: 2vh;
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  border: none;
+  background-color: transparent;
+  color: transparent;
+  padding-left: 4vw;
+  padding-bottom: 2vw;
+}
+
+.selectionRemove:hover {
+  color: var(--grey);
+}
+
+.panelItem {
+  padding: 2vh;
+  margin: 1vh;
+  border-radius: 1vh;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white;
+  position: relative;
+}
+
+.panelItem:hover {
+
+}
+
 .titleBar {
   display: inline-block;
 }
 
 .infoBar {
-  margin-bottom: 4vh;
+
 }
 
 .live {
@@ -244,7 +274,7 @@ svg {
 }
 
 .dead {
-  color: 'white'
+  color: white;
 }
 
 .visBar {

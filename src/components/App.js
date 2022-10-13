@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+//import create from 'zustand';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
@@ -514,7 +515,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     invalidate();
   }, [group, groupColors]);
 
-
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
     e.stopPropagation();
@@ -643,9 +643,16 @@ function clearInfoPanel() {
     .remove()
 }
 
-function PanelItem({ clickedItem }) {
-  const [visBar, setVisBar] = useState(false);
-  const [scaleTransform, setScaleTransform] = useState(true);
+const glyphToMap = {
+  'box':boxMap,
+  'exp':expressivenessMap,
+  'iso':isoMap,
+  'radar':radarMap
+}
+
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors }) {
+  //const [visBar, setVisBar] = useState(false);
+  //const [scaleTransform, setScaleTransform] = useState(true);
 
   const svgRef = useRef();
 
@@ -673,6 +680,45 @@ function PanelItem({ clickedItem }) {
     return [infoList.filter(d => d !== '').join(' • ')];
   }
 
+  const glyphMap = glyphToMap[glyph];
+  const handleRemove = () => {
+    if ( !multiClick ) {
+      Object.keys(glyphMap).forEach((item, i) => {
+        const mesh = meshList[item];
+        glyphMap[item].forEach((globalIndex, j) => {
+          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          colorSubstrate.set(colorVal);
+          mesh.setColorAt(j, colorSubstrate);
+        });
+        mesh.instanceColor.needsUpdate = true;
+      });
+    } else {
+      Object.keys(glyphMap).forEach((item, i) => {
+        const mesh = meshList[item];
+        glyphMap[item].forEach((globalIndex, j) => {
+          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          // if the item we are considering in this loop iteration is not identical to the item we just clicked
+          // basically, this case handles items that need to be set to whatever color they had before
+          if ( clickedItem !== globalIndex ) {
+            // if the item we're considering in this loop iteration is not already clicked, set to its normal color
+            if ( !clickedItems.includes(globalIndex) ) {
+              colorSubstrate.set(colorVal);
+              mesh.setColorAt(j, colorSubstrate);
+            } else { // but if it is clicked, set to highlight color
+              colorSubstrate.set(highlightColor);
+              mesh.setColorAt(j, colorSubstrate);
+            }
+          } else if ( clickedItem === globalIndex ) { // loop iteration item IS ALSO the item we just clicked
+              colorSubstrate.set(colorVal);
+              mesh.setColorAt(j, colorSubstrate);
+          }
+        });
+        mesh.instanceColor.needsUpdate = true;
+      });
+    }
+  }
+
+/*
   useEffect(() => {
     if ( visBar ) {
 
@@ -723,9 +769,11 @@ function PanelItem({ clickedItem }) {
 
     }
   }, [visBar, clickedItem, scaleTransform])
+*/
 
   return (
-    <div className='panelItem'>
+    <div className='panelItem' title={clickedItem} onClick={() => console.log(targetCoords[clickedItem])}>
+      <button title='remove from selection' className='selectionRemove material-icons' onClick={() => { handleRemove(); multiClick ? setClickedItems(clickedItems.filter(d => d!==clickedItem)) : setClickedItems([])}} >cancel</button>
       <div className='catalog'>
         <p>{'#'+data['catalog'][clickedItem]}</p>
       </div>
@@ -734,33 +782,31 @@ function PanelItem({ clickedItem }) {
         <p className='title bran'>{data['bran'][clickedItem]}</p>
         <p className='title year'>{data['year'][clickedItem]}</p>
       </div>
-      <div className={blankInfo ? 'infoBar dead' : 'infoBar live'}>
-        {writeInfoArray(clickedItem).map((d,i) => <p className='info boxWord' key={i}>{d}</p>)}
+      <div className='infoBar'>
+        {writeInfoArray(clickedItem).map((d,i) => <p className={blankInfo ? 'boxWord dead' : 'boxWord live'} key={i}>{d}</p>)}
       </div>
-      {visBar &&
-        <div className='visBar'>
-          <div className='imgmat pgkimg'>
-            <img src={returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
-          </div>
-          <svg
-            ref={svgRef}
-            width={svgSide}
-            height={svgSide}
-          />
-          <div className='imgmat txtimg'>
-            <img src={returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg'} onLoad={(e) => e.target.style.display = 'inline-block'} onError={(e) => e.target.style.display = 'none'} />
-          </div>
-          <div className='panelButtons'>
-            <button title='rank scale' onClick={() => setScaleTransform(!scaleTransform)} className={scaleTransform ? 'material-icons active' : 'material-icons'}>sort</button>
-          </div>
-        </div>
-      }
-      {visBar ? <button title='expand panel' onClick={() => setVisBar(!visBar)} className={'controls material-icons visBarExpander'}>expand_less</button>
-              : <button title='expand panel' onClick={() => setVisBar(!visBar)} className={'controls material-icons visBarExpander'}>expand_more</button>
-      }
     </div>
   )
 }
+
+/*Camera position-------------------------------------------------------------*/
+
+/*
+const useStore = create(set => ({
+  position: [0, 0, 75],
+  setPosition: position => set({ position })
+}))
+
+function MyCameraReactsToStateChanges({ orbitRef }) {
+  const [x, y, z] = useStore(state => state.position);
+  useFrame(state => {
+    state.camera.position.lerp({ x, y, z }, 0.1);
+    state.camera.lookAt(x, y, z);
+    orbitRef.current.update();
+  });
+  return null
+}
+*/
 
 /*App-------------------------------------------------------------------------*/
 
@@ -801,6 +847,7 @@ export default function App() {
   };
 
   const orbitRef = useRef();
+  //const setPosition = useStore(state => state.setPosition);
 
   return (
     <div id='app'>
@@ -808,10 +855,10 @@ export default function App() {
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
       </div>
       <div id='infoPanel'>
-        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} key={i} />)}
+        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} key={i} />)}
       </div>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 75], far: 20000 }} frameloop="demand">
+        <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 20000 }} frameloop="demand">
           <color attach="background" args={[0x494949]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
