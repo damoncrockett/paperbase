@@ -371,18 +371,13 @@ function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progre
 
 const substrate = new Object3D();
 
-function updatePositions({ globalIndicesForThisMesh, glyph, mesh }) {
+function updatePositions({ globalIndicesForThisMesh, mesh }) {
   if (!mesh) return;
   globalIndicesForThisMesh.forEach((item, i) => {
-    if ( glyph === 'radar') {
-      substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],0.25 * animatedCoords[item][2]);
-    } else {
-      substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],animatedCoords[item][2]);
-    }
+    substrate.position.set(animatedCoords[item][0],animatedCoords[item][1],animatedCoords[item][2]);
     substrate.updateMatrix();
     mesh.setMatrixAt(i, substrate.matrix);
   });
-
   mesh.instanceMatrix.needsUpdate = true;
 }
 
@@ -413,7 +408,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -459,7 +454,11 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       });
     }
 
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide])
+    if ( raisedItem !== null ) {
+      targetCoords[raisedItem][2] = 2
+    }
+
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide, raisedItem])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -472,10 +471,10 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     },
     onChange: (_, ctrl) => {
       interpolatePositions({ globalIndicesForThisMesh, targetCoords }, ctrl.get().animationProgress );
-      updatePositions({ globalIndicesForThisMesh, glyph, mesh: meshRef.current });
+      updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide, raisedItem]);
 
   useLayoutEffect(() => {
 
@@ -643,7 +642,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -673,9 +672,22 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
     return [infoList.filter(d => d !== '').join(' • ')];
   }
 
+  /*
+  This is crucial because it gives us the correct meshes to iterate through here.
+  An added bonus is that it will update anytime we update the display glyph!
+  */
   const glyphMap = glyphToMap[glyph];
-  const handleRemove = () => {
+
+  const handleRemove = e => {
+
+    e.stopPropagation();
+
+    if ( raisedItem !== null && clickedItem === raisedItem ) {
+      setRaisedItem(null);
+    }
+
     if ( !multiClick ) {
+
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
@@ -685,7 +697,11 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         });
         mesh.instanceColor.needsUpdate = true;
       });
+
+      setClickedItems([]);
+
     } else {
+
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
@@ -708,6 +724,18 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         });
         mesh.instanceColor.needsUpdate = true;
       });
+
+      setClickedItems(clickedItems.filter(d => d!==clickedItem));
+    }
+  }
+
+  const handlePanelItemClick = e => {
+    e.stopPropagation();
+
+    if ( clickedItem !== raisedItem ) {
+      setRaisedItem(clickedItem);
+    } else {
+      setRaisedItem(null);
     }
   }
 
@@ -765,8 +793,8 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className='panelItem' title={clickedItem} onClick={() => console.log(targetCoords[clickedItem])}>
-      <button title='remove from selection' className='selectionRemove material-icons' onClick={() => { handleRemove(); multiClick ? setClickedItems(clickedItems.filter(d => d!==clickedItem)) : setClickedItems([])}} >cancel</button>
+    <div className='panelItem' title={clickedItem} onClick={handlePanelItemClick}>
+      <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className='catalog'>
         <p>{'#'+data['catalog'][clickedItem]}</p>
       </div>}
@@ -828,6 +856,7 @@ export default function App() {
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
+  const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
 
   // key code constants
@@ -868,7 +897,7 @@ export default function App() {
         <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >delete_sweep</button>
       </div>
       <div id='infoPanel' className={lightMode ? 'lightMode' : 'darkMode'}>
-        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} briefMode={briefMode} key={i} />)}
+        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} briefMode={briefMode} raisedItem={raisedItem} setRaisedItem={setRaisedItem} key={i} />)}
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 20000 }} frameloop="demand">
@@ -876,16 +905,16 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors}/>
+            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
           })}
           <OrbitControls
             ref={orbitRef}
