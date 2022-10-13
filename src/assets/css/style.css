@@ -219,11 +219,17 @@ svg {
   scrollbar-width: none; /* hides scrollbar in Firefox */
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
   z-index: 1;
-  background: white;
   padding: 2vh;
-  color: var(--grey);
   border-radius: 2vh;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.lightMode {
+  background-color: white;
+}
+
+.darkMode {
+  background-color: var(--darkgrey);
 }
 
 #infoPanel::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
@@ -250,11 +256,13 @@ svg {
 .panelItem {
   padding: 2vh;
   margin: 1vh;
-  border-radius: 1vh;
+  border-radius: 2vh;
   border-width: 1px;
   border-style: solid;
   border-color: white;
   position: relative;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  background-color: white;
 }
 
 .panelItem:hover {

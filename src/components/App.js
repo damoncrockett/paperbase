@@ -830,6 +830,7 @@ export default function App() {
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
+  const [lightMode, setLightMode] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
@@ -865,10 +866,12 @@ export default function App() {
   return (
     <div id='app'>
       <div className='controls' id='multiClick'>
+        {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
+        {!lightMode && <button title='switch to light mode' className={'material-icons'} onClick={() => setLightMode(true)} >light_mode</button>}
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
         <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >clear_all</button>
       </div>
-      <div id='infoPanel'>
+      <div id='infoPanel' className={lightMode ? 'lightMode' : 'darkMode'}>
         {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} key={i} />)}
       </div>
       <div id='viewpane'>
