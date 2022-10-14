@@ -650,7 +650,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor, texture }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -747,6 +747,8 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
     }
   }
 
+  const imgString = returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg';
+
 /*
   useEffect(() => {
     if ( visBar ) {
@@ -801,7 +803,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : {backgroundColor: 'white'}}>
+    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'white'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className={smallFont ? 'catalogSmall' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -812,7 +814,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         <p className={smallFont ? 'titleBarSmall year' : 'year'}>{data['year'][clickedItem]}</p>
       </div>
       {!briefMode && <div className='infoBar'>
-          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor ? {color:'#989898'} : {color:'white'}} key={i}>{d}</p>)}
+          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#989898'} : {color:'white'}} key={i}>{d}</p>)}
       </div>}
     </div>
   )
@@ -864,6 +866,7 @@ export default function App() {
   const [briefMode, setBriefMode] = useState(false);
   const [smallFont, setSmallFont] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
+  const [texture, setTexture] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
@@ -902,7 +905,8 @@ export default function App() {
       <div className='controls' id='multiClick'>
         {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => setGridMode(false)} >list</button>}
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
-        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => setBackgroundColor(!backgroundColor)} >format_color_fill</button>
+        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false)}} >format_color_fill</button>
+        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false)}} >texture</button>
         {smallFont && <button title='switch to normal font' className={'material-icons active'} onClick={() => setSmallFont(false)} >format_size</button>}
         {!smallFont && <button title='switch to small font' className={'material-icons'} onClick={() => setSmallFont(true)} >text_fields</button>}
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
@@ -926,6 +930,7 @@ export default function App() {
                                                gridMode={gridMode}
                                                smallFont={smallFont}
                                                backgroundColor={backgroundColor}
+                                               texture={texture}
                                                key={i}
                                                />
                                              )}

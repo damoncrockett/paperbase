@@ -208,6 +208,7 @@ svg {
 
 #multiClick > button {
   font-size: 3vh;
+  padding-top: 1.5vh;
 }
 
 #infoPanel {
