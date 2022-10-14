@@ -408,7 +408,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -433,8 +433,10 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
     } else {
       const gepCoords = slide === -2 ? 'gep50' : slide === -1 ? 'gep75' : slide === 0 ? 'gep' : slide === 1 ? 'gep125' : 'gep150';
-      targetCoords = data[gepCoords];
+      targetCoords = [...data[gepCoords]];
     }
+
+
 
     if ( facetcol !== 'none' ) {
       // update z dims for 3d facet
@@ -547,6 +549,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
                 colorSubstrate.set(colorVal);
                 mesh.setColorAt(j, colorSubstrate);
                 setClickedItems([]);
+                if ( raisedItem !== null && raisedItem === globalInstanceId ) {
+                  setRaisedItem(null);
+                }
               }
             }
           });
@@ -579,6 +584,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
                 colorSubstrate.set(colorVal);
                 mesh.setColorAt(j, colorSubstrate);
                 setClickedItems(clickedItems.filter(d => d !== globalInstanceId));
+                if ( raisedItem !== null && raisedItem === globalInstanceId ) {
+                  setRaisedItem(null);
+                }
               }
             }
           });
@@ -905,16 +913,124 @@ export default function App() {
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={boxMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
+            return <Glyphs
+                     key={i}
+                     glyphMap={boxMap}
+                     glyphGroup={d}
+                     glyph={glyph}
+                     model={model}
+                     xcol={xcol}
+                     xcolAsc={xcolAsc}
+                     ycol={ycol}
+                     ycolAsc={ycolAsc}
+                     zcol={zcol}
+                     zcolAsc={zcolAsc}
+                     facetcol={facetcol}
+                     facetcolAsc={facetcolAsc}
+                     group={group}
+                     multiClick={multiClick}
+                     clickedItems={clickedItems}
+                     setClickedItems={setClickedItems}
+                     z={null}
+                     vertices={null}
+                     normals={null}
+                     itemSize={null}
+                     s={null}
+                     slide={slide}
+                     groupColors={groupColors}
+                     raisedItem={raisedItem}
+                     setRaisedItem={setRaisedItem}
+                     />
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={expressivenessMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={null} normals={null} itemSize={null} s={exprStringToFloat(d)} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
+            return <Glyphs
+                     key={i}
+                     glyphMap={expressivenessMap}
+                     glyphGroup={d}
+                     glyph={glyph}
+                     model={model}
+                     xcol={xcol}
+                     xcolAsc={xcolAsc}
+                     ycol={ycol}
+                     ycolAsc={ycolAsc}
+                     zcol={zcol}
+                     zcolAsc={zcolAsc}
+                     facetcol={facetcol}
+                     facetcolAsc={facetcolAsc}
+                     group={group}
+                     multiClick={multiClick}
+                     clickedItems={clickedItems}
+                     setClickedItems={setClickedItems}
+                     z={null}
+                     vertices={null}
+                     normals={null}
+                     itemSize={null}
+                     s={exprStringToFloat(d)}
+                     slide={slide}
+                     groupColors={groupColors}
+                     raisedItem={raisedItem}
+                     setRaisedItem={setRaisedItem}
+                     />
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={isoMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={zArray[i]} vertices={null} normals={null} itemSize={null} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
+            return <Glyphs
+                     key={i}
+                     glyphMap={isoMap}
+                     glyphGroup={d}
+                     glyph={glyph}
+                     model={model}
+                     xcol={xcol}
+                     xcolAsc={xcolAsc}
+                     ycol={ycol}
+                     ycolAsc={ycolAsc}
+                     zcol={zcol}
+                     zcolAsc={zcolAsc}
+                     facetcol={facetcol}
+                     facetcolAsc={facetcolAsc}
+                     group={group}
+                     multiClick={multiClick}
+                     clickedItems={clickedItems}
+                     setClickedItems={setClickedItems}
+                     z={zArray[i]}
+                     vertices={null}
+                     normals={null}
+                     itemSize={null}
+                     s={null}
+                     slide={slide}
+                     groupColors={groupColors}
+                     raisedItem={raisedItem}
+                     setRaisedItem={setRaisedItem}
+                     />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
-            return <Glyphs key={i} glyphMap={radarMap} glyphGroup={d} glyph={glyph} model={model} xcol={xcol} xcolAsc={xcolAsc} ycol={ycol} ycolAsc={ycolAsc} zcol={zcol} zcolAsc={zcolAsc} facetcol={facetcol} facetcolAsc={facetcolAsc} group={group} multiClick={multiClick} clickedItems={clickedItems} setClickedItems={setClickedItems} z={null} vertices={radarVertices(d)} normals={radarNormals(d)} itemSize={itemSize} s={null} slide={slide} groupColors={groupColors} raisedItem={raisedItem}/>
+            return <Glyphs
+                     key={i}
+                     glyphMap={radarMap}
+                     glyphGroup={d}
+                     glyph={glyph}
+                     model={model}
+                     xcol={xcol}
+                     xcolAsc={xcolAsc}
+                     ycol={ycol}
+                     ycolAsc={ycolAsc}
+                     zcol={zcol}
+                     zcolAsc={zcolAsc}
+                     facetcol={facetcol}
+                     facetcolAsc={facetcolAsc}
+                     group={group}
+                     multiClick={multiClick}
+                     clickedItems={clickedItems}
+                     setClickedItems={setClickedItems}
+                     z={null}
+                     vertices={radarVertices(d)}
+                     normals={radarNormals(d)}
+                     itemSize={itemSize}
+                     s={null}
+                     slide={slide}
+                     groupColors={groupColors}
+                     raisedItem={raisedItem}
+                     setRaisedItem={setRaisedItem}
+                     />
           })}
           <OrbitControls
             ref={orbitRef}
