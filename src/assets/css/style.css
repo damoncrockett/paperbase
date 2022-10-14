@@ -203,7 +203,7 @@ svg {
 #multiClick {
   position: fixed;
   top: -1vh;
-  left: 10vw;
+  left: 9vw;
 }
 
 #multiClick > button {
@@ -255,12 +255,8 @@ svg {
   padding: 1vw;
   margin: 0.5vw;
   border-radius: 2vh;
-  border-width: 1px;
-  border-style: solid;
-  border-color: white;
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-  background-color: white;
   overflow-y: auto;
   scrollbar-width: none; /* hides scrollbar in Firefox */
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
@@ -276,14 +272,10 @@ svg {
 }
 
 .grid {
-  max-width: 36.5vw;
+  max-width: 36vw;
 
 }
 
-.list {
-
-
-}
 
 .gridMode {
   width: 9vw;
@@ -291,29 +283,8 @@ svg {
   display: inline-block;
 }
 
-.listMode {
-
-
-}
-
 .titleBar {
   display: inline-block;
-}
-
-.infoBar {
-
-}
-
-.live {
-  color: #989898;
-}
-
-.dead {
-  color: white;
-}
-
-.visBar {
-
 }
 
 .visBarExpander {
@@ -331,6 +302,10 @@ svg {
 
 .catalog {
   font-size: 1.5vh;
+}
+
+.catalogSmall {
+  font-size: 1vh;
 }
 
 .man {
@@ -354,8 +329,16 @@ svg {
   font-weight: 100;
 }
 
+.titleBarSmall {
+  font-size: 2vh;
+}
+
 .boxWord {
   font-size: 2vh;
+}
+
+.boxWordSmall {
+  font-size: 1.33vh;
 }
 
 #cameraReset {

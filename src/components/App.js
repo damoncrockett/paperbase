@@ -650,7 +650,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -801,18 +801,18 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick}>
+    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : {backgroundColor: 'white'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      {!briefMode && <div className='catalog'>
+      {!briefMode && <div className={smallFont ? 'catalogSmall' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
       </div>}
       <div className='titleBar'>
-        <p className='title man'>{data['man'][clickedItem]}</p>
-        <p className='title bran'>{data['bran'][clickedItem]}</p>
-        <p className='title year'>{data['year'][clickedItem]}</p>
+        <p className={smallFont ? 'titleBarSmall man' : 'man'}>{data['man'][clickedItem]}</p>
+        <p className={smallFont ? 'titleBarSmall bran' : 'bran'}>{data['bran'][clickedItem]}</p>
+        <p className={smallFont ? 'titleBarSmall year' : 'year'}>{data['year'][clickedItem]}</p>
       </div>
       {!briefMode && <div className='infoBar'>
-        {writeInfoArray(clickedItem).map((d,i) => <p className={blankInfo ? 'boxWord dead' : 'boxWord live'} key={i}>{d}</p>)}
+          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor ? {color:'#989898'} : {color:'white'}} key={i}>{d}</p>)}
       </div>}
     </div>
   )
@@ -862,6 +862,8 @@ export default function App() {
   const [gridMode, setGridMode] = useState(false);
   const [lightMode, setLightMode] = useState(false);
   const [briefMode, setBriefMode] = useState(false);
+  const [smallFont, setSmallFont] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
@@ -900,6 +902,9 @@ export default function App() {
       <div className='controls' id='multiClick'>
         {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => setGridMode(false)} >list</button>}
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
+        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => setBackgroundColor(!backgroundColor)} >format_color_fill</button>
+        {smallFont && <button title='switch to normal font' className={'material-icons active'} onClick={() => setSmallFont(false)} >format_size</button>}
+        {!smallFont && <button title='switch to small font' className={'material-icons'} onClick={() => setSmallFont(true)} >text_fields</button>}
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
         {!briefMode && <button title='switch to brief mode' className={'material-icons'} onClick={() => setBriefMode(true)} >short_text</button>}
         {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
@@ -919,6 +924,8 @@ export default function App() {
                                                raisedItem={raisedItem}
                                                setRaisedItem={setRaisedItem}
                                                gridMode={gridMode}
+                                               smallFont={smallFont}
+                                               backgroundColor={backgroundColor}
                                                key={i}
                                                />
                                              )}
