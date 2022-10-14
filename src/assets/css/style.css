@@ -219,7 +219,7 @@ svg {
   scrollbar-width: none; /* hides scrollbar in Firefox */
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
   z-index: 1;
-  padding: 2vh;
+  padding: 1vw;
   border-radius: 2vh;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
@@ -252,8 +252,8 @@ svg {
 }
 
 .panelItem {
-  padding: 2vh;
-  margin: 1vh;
+  padding: 1vw;
+  margin: 0.5vw;
   border-radius: 2vh;
   border-width: 1px;
   border-style: solid;
@@ -261,9 +261,38 @@ svg {
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   background-color: white;
+  overflow-y: auto;
+  scrollbar-width: none; /* hides scrollbar in Firefox */
+  -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
+}
+
+.panelItem::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
+    width: 0;
+    height: 0;
 }
 
 .panelItem:hover {
+
+}
+
+.grid {
+  max-width: 36.5vw;
+
+}
+
+.list {
+
+
+}
+
+.gridMode {
+  width: 9vw;
+  height: 9vw;
+  display: inline-block;
+}
+
+.listMode {
+
 
 }
 

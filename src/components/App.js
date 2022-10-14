@@ -8,7 +8,7 @@ import { Slider } from '@mui/material';
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { transition } from 'd3-transition';
-import { orderBy, compact, max, min, isEqual } from 'lodash';
+import { orderBy, compact, max, min, cloneDeep } from 'lodash';
 import { data } from './data';
 
 /*Misc functions--------------------------------------------------------------*/
@@ -433,7 +433,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
     } else {
       const gepCoords = slide === -2 ? 'gep50' : slide === -1 ? 'gep75' : slide === 0 ? 'gep' : slide === 1 ? 'gep125' : 'gep150';
-      targetCoords = [...data[gepCoords]];
+      targetCoords = cloneDeep(data[gepCoords]);
     }
 
 
@@ -650,7 +650,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -801,7 +801,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className='panelItem' title={clickedItem} onClick={handlePanelItemClick}>
+    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className='catalog'>
         <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -859,6 +859,7 @@ export default function App() {
   const [group, setGroup] = useState('colorGroupBinder');
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
+  const [gridMode, setGridMode] = useState(false);
   const [lightMode, setLightMode] = useState(false);
   const [briefMode, setBriefMode] = useState(false);
   const [glyph, setGlyph] = useState('box');
@@ -897,15 +898,30 @@ export default function App() {
   return (
     <div id='app'>
       <div className='controls' id='multiClick'>
-        {briefMode && <button title='switch to long mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
+        {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => setGridMode(false)} >list</button>}
+        {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
+        {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
         {!briefMode && <button title='switch to brief mode' className={'material-icons'} onClick={() => setBriefMode(true)} >short_text</button>}
         {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
         {!lightMode && <button title='switch to light mode' className={'material-icons'} onClick={() => setLightMode(true)} >light_mode</button>}
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
-        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([])}} >delete_sweep</button>
+        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
       </div>
-      <div id='infoPanel' className={lightMode ? 'lightMode' : 'darkMode'}>
-        {clickedItems.map((clickedItem,i) => <PanelItem clickedItem={clickedItem} clickedItems={clickedItems} setClickedItems={setClickedItems} multiClick={multiClick} glyph={glyph} groupColors={groupColors} briefMode={briefMode} raisedItem={raisedItem} setRaisedItem={setRaisedItem} key={i} />)}
+      <div id='infoPanel' className={lightMode && gridMode ? 'lightMode grid' : lightMode && !gridMode ? 'lightMode list' : !lightMode && gridMode ? 'darkMode grid' : 'darkMode list'}>
+        {clickedItems.map((clickedItem,i) => <PanelItem
+                                               clickedItem={clickedItem}
+                                               clickedItems={clickedItems}
+                                               setClickedItems={setClickedItems}
+                                               multiClick={multiClick}
+                                               glyph={glyph}
+                                               groupColors={groupColors}
+                                               briefMode={briefMode}
+                                               raisedItem={raisedItem}
+                                               setRaisedItem={setRaisedItem}
+                                               gridMode={gridMode}
+                                               key={i}
+                                               />
+                                             )}
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 20000 }} frameloop="demand">
