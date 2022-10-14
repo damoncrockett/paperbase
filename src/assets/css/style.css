@@ -421,6 +421,64 @@ svg {
   padding-right: 4vh;
 }
 
+#filterModal {
+  position: fixed;
+  top: 17vh;
+  right: 5.5vw;
+  height: 70vh;
+  background-color: transparent;
+  overflow-y: auto;
+  scrollbar-width: none; /* hides scrollbar in Firefox */
+  -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
+  z-index: 1;
+  padding: 1vw;
+  border-radius: 2vh;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+#filterModal::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
+    width: 0;
+    height: 0;
+}
+
+.filterButton {
+  background-color: white;
+  padding: 1vh;
+  margin: 0.25vh;
+  color: var(--darkgrey);
+  border-radius: 2vh;
+  border-width: 1px;
+  border-color: var(--grey);
+  border-style: solid;
+  font-family: 'Archivo';
+  font-size: 1.5vh;
+}
+
+.expandButtons {
+  background-color: white;
+  border-radius: 1vh;
+  border-width: 1px;
+  border-color: var(--grey);
+  border-style: solid;
+  color: var(--grey);
+  position: fixed;
+  top: 51vh;
+  padding: 1vh;
+  font-size: 3vh;
+}
+
+.expandButtons:hover {
+  border-color: white;
+}
+
+.expanded {
+  width: 48vw;
+}
+
+.open {
+  width: 20vw;
+}
+
 #toggleControls {
   position: fixed;
   bottom: 16.3vh;

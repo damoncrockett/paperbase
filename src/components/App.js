@@ -55,14 +55,14 @@ data['colorGroupMan'] = makeGroupLabels('man');
 //console.log(Object.keys(data));
 //console.log(data);
 
-/*
 function valueCounts(col) {
   const occurrences = data[col].reduce(function (acc, curr) {
     return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
   }, {});
   return occurrences
 }
-*/
+
+console.log(valueCounts('bran'));
 
 /*groupMaps-------------------------------------------------------------------*/
 
@@ -841,6 +841,8 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 
 /*App-------------------------------------------------------------------------*/
 
+const placeholderArray = new Array(1000).fill(0);
+
 export default function App() {
   const [model, setModel] = useState('grid');
   const [filter, setFilter] = useState(false);
@@ -873,6 +875,7 @@ export default function App() {
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
+  const [filterModal, setFilterModal] = useState('closed');
 
   // key code constants
   const ALT_KEY = 18;
@@ -941,7 +944,7 @@ export default function App() {
       </div>
       <div id='viewpane'>
         <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 20000 }} frameloop="demand">
-          <color attach="background" args={[0x494949]} />
+          <color attach="background" args={[0x4a4a4a]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
           {glyph==='box' && boxGroupArray.map((d,i) => {
@@ -1198,8 +1201,14 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
-        <button title='filter' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilter(!filter)} >filter_alt</button>
+        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'white'}} onClick={() => setFilterModal('closed')} >close</button>}
+        {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
       </div>
+      {filterModal!=='closed' && <div id='filterModal' className={filterModal==='closed' ? 'closed' : filterModal==='open' ? 'open' : 'expanded'}>
+        {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >arrow_back_ios</button>}
+        {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >arrow_forward_ios</button>}
+        {placeholderArray.map(d => <button className='filterButton' >Kodabromide</button>)}
+      </div>}
     </div>
   )
 }
