@@ -1104,15 +1104,8 @@ export default function App() {
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
           <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
         </div>
-        <div className='controls' id='colorControls'>
-          <button title='group color shuffle' onClick={() => shuffleGroupColors(makeColorArray(50))} className={'material-icons'}>shuffle</button>
-        </div>
       </div>
       <div id='bottomControls'>
-        <div className='controls' id='facetControls'>
-          <button title='facet 2D' className={facet === '2d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('2d')} >dashboard</button>
-          <button title='facet 3D' className={facet === '3d' ? 'material-icons active' : 'material-icons'} onClick={() => setFacet('3d')} >layers</button>
-        </div>
         <div className='controls' id='axisMenus'>
           {model==='grid' &&
             <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
@@ -1141,7 +1134,8 @@ export default function App() {
               <option value='expressiveness'>expressiveness</option>
             </select>
           }
-          <button className={xcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setXcolAsc(!xcolAsc)} >swap_vert</button>
+          {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} >arrow_downward</button>}
+          {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} >arrow_upward</button>}
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
             <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
@@ -1151,7 +1145,8 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={ycolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setYcolAsc(!ycolAsc)} >swap_vert</button>
+          {ycolAsc && <button className={'material-icons'} title='sort y-axis descending' onClick={() => setYcolAsc(false)} >arrow_downward</button>}
+          {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} >arrow_upward</button>}
           <select value={zcol} onChange={e => setZcol(e.target.value)} title='z-axis'>
             <option value='none'>no z-axis</option>
             <option value='colorGroupBinder'>binder</option>
@@ -1162,7 +1157,8 @@ export default function App() {
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
-          <button className={zcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setZcolAsc(!zcolAsc)} >swap_vert</button>
+          {zcolAsc && <button className={'material-icons'} title='sort z-axis descending' onClick={() => setZcolAsc(false)} >arrow_downward</button>}
+          {!zcolAsc && <button className={'material-icons active'} title='sort z-axis ascending' onClick={() => setZcolAsc(true)} >arrow_upward</button>}
           <select value={group} onChange={e => setGroup(e.target.value)} title='glyph color'>
             <option value='colorGroupBinder'>binder</option>
             <option value='colorGroupMan'>manufacturer</option>
@@ -1180,6 +1176,7 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
+          <button title='group color shuffle' onClick={() => shuffleGroupColors(makeColorArray(50))} className={'material-icons'}>shuffle</button>
           <select value={facetcol} onChange={e => setFacetCol(e.target.value)} title='facet group'>
             <option value='none'>no facet axis</option>
             <option value='expressivenessGroup'>expressiveness</option>
@@ -1192,7 +1189,8 @@ export default function App() {
             <option value='colorGroupGlossWord'>gloss description</option>
             <option value='colorGroupThickWord'>weight description</option>
           </select>
-          <button className={facetcolAsc ? 'material-icons active' : 'material-icons'} title='sort ascending' onClick={() => setFacetcolAsc(!facetcolAsc)} >swap_vert</button>
+          {facetcolAsc && <button className={'material-icons'} title='sort facet axis descending' onClick={() => setFacetcolAsc(false)} >arrow_downward</button>}
+          {!facetcolAsc && <button className={'material-icons active'} title='sort facet axis ascending' onClick={() => setFacetcolAsc(true)} >arrow_upward</button>}
         </div>
       </div>
       <div className='controls' id='plottypeControls'>
@@ -1200,19 +1198,7 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
-      </div>
-      <div className='controls' id='filterControls'>
         <button title='filter' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilter(!filter)} >filter_alt</button>
-      </div>
-      <div id='toggleControls' className={toggleExpand ? 'toggleExpand' : 'toggleCollapse'}>
-        <div id='checkboxes'>
-          <label><input type="checkbox" checked={toggleLAB} onChange={() => setToggleLAB(!toggleLAB)}/>Lola Alvarez-Bravo</label>
-          <label><input type="checkbox" checked={toggleHC} onChange={() => setToggleHC(!toggleHC)}/>Harry Callahan</label>
-          <label><input type="checkbox" checked={toggleAS} onChange={() => setToggleAS(!toggleAS)}/>August Sander</label>
-          <label><input type="checkbox" checked={toggleMR} onChange={() => setToggleMR(!toggleMR)}/>Man Ray</label>
-        </div>
-        {!toggleExpand && <button title='toggle' className={( toggleMR || toggleAS || toggleHC || toggleLAB ) ? 'material-icons active' : 'material-icons'} style={{paddingRight: '3vh'}} onClick={() => setToggleExpand(true)} >check_box</button>}
-        {toggleExpand && <button title='toggle' className={( toggleMR || toggleAS || toggleHC || toggleLAB ) ? 'material-icons active' : 'material-icons'} onClick={() => setToggleExpand(false)} >close</button>}
       </div>
     </div>
   )

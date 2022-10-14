@@ -375,14 +375,6 @@ svg {
   margin-right: 2vw;
 }
 
-#colorControls {
-  display: inline-block;
-}
-
-#colorControls > button {
-  font-size: 3vh;
-}
-
 #glyphControls > button {
   font-size: 3vh;
 }
@@ -402,6 +394,13 @@ svg {
   margin: 1vh;
 }
 
+/* all bottom buttons */
+#axisMenus > button {
+  font-size: 2vh;
+  padding: 1vh;
+  margin-right: 1vw;
+}
+
 #topControls {
   position: fixed;
   right: 4vh;
@@ -416,20 +415,6 @@ svg {
 }
 
 #plottypeControls > button {
-  float: right;
-  font-size: 4vh;
-  padding: 2vh;
-  padding-right: 4vh;
-}
-
-#filterControls {
-  position: fixed;
-  bottom: 25vh;
-  width: 1vw;
-  right: -1vw;
-}
-
-#filterControls > button {
   float: right;
   font-size: 4vh;
   padding: 2vh;
