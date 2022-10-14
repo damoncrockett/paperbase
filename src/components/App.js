@@ -650,7 +650,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor, texture }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor, texture, smallItem }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -803,7 +803,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className={gridMode ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'white'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'white'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className={smallFont ? 'catalogSmall' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -865,6 +865,7 @@ export default function App() {
   const [lightMode, setLightMode] = useState(false);
   const [briefMode, setBriefMode] = useState(false);
   const [smallFont, setSmallFont] = useState(false);
+  const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
   const [texture, setTexture] = useState(false);
   const [glyph, setGlyph] = useState('box');
@@ -903,8 +904,10 @@ export default function App() {
   return (
     <div id='app'>
       <div className='controls' id='multiClick'>
-        {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => setGridMode(false)} >list</button>}
+        {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => {setGridMode(false);smallItem && setSmallItem(false)}} >list</button>}
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
+        {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
+        {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
         <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false)}} >format_color_fill</button>
         <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false)}} >texture</button>
         {smallFont && <button title='switch to normal font' className={'material-icons active'} onClick={() => setSmallFont(false)} >format_size</button>}
@@ -931,6 +934,7 @@ export default function App() {
                                                smallFont={smallFont}
                                                backgroundColor={backgroundColor}
                                                texture={texture}
+                                               smallItem={smallItem}
                                                key={i}
                                                />
                                              )}

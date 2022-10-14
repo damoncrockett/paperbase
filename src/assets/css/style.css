@@ -284,6 +284,12 @@ svg {
   display: inline-block;
 }
 
+.gridModeSmall {
+  width: 4.2vw;
+  height: 4.2vw;
+  display: inline-block;
+}
+
 .titleBar {
   display: inline-block;
 }
@@ -306,7 +312,7 @@ svg {
 }
 
 .catalogSmall {
-  font-size: 1vh;
+  font-size: 0.75vh;
 }
 
 .man {
@@ -331,7 +337,7 @@ svg {
 }
 
 .titleBarSmall {
-  font-size: 2vh;
+  font-size: 1.5vh;
 }
 
 .boxWord {
@@ -339,7 +345,7 @@ svg {
 }
 
 .boxWordSmall {
-  font-size: 1.33vh;
+  font-size: 1vh;
 }
 
 #cameraReset {
