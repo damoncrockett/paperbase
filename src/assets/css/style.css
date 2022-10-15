@@ -4,7 +4,7 @@
   --yaleblue: #00356b;
   --yaledark: #000a14;
   --yalelightgray: #dddddd;
-  --yalemidlightgray: #978d85;
+  --yalemidlightgray: #969696;
   --yalemidgray: #4a4a4a;
   --yaledarkgrey: #222222;
   --yalewhite: #f9f9f9;
@@ -171,30 +171,6 @@ svg {
   margin-right: 5vw;
 }
 
-.panelButtons {
-  margin-top: 2vh;
-  margin-left: 20vh;
-  display: block;
-}
-
-.panelButtons > button {
-  border-radius: .5rem;
-  border-width: 1px;
-  border-style: solid;
-  border-color: white;
-  display: block;
-  color: var(--darkgrey);
-  background-color: transparent;
-}
-
-.panelButtons > button:hover {
-  border-color: var(--grey);
-}
-
-.panelButtons > button.active {
-  color: var(--grey);
-}
-
 #viewpane {
   width: 100vw;
   height: 100vh;
@@ -230,7 +206,7 @@ svg {
 }
 
 .darkMode {
-  background-color: var(--darkgrey);
+  background-color: var(--yalemidgray);
 }
 
 #infoPanel::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
@@ -249,7 +225,7 @@ svg {
 }
 
 .panelItem:hover > .selectionRemove {
-  color: var(--darkgrey);
+  color: var(--yalemidgray);
 }
 
 .panelItem {
@@ -294,19 +270,6 @@ svg {
   display: inline-block;
 }
 
-.visBarExpander {
-  border-radius: .5rem;
-  border-width: 1px;
-  border-style: solid;
-  border-color: white;
-  margin: 0 auto;
-  display: block;
-}
-
-.visBarExpander:hover {
-  border-color: var(--grey);
-}
-
 .catalog {
   font-size: 1.5vh;
 }
@@ -319,7 +282,7 @@ svg {
   font-weight: 700;
   font-size: 3vh;
   float: left;
-  color: var(--darkgrey);
+  color: var(--yalemidgray);
   margin-right: 0.5vh;
 }
 
@@ -361,7 +324,7 @@ svg {
 .controls {
   z-index: 1;
   background: transparent;
-  color: var(--grey);
+  color: var(--yalemidlightgray);
   border-radius: 1vh;
 }
 
@@ -442,25 +405,25 @@ svg {
 }
 
 .filterButton {
-  background-color: white;
+  background-color: var(--yalewhite);
   padding: 1vh;
   margin: 0.25vh;
-  color: var(--darkgrey);
+  color: var(--yalemidgray);
   border-radius: 2vh;
   border-width: 1px;
-  border-color: var(--grey);
+  border-color: var(--yalemidlightgray);
   border-style: solid;
   font-family: 'Archivo';
   font-size: 1.5vh;
 }
 
 .expandButtons {
-  background-color: white;
+  background-color: var(--yalewhite);
   border-radius: 1vh;
   border-width: 1px;
-  border-color: var(--grey);
+  border-color: var(--yalemidlightgray);
   border-style: solid;
-  color: var(--grey);
+  color: var(--yalemidlightgray);
   position: fixed;
   top: 51vh;
   padding: 1vh;
@@ -468,7 +431,7 @@ svg {
 }
 
 .expandButtons:hover {
-  border-color: white;
+  border-color: var(--yalewhite);
 }
 
 .expanded {
@@ -477,43 +440,6 @@ svg {
 
 .open {
   width: 20vw;
-}
-
-#toggleControls {
-  position: fixed;
-  bottom: 16.3vh;
-  display: inline-block;
-  border-color: var(--grey);
-  border-radius: 1vh;
-  border-width: 1px;
-  border-style: solid;
-  outline: none;
-  color: var(--grey);
-}
-
-#toggleControls > button {
-  float: right;
-  font-size: 4vh;
-  padding: 2vh;
-  margin-right: 2vh;
-  display: inline-block;
-  outline: none;
-  background-color: transparent;
-  border-color: transparent;
-  border-radius: 1vh;
-  border-width: 1px;
-  border-style: solid;
-  color: var(--grey);
-}
-
-#toggleControls > button:hover {
-  background-color: rgb(249,250,251);
-  border-color: rgb(249,250,251);
-}
-
-#toggleControls > button.active {
-  background-color: black;
-  color: white;
 }
 
 #checkboxes {
@@ -537,47 +463,27 @@ input[type=checkbox] {
   margin-right: 4vh;
 }
 
-.toggleCollapse {
-  background: transparent;
-  right: -50.6vw;
-  transition: right 0.2s linear;
-  -webkit-transition: right 0.2s linear;
-  -moz-transition: right 0.2s linear;
-  -ms-transition: right 0.2s linear;
-  -o-transition: right 0.2s linear;
-}
-
-.toggleExpand {
-  background-color: var(--darkgrey);
-  right: -1vw;
-  transition: right 0.2s linear;
-  -webkit-transition: right 0.2s linear;
-  -moz-transition: right 0.2s linear;
-  -ms-transition: right 0.2s linear;
-  -o-transition: right 0.2s linear;
-}
-
 select {
   font-family: 'Archivo';
   font-size: 2vh;
   border-radius: 1vh;
-  border-color: var(--grey);
+  border-color: var(--yalemidlightgray);
   padding: 1vh;
   margin: 0.25vh;
   outline: none;
   width: 16vw;
   background-color: transparent;
-  color: white;
+  color: var(--yalewhite);
 }
 
 .controls > button {
   background-color: transparent;
-  border-color: var(--grey);
+  border-color: var(--yalemidlightgray);
   border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
   outline: none;
-  color: var(--grey);
+  color: var(--yalemidlightgray);
   font-size: 2vh;
   font-weight: 400;
   text-align: center;
@@ -590,13 +496,13 @@ select {
 }
 
 .controls > button:hover {
-  background-color: rgb(249,250,251);
-  border-color: rgb(249,250,251);
+  background-color: var(--yalewhite);
+  border-color: var(--yalewhite);
 }
 
 .controls > button.active {
-  background-color: black;
-  color: white;
+  background-color: var(--yaledarkgrey);
+  color: var(--yalewhite);
 }
 
 .controlsLabel {

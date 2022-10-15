@@ -766,7 +766,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         .attr('y1', 0 )
         .attr('x2', svgSide / 2 )
         .attr('y2', svgSide )
-        .attr('stroke', '#494949')
+        .attr('stroke', '#4a4a4a')
 
       select(svgRef.current)
         .selectAll('line.xaxis')
@@ -779,7 +779,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         .attr('y1', svgSide / 2 )
         .attr('x2', svgSide )
         .attr('y2', svgSide / 2 )
-        .attr('stroke', '#494949')
+        .attr('stroke', '#4a4a4a')
 
       select(svgRef.current)
         .selectAll('polygon.radar')
@@ -789,8 +789,8 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         .attr('class', 'radar')
         .attr('id', 'radar')
         .attr('points', polygonPoints(dataU,clickedItem,scaleTransform))
-        .attr('stroke', '#494949')
-        .attr('fill', '#989898')
+        .attr('stroke', '#4a4a4a')
+        .attr('fill', '#969696')
         .attr('fill-opacity', '0.5')
 
       select(svgRef.current)
@@ -803,7 +803,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'white'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'var(--yalewhite)'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className={smallFont ? 'catalogSmall' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -814,7 +814,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         <p className={smallFont ? 'titleBarSmall year' : 'year'}>{data['year'][clickedItem]}</p>
       </div>
       {!briefMode && <div className='infoBar'>
-          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#989898'} : {color:'white'}} key={i}>{d}</p>)}
+          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
       </div>}
     </div>
   )
@@ -1201,7 +1201,7 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
-        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'white'}} onClick={() => setFilterModal('closed')} >close</button>}
+        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => setFilterModal('closed')} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='closed' ? 'closed' : filterModal==='open' ? 'open' : 'expanded'}>
