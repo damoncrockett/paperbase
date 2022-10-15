@@ -62,7 +62,19 @@ function valueCounts(col) {
   return occurrences
 }
 
-console.log(valueCounts('bran'));
+const thicknessValCounts = valueCounts('thicknessWord');
+const colorValCounts = valueCounts('colorWord');
+const textureValCounts = valueCounts('textureWord');
+const glossValCounts = valueCounts('glossWord');
+const manValCounts = valueCounts('man');
+const branValCounts = valueCounts('bran');
+
+const thicknessValCountsScaled = featureScale(Object.values(thicknessValCounts));
+const colorValCountsScaled = featureScale(Object.values(colorValCounts));
+const textureValCountsScaled = featureScale(Object.values(textureValCounts));
+const glossValCountsScaled = featureScale(Object.values(glossValCounts));
+const manValCountsScaled = featureScale(Object.values(manValCounts));
+const branValCountsScaled = featureScale(Object.values(branValCounts));
 
 /*groupMaps-------------------------------------------------------------------*/
 
@@ -1205,9 +1217,20 @@ export default function App() {
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='closed' ? 'closed' : filterModal==='open' ? 'open' : 'expanded'}>
-        {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >arrow_back_ios</button>}
-        {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >arrow_forward_ios</button>}
-        {placeholderArray.map(d => <button className='filterButton' >Kodabromide</button>)}
+        {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
+        {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
+        <p className='filterCategoryHeading'>THICKNESS</p>
+        {Object.keys(thicknessValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessValCountsScaled[i]*100)+'%)',color:thicknessValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>BASE COLOR</p>
+        {Object.keys(colorValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorValCountsScaled[i]*100)+'%)',color:colorValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>TEXTURE</p>
+        {Object.keys(textureValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureValCountsScaled[i]*100)+'%)',color:textureValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>GLOSS</p>
+        {Object.keys(glossValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossValCountsScaled[i]*100)+'%)',color:glossValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>MANUFACTURER</p>
+        {Object.keys(manValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manValCountsScaled[i]*100)+'%)',color:manValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>BRAND</p>
+        {Object.keys(branValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branValCountsScaled[i]*100)+'%)',color:branValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
       </div>}
     </div>
   )
