@@ -4,7 +4,8 @@ import { OrbitControls } from '@react-three/drei';
 //import create from 'zustand';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
-import { Slider } from '@mui/material';
+import { Switch, Slider } from '@mui/material';
+import OrbitSlider from "@kiwicom/orbit-components/lib/Slider";
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { transition } from 'd3-transition';
@@ -1213,19 +1214,32 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
+      </div>
+      <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => setFilterModal('closed')} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
+        <button title='remove all filters' className='material-icons' onClick={() => setFilter(false)} >filter_alt_off</button>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='closed' ? 'closed' : filterModal==='open' ? 'open' : 'expanded'}>
         {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
+        <p className='filterCategoryHeading'>PRINT COLLECTION</p>
+        {['Man Ray','László Moholy-Nagy','August Sander','Harry Callahan','Lola Alvarez-Bravo'].map((d,i) => <div style={{display:'block'}}><Switch /><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
+        <p className='filterCategoryHeading'>REFERENCE COLLECTION</p>
+        {['LML Packages','LML Sample Books'].map((d,i) => <button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)'}} >{d}</button>)}
+        <p className='filterCategoryHeading'>YEAR</p>
+        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]} minValue={min(data['year'].map(d=>parseInt(d)))} maxValue={max(data['year'].map(d=>parseInt(d)))} onChange={value => console.log(value)} /></div>
         <p className='filterCategoryHeading'>THICKNESS</p>
+        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['thickness']),max(data['thickness'])]} minValue={min(data['thickness'])} maxValue={max(data['thickness'])} onChange={value => console.log(value)} /></div>
         {Object.keys(thicknessValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessValCountsScaled[i]*100)+'%)',color:thicknessValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
         <p className='filterCategoryHeading'>BASE COLOR</p>
+        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['color']),max(data['color'])]} minValue={min(data['color'])} maxValue={max(data['color'])} onChange={value => console.log(value)} /></div>
         {Object.keys(colorValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorValCountsScaled[i]*100)+'%)',color:colorValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
         <p className='filterCategoryHeading'>TEXTURE</p>
+        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['roughness']),max(data['roughness'])]} minValue={min(data['roughness'])} maxValue={max(data['roughness'])} onChange={value => console.log(value)} /></div>
         {Object.keys(textureValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureValCountsScaled[i]*100)+'%)',color:textureValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
         <p className='filterCategoryHeading'>GLOSS</p>
+        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['gloss']),max(data['gloss'])]} minValue={min(data['gloss'])} maxValue={max(data['gloss'])} onChange={value => console.log(value)} /></div>
         {Object.keys(glossValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossValCountsScaled[i]*100)+'%)',color:glossValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
         <p className='filterCategoryHeading'>MANUFACTURER</p>
         {Object.keys(manValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manValCountsScaled[i]*100)+'%)',color:manValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}

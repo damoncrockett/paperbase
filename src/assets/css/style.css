@@ -384,6 +384,20 @@ svg {
   padding-right: 4vh;
 }
 
+#filterControls {
+  position: fixed;
+  right: -1vw;
+  bottom: 17vh;
+  width: 1vw;
+}
+
+#filterControls > button {
+  float: right;
+  font-size: 4vh;
+  padding: 2vh;
+  padding-right: 4vh;
+}
+
 #filterModal {
   position: fixed;
   top: 17vh;
@@ -437,7 +451,7 @@ svg {
   position: fixed;
   top: 51vh;
   padding: 0;
-  font-size: 3vh;
+  font-size: 4vh;
 }
 
 .expandButtons:hover {
@@ -450,6 +464,11 @@ svg {
 
 .open {
   width: 20vw;
+}
+
+.orbitSliderContainer {
+  margin: 4vh 0 4vh 0;
+  padding: 0 2vh 0 2vh;
 }
 
 #checkboxes {

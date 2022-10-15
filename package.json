@@ -2,10 +2,12 @@
   "name": "phenome",
   "packageManager": "yarn@3.2.0",
   "devDependencies": {
+    "@babel/runtime": "^7.19.4",
     "buble": "^0.20.0",
     "buble-loader": "^0.5.1",
     "css-loader": "^6.6.0",
     "html-webpack-plugin": "^5.5.0",
+    "react-is": "^18.2.0",
     "style-loader": "^3.3.1",
     "webpack": "^5.69.1",
     "webpack-cli": "^4.9.2",
@@ -33,22 +35,20 @@
   },
   "homepage": "https://github.com/damoncrockett/phenome#readme",
   "dependencies": {
-    "@emotion/react": "^11.9.0",
-    "@emotion/styled": "^11.8.1",
-    "@mui/material": "^5.6.4",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@kiwicom/orbit-components": "^4.0.0",
+    "@mui/material": "^5.10.9",
     "@react-spring/three": "^9.4.4",
     "@react-three/drei": "^8.16.4",
     "@react-three/fiber": "^7.0.26",
-    "@types/dat.gui": "^0.7.7",
     "d3-array": "^3.1.1",
     "d3-selection": "^3.0.0",
     "d3-transition": "^3.0.1",
-    "dat.gui": "^0.7.9",
-    "leva": "^0.9.23",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "three": "^0.137.5",
-    "zustand": "^4.1.2"
+    "styled-components": "^5.3.6",
+    "three": "^0.137.5"
   }
 }
