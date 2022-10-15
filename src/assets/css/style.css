@@ -1,16 +1,14 @@
 :root {
-  --grey: #989898;
-  --darkgrey: #494949;
   --yaleblue: #00356b;
   --yaledark: #000a14;
   --yalelightgray: #dddddd;
   --yalemidlightgray: #969696;
   --yalemidgray: #4a4a4a;
-  --yaledarkgrey: #222222;
+  --yaledarkgray: #222222;
   --yalewhite: #f9f9f9;
   --rippling: #4b2f3b;
   --ripplingdark: #140c10;
-  --ripplinglightgrey: #c9c0c4;
+  --ripplinglightgray: #c9c0c4;
   --ripplingyellow: #f4bb46;
   --ripplingwhite: #fefefe;
   --yalelightblue: #63aaff;
@@ -268,10 +266,23 @@ svg {
 
 .titleBar {
   display: inline-block;
+  font-size: 3vh;
+}
+
+.titleBarMid {
+  font-size: 2vh;
+}
+
+.titleBarSmall {
+  font-size: 1.5vh;
 }
 
 .catalog {
   font-size: 1.5vh;
+}
+
+.catalogMid {
+  font-size: 1vh;
 }
 
 .catalogSmall {
@@ -280,31 +291,28 @@ svg {
 
 .man {
   font-weight: 700;
-  font-size: 3vh;
   float: left;
   color: var(--yalemidgray);
   margin-right: 0.5vh;
 }
 
 .bran {
-  font-size: 3vh;
   float: left;
   margin-right: 0.5vh;
 }
 
 .year {
-  font-size: 3vh;
   float: left;
   margin-right: 0.335vh;
   font-weight: 100;
 }
 
-.titleBarSmall {
-  font-size: 1.5vh;
-}
-
 .boxWord {
   font-size: 2vh;
+}
+
+.boxWordMid {
+  font-size: 1.33vh;
 }
 
 .boxWordSmall {
@@ -403,7 +411,6 @@ svg {
   top: 17vh;
   right: 5.5vw;
   height: 70vh;
-  background-color: transparent;
   overflow-y: auto;
   scrollbar-width: none; /* hides scrollbar in Firefox */
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
@@ -416,6 +423,11 @@ svg {
 #filterModal::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
     width: 0;
     height: 0;
+}
+
+.filterCategoryContainer > button.active {
+  background-color: var(--yaledarkgray);
+  color: var(--yalewhite);
 }
 
 .filterButton {
@@ -436,9 +448,32 @@ svg {
 }
 
 .filterCategoryHeading {
-  font-size: 2.5vh;
+  font-size: 2.25vh;
   color: var(--yalewhite);
-  margin: 4vh 0 1vh 0;
+  display: inline-block;
+  border-radius: 1vh;
+  border-width: 1px;
+  border-color: transparent;
+  border-style: solid;
+  background-color: transparent;
+}
+
+.filterCategoryHeadingContainer {
+  margin: 2vh 0 3vh 0;
+}
+
+.headingMat {
+  background-color: var(--yalemidgray);
+  border-color: var(--yalemidlightgray);
+  padding: 1.5vh;
+}
+
+.filterCategoryContainer {
+  padding: 1vw;
+}
+
+.topline {
+  margin-top: 1vh;
 }
 
 .expandButtons {
@@ -451,7 +486,7 @@ svg {
   position: fixed;
   top: 51vh;
   padding: 0;
-  font-size: 4vh;
+  font-size: 5vh;
 }
 
 .expandButtons:hover {
@@ -466,10 +501,34 @@ svg {
   width: 20vw;
 }
 
-.orbitSliderContainer {
-  margin: 4vh 0 4vh 0;
-  padding: 0 2vh 0 2vh;
+.filterLightMode {
+  border-radius: 1vh;
+  border-width: 1px;
+  border-color: var(--yalemidlightgray);
+  border-style: solid;
+  position: fixed;
+  top: 45vh;
+  padding: 1vh;
+  font-size: 3vh;
+  color: var(--yalemidlightgray);
+  background-color: var(--yalewhite);
 }
+
+.filterLightMode:hover {
+  border-color: var(--yalewhite);
+}
+
+.filterLightMode.active {
+  background-color: var(--yaledarkgray);
+  color: var(--yalewhite);
+}
+
+.sliderContainer {
+  margin: 6vh auto 4vh;
+  padding: 0 4vh 0 4vh;
+  max-width: 30vw;
+}
+
 
 #checkboxes {
   float: right;
@@ -530,7 +589,7 @@ select {
 }
 
 .controls > button.active {
-  background-color: var(--yaledarkgrey);
+  background-color: var(--yaledarkgray);
   color: var(--yalewhite);
 }
 

@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-//import create from 'zustand';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
-import OrbitSlider from "@kiwicom/orbit-components/lib/Slider";
 import { select } from 'd3-selection';
 import { bin } from 'd3-array';
 import { transition } from 'd3-transition';
 import { orderBy, compact, max, min, cloneDeep } from 'lodash';
 import { data } from './data';
+
+console.log(max(data['thickness']));
 
 /*Misc functions--------------------------------------------------------------*/
 
@@ -53,8 +53,7 @@ data['colorGroupTextureWord'] = makeGroupLabels('textureWord');
 data['colorGroupGlossWord'] = makeGroupLabels('glossWord');
 data['colorGroupMan'] = makeGroupLabels('man');
 
-//console.log(Object.keys(data));
-//console.log(data);
+/*Metadata value counts-------------------------------------------------------*/
 
 function valueCounts(col) {
   const occurrences = data[col].reduce(function (acc, curr) {
@@ -70,12 +69,29 @@ const glossValCounts = valueCounts('glossWord');
 const manValCounts = valueCounts('man');
 const branValCounts = valueCounts('bran');
 
-const thicknessValCountsScaled = featureScale(Object.values(thicknessValCounts));
-const colorValCountsScaled = featureScale(Object.values(colorValCounts));
-const textureValCountsScaled = featureScale(Object.values(textureValCounts));
-const glossValCountsScaled = featureScale(Object.values(glossValCounts));
-const manValCountsScaled = featureScale(Object.values(manValCounts));
-const branValCountsScaled = featureScale(Object.values(branValCounts));
+const thicknessValues = Object.keys(thicknessValCounts).sort();
+const thicknessCounts = thicknessValues.map(d => thicknessValCounts[d]);
+const thicknessCountsScaled = featureScale(thicknessCounts);
+
+const colorValues = Object.keys(colorValCounts).sort();
+const colorCounts = colorValues.map(d => colorValCounts[d]);
+const colorCountsScaled = featureScale(colorCounts);
+
+const textureValues = Object.keys(textureValCounts).sort();
+const textureCounts = textureValues.map(d => textureValCounts[d]);
+const textureCountsScaled = featureScale(textureCounts);
+
+const glossValues = Object.keys(glossValCounts).sort();
+const glossCounts = glossValues.map(d => glossValCounts[d]);
+const glossCountsScaled = featureScale(glossCounts);
+
+const manValues = Object.keys(manValCounts).sort();
+const manCounts = manValues.map(d => manValCounts[d]);
+const manCountsScaled = featureScale(manCounts);
+
+const branValues = Object.keys(branValCounts).sort();
+const branCounts = branValues.map(d => branValCounts[d]);
+const branCountsScaled = featureScale(branCounts);
 
 /*groupMaps-------------------------------------------------------------------*/
 
@@ -663,7 +679,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, smallFont, backgroundColor, texture, smallItem }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, smallItem }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -818,16 +834,16 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
   return (
     <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'var(--yalewhite)'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      {!briefMode && <div className={smallFont ? 'catalogSmall' : 'catalog'}>
+      {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
       </div>}
       <div className='titleBar'>
-        <p className={smallFont ? 'titleBarSmall man' : 'man'}>{data['man'][clickedItem]}</p>
-        <p className={smallFont ? 'titleBarSmall bran' : 'bran'}>{data['bran'][clickedItem]}</p>
-        <p className={smallFont ? 'titleBarSmall year' : 'year'}>{data['year'][clickedItem]}</p>
+        <p className={infoPanelFontSize===1 ? 'titleBarSmall man' : infoPanelFontSize===2 ? 'titleBarMid man' : 'man'}>{data['man'][clickedItem]}</p>
+        <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]}</p>
+        <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{data['year'][clickedItem]}</p>
       </div>
       {!briefMode && <div className='infoBar'>
-          {writeInfoArray(clickedItem).map((d,i) => <p className={smallFont ? 'boxWordSmall' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
+          {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
       </div>}
     </div>
   )
@@ -879,7 +895,7 @@ export default function App() {
   const [gridMode, setGridMode] = useState(false);
   const [lightMode, setLightMode] = useState(false);
   const [briefMode, setBriefMode] = useState(false);
-  const [smallFont, setSmallFont] = useState(false);
+  const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
   const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
   const [texture, setTexture] = useState(false);
@@ -889,6 +905,14 @@ export default function App() {
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
   const [filterModal, setFilterModal] = useState('closed');
+  const [filterLightMode, setFilterLightMode] = useState(false);
+  const [manExpand, setManExpand] = useState(false);
+  const [branExpand, setBranExpand] = useState(false);
+  const [yearSlide, setYearSlide] = useState([min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]);
+  const [thicknessSlide, setThicknessSlide] = useState([min(data['thickness']),max(data['thickness'])]);
+  const [colorSlide, setColorSlide] = useState([min(data['color']),max(data['color'])]);
+  const [roughnessSlide, setRoughnessSlide] = useState([min(data['roughness']),max(data['roughness'])]);
+  const [glossSlide, setGlossSlide] = useState([min(data['gloss']),max(data['gloss'])]);
 
   // key code constants
   const ALT_KEY = 18;
@@ -926,8 +950,8 @@ export default function App() {
         {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
         <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false)}} >format_color_fill</button>
         <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false)}} >texture</button>
-        {smallFont && <button title='switch to normal font' className={'material-icons active'} onClick={() => setSmallFont(false)} >format_size</button>}
-        {!smallFont && <button title='switch to small font' className={'material-icons'} onClick={() => setSmallFont(true)} >text_fields</button>}
+        <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
+        <button title='decrease font size' className='material-icons' onClick={() => infoPanelFontSize > 1 && setInfoPanelFontSize(infoPanelFontSize - 1)} >text_fields</button>
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
         {!briefMode && <button title='switch to brief mode' className={'material-icons'} onClick={() => setBriefMode(true)} >short_text</button>}
         {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
@@ -947,7 +971,7 @@ export default function App() {
                                                raisedItem={raisedItem}
                                                setRaisedItem={setRaisedItem}
                                                gridMode={gridMode}
-                                               smallFont={smallFont}
+                                               infoPanelFontSize={infoPanelFontSize}
                                                backgroundColor={backgroundColor}
                                                texture={texture}
                                                smallItem={smallItem}
@@ -1216,35 +1240,63 @@ export default function App() {
         <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
       </div>
       <div className='controls' id='filterControls'>
-        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => setFilterModal('closed')} >close</button>}
+        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={() => setFilter(false)} >filter_alt_off</button>
       </div>
-      {filterModal!=='closed' && <div id='filterModal' className={filterModal==='closed' ? 'closed' : filterModal==='open' ? 'open' : 'expanded'}>
+      {filterModal!=='closed' && <div id='filterModal' className={filterModal==='open' && filterLightMode ? 'open lightMode' : filterModal==='open' && !filterLightMode ? 'open darkMode' : filterModal==='expanded' && filterLightMode ? 'expanded lightMode' : 'expanded darkMode'}>
         {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
-        <p className='filterCategoryHeading'>PRINT COLLECTION</p>
-        {['Man Ray','László Moholy-Nagy','August Sander','Harry Callahan','Lola Alvarez-Bravo'].map((d,i) => <div style={{display:'block'}}><Switch /><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
-        <p className='filterCategoryHeading'>REFERENCE COLLECTION</p>
-        {['LML Packages','LML Sample Books'].map((d,i) => <button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>YEAR</p>
-        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]} minValue={min(data['year'].map(d=>parseInt(d)))} maxValue={max(data['year'].map(d=>parseInt(d)))} onChange={value => console.log(value)} /></div>
-        <p className='filterCategoryHeading'>THICKNESS</p>
-        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['thickness']),max(data['thickness'])]} minValue={min(data['thickness'])} maxValue={max(data['thickness'])} onChange={value => console.log(value)} /></div>
-        {Object.keys(thicknessValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessValCountsScaled[i]*100)+'%)',color:thicknessValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>BASE COLOR</p>
-        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['color']),max(data['color'])]} minValue={min(data['color'])} maxValue={max(data['color'])} onChange={value => console.log(value)} /></div>
-        {Object.keys(colorValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorValCountsScaled[i]*100)+'%)',color:colorValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>TEXTURE</p>
-        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['roughness']),max(data['roughness'])]} minValue={min(data['roughness'])} maxValue={max(data['roughness'])} onChange={value => console.log(value)} /></div>
-        {Object.keys(textureValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureValCountsScaled[i]*100)+'%)',color:textureValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>GLOSS</p>
-        <div className='orbitSliderContainer'><OrbitSlider defaultValue={[min(data['gloss']),max(data['gloss'])]} minValue={min(data['gloss'])} maxValue={max(data['gloss'])} onChange={value => console.log(value)} /></div>
-        {Object.keys(glossValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossValCountsScaled[i]*100)+'%)',color:glossValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>MANUFACTURER</p>
-        {Object.keys(manValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manValCountsScaled[i]*100)+'%)',color:manValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
-        <p className='filterCategoryHeading'>BRAND</p>
-        {Object.keys(branValCounts).map((d,i) => <button className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branValCountsScaled[i]*100)+'%)',color:branValCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgrey)'}} >{d}</button>)}
+        {filterLightMode && filterModal==='open' && <button title='switch to dark mode' style={{right:'28vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
+        {!filterLightMode && filterModal==='open' && <button title='switch to light mode' style={{right:'28vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
+        {filterLightMode && filterModal==='expanded' && <button title='switch to dark mode' style={{right:'56vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
+        {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
+          {['Man Ray','László Moholy-Nagy','August Sander','Harry Callahan','Lola Alvarez-Bravo'].map((d,i) => <div key={i} style={{display:'block'}}><Switch /><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
+          {['LML Packages','LML Sample Books'].map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => {setYearSlide(e.target.value);console.log(e.target.value)}} defaultValue={[min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]} valueLabelDisplay="on" min={min(data['year'].map(d=>parseInt(d)))} max={max(data['year'].map(d=>parseInt(d)))} /></div>
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
+          {!manExpand && manValues.slice(0,20).map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(true)} >more_horiz</button>}
+          {manExpand && manValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(false)} >expand_less</button>}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
+          {!branExpand && branValues.slice(0,20).map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={() => setBranExpand(true)} >more_horiz</button>}
+          {branExpand && branValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => setBranExpand(false)} >expand_less</button>}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => {setThicknessSlide(e.target.value);console.log(e.target.value)}} defaultValue={[min(data['thickness']),max(data['thickness'])]} valueLabelDisplay="on" min={min(data['thickness'])} max={max(data['thickness'])} step={0.001} /></div>
+          {thicknessValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessCountsScaled[i]*100)+'%)',color:thicknessCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => setColorSlide(e.target.value)} defaultValue={[Number(min(data['color']).toFixed(2)),Number(max(data['color']).toFixed(2))]} valueLabelDisplay="on" min={Number(min(data['color']).toFixed(2))} max={Number(max(data['color']).toFixed(2))} step={0.01}/></div>
+          {colorValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[Math.round(min(data['roughness'])),Math.round(max(data['roughness']))]} valueLabelDisplay="on" min={Math.round(min(data['roughness']))} max={Math.round(max(data['roughness']))} /></div>
+          {textureValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureCountsScaled[i]*100)+'%)',color:textureCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => setGlossSlide(e.target.value)} defaultValue={[Math.round(min(data['gloss'])),Math.round(max(data['gloss']))]} valueLabelDisplay="on" min={Math.round(min(data['gloss']))} max={Math.round(max(data['gloss']))} /></div>
+          {glossValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+        </div>
       </div>}
     </div>
   )
