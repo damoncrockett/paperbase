@@ -679,7 +679,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, smallItem }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, smallItem }) {
   //const [visBar, setVisBar] = useState(false);
   //const [scaleTransform, setScaleTransform] = useState(true);
 
@@ -776,7 +776,8 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
     }
   }
 
-  const imgString = returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg';
+  const imgStringTexture = returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg';
+  const imgString = returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg';
 
 /*
   useEffect(() => {
@@ -832,7 +833,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 */
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'var(--yalewhite)'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, overflow: 'hidden', backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'var(--yalewhite)'}}>
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
         <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -899,6 +900,7 @@ export default function App() {
   const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
   const [texture, setTexture] = useState(false);
+  const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
@@ -948,8 +950,9 @@ export default function App() {
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
         {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
         {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
-        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false)}} >format_color_fill</button>
-        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false)}} >texture</button>
+        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false)}} >format_color_fill</button>
+        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false)}} >texture</button>
+        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false)}} >image</button>
         <button title='decrease font size' className='material-icons' onClick={() => infoPanelFontSize > 1 && setInfoPanelFontSize(infoPanelFontSize - 1)} >text_fields</button>
         <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
@@ -974,6 +977,7 @@ export default function App() {
                                                infoPanelFontSize={infoPanelFontSize}
                                                backgroundColor={backgroundColor}
                                                texture={texture}
+                                               packageImage={packageImage}
                                                smallItem={smallItem}
                                                key={i}
                                                />
