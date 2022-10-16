@@ -177,7 +177,7 @@ svg {
 #multiClick {
   position: fixed;
   top: -1vh;
-  left: 9vw;
+  left: 4vw;
 }
 
 #multiClick > button {
@@ -232,9 +232,7 @@ svg {
   border-radius: 2vh;
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-  overflow-y: auto;
-  scrollbar-width: none; /* hides scrollbar in Firefox */
-  -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
+  overflow: hidden;
 }
 
 .panelItem::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
@@ -251,7 +249,6 @@ svg {
 
 }
 
-
 .gridMode {
   width: 9vw;
   height: 9vw;
@@ -262,6 +259,12 @@ svg {
   width: 4.2vw;
   height: 4.2vw;
   display: inline-block;
+}
+
+.fixedOverlay {
+  position: absolute;
+  top: 1vw;
+  left: 1vw;
 }
 
 .titleBar {
@@ -294,6 +297,10 @@ svg {
   float: left;
   color: var(--yalemidgray);
   margin-right: 0.5vh;
+}
+
+.lightman {
+  color: var(--yalemidlightgray);
 }
 
 .bran {

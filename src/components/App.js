@@ -19,8 +19,6 @@ function returnDomain() {
   return production ? '' : 'http://localhost:8888/'
 }
 
-const svgSide = window.innerHeight * 0.15;
-
 const n = data['isoGroup'].length; // nrows in data; 'isgoGroup' could be any col
 
 const randomRGB = () => {
@@ -190,9 +188,8 @@ function radarNormals(glyphGroup) {
 
 // Radar used in InfoPanel, drawn by d3 instead of webGL
 
-function getUniverse(dataU,scaleTransform) {
-  if ( scaleTransform ) {
-    return [
+function getUniverse(dataU) {
+  return [
       min(dataU['color']),
       max(dataU['color']),
       min(dataU['thickness']),
@@ -202,18 +199,6 @@ function getUniverse(dataU,scaleTransform) {
       min(dataU['gloss']),
       max(dataU['gloss'])
     ]
-  } else {
-    return [
-      min(rankTransform(dataU['color'])),
-      max(rankTransform(dataU['color'])),
-      min(rankTransform(dataU['thickness'])),
-      max(rankTransform(dataU['thickness'])),
-      min(rankTransform(dataU['roughness'])),
-      max(rankTransform(dataU['roughness'])),
-      min(rankTransform(dataU['gloss'])),
-      max(rankTransform(dataU['gloss']))
-    ]
-  }
 }
 
 function uScale(uMin,uMax,val) {
@@ -226,22 +211,23 @@ function rankTransform(arr) {
   return arr.map((x) => sorted.indexOf(x) + 1)
 }
 
-function polygonPoints(dataU, clickedItem, scaleTransform) {
+const dataU = {
+  color: rankTransform(data['color']),
+  thickness: rankTransform(data['thickness']),
+  roughness: rankTransform(data['roughness']),
+  gloss: rankTransform(data['gloss'])
+};
 
-    const universe = getUniverse(dataU,scaleTransform);
+const universe = getUniverse(dataU);
+
+function polygonPoints(dataU, clickedItem, svgSide) {
+
     let p1,p2,p3,p4;
 
-    if ( scaleTransform ) {
-      p1 = data['color'][clickedItem];
-      p2 = data['thickness'][clickedItem];
-      p3 = data['roughness'][clickedItem];
-      p4 = data['gloss'][clickedItem];
-    } else {
-      p1 = rankTransform(data['color'])[clickedItem];
-      p2 = rankTransform(data['thickness'])[clickedItem];
-      p3 = rankTransform(data['roughness'])[clickedItem];
-      p4 = rankTransform(data['gloss'])[clickedItem];
-    }
+    p1 = dataU['color'][clickedItem];
+    p2 = dataU['thickness'][clickedItem];
+    p3 = dataU['roughness'][clickedItem];
+    p4 = dataU['gloss'][clickedItem];
 
     p1 = uScale(universe[0],universe[1],p1);
     p2 = uScale(universe[2],universe[3],p2);
@@ -465,8 +451,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords = cloneDeep(data[gepCoords]);
     }
 
-
-
     if ( facetcol !== 'none' ) {
       // update z dims for 3d facet
       const facetData = data[facetcol];
@@ -679,11 +663,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, smallItem }) {
-  //const [visBar, setVisBar] = useState(false);
-  //const [scaleTransform, setScaleTransform] = useState(true);
-
-  const svgRef = useRef();
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem }) {
 
   let blankInfo;
   const writeInfoArray = globalInstanceId => {
@@ -779,72 +759,53 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
   const imgStringTexture = returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg';
   const imgString = returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg';
 
-/*
-  useEffect(() => {
-    if ( visBar ) {
+  const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
+  const sSixth = svgSide / 6;
+  const sThird = svgSide / 3;
+  const sHalf = svgSide / 2;
+  const sTwoThird = svgSide * 2/3;
+  const sFiveSixth = svgSide * 5/6;
 
-      const dataU = data;
-
-      select(svgRef.current)
-        .selectAll('line.yaxis')
-        .data([0])
-        .enter()
-        .append('line')
-        .attr('class', 'yaxis')
-        .attr('id', 'yaxis')
-        .attr('x1', svgSide / 2 )
-        .attr('y1', 0 )
-        .attr('x2', svgSide / 2 )
-        .attr('y2', svgSide )
-        .attr('stroke', '#4a4a4a')
-
-      select(svgRef.current)
-        .selectAll('line.xaxis')
-        .data([0])
-        .enter()
-        .append('line')
-        .attr('class', 'xaxis')
-        .attr('id', 'xaxis')
-        .attr('x1', 0 )
-        .attr('y1', svgSide / 2 )
-        .attr('x2', svgSide )
-        .attr('y2', svgSide / 2 )
-        .attr('stroke', '#4a4a4a')
-
-      select(svgRef.current)
-        .selectAll('polygon.radar')
-        .data([0])
-        .enter()
-        .append('polygon')
-        .attr('class', 'radar')
-        .attr('id', 'radar')
-        .attr('points', polygonPoints(dataU,clickedItem,scaleTransform))
-        .attr('stroke', '#4a4a4a')
-        .attr('fill', '#969696')
-        .attr('fill-opacity', '0.5')
-
-      select(svgRef.current)
-        .selectAll('polygon.radar')
-        .transition().duration(500)
-          .attr('points', polygonPoints(dataU,clickedItem,scaleTransform))
-
-    }
-  }, [visBar, clickedItem, scaleTransform])
-*/
+  const stroke = "#595959";
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, overflow: 'hidden', backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, overflow: 'hidden', backgroundPosition: 'center' } : {backgroundColor: 'var(--yalewhite)'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
+      {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
+
+          <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
+          <line x1={0} y1={sHalf} x2={svgSide} y2={sHalf} stroke={stroke} />
+
+          <line x1={sHalf} y1={0} x2={svgSide} y2={sHalf} stroke={stroke} />
+          <line x1={svgSide} y1={sHalf} x2={sHalf} y2={svgSide} stroke={stroke} />
+          <line x1={sHalf} y1={svgSide} x2={0} y2={sHalf} stroke={stroke} />
+          <line x1={0} y1={sHalf} x2={sHalf} y2={0} stroke={stroke} />
+
+          <line x1={sHalf} y1={sSixth} x2={sFiveSixth} y2={sHalf} stroke={stroke} />
+          <line x1={sFiveSixth} y1={sHalf} x2={sHalf} y2={sFiveSixth} stroke={stroke} />
+          <line x1={sHalf} y1={sFiveSixth} x2={sSixth} y2={sHalf} stroke={stroke} />
+          <line x1={sSixth} y1={sHalf} x2={sHalf} y2={sSixth} stroke={stroke} />
+
+          <line x1={sHalf} y1={sThird} x2={sTwoThird} y2={sHalf} stroke={stroke} />
+          <line x1={sTwoThird} y1={sHalf} x2={sHalf} y2={sTwoThird} stroke={stroke} />
+          <line x1={sHalf} y1={sTwoThird} x2={sThird} y2={sHalf} stroke={stroke} />
+          <line x1={sThird} y1={sHalf} x2={sHalf} y2={sThird} stroke={stroke} />
+
+          <polygon points={polygonPoints(dataU,clickedItem,svgSide)} stroke={"none"} fill={"#63aaff"} fillOpacity={0.5} />
+
+        </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
-        <p>{'#'+data['catalog'][clickedItem]}</p>
-      </div>}
-      <div className='titleBar'>
-        <p className={infoPanelFontSize===1 ? 'titleBarSmall man' : infoPanelFontSize===2 ? 'titleBarMid man' : 'man'}>{data['man'][clickedItem]}</p>
-        <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]}</p>
-        <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{data['year'][clickedItem]}</p>
-      </div>
-      {!briefMode && <div className='infoBar'>
-          {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
+      {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
+        {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
+          <p>{'#'+data['catalog'][clickedItem]}</p>
+        </div>}
+        <div className='titleBar'>
+          <p className={infoPanelFontSize===1 && ( svgRadar || packageImage ) ? 'titleBarSmall man lightman' : infoPanelFontSize===1 && !svgRadar && !packageImage ? 'titleBarSmall man' : infoPanelFontSize===2 && ( svgRadar || packageImage ) ? 'titleBarMid man lightman' : infoPanelFontSize===2 && !svgRadar && !packageImage ? 'titleBarMid man' : ( svgRadar || packageImage ) ? 'man lightman' : 'man'}>{data['man'][clickedItem]}</p>
+          <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]}</p>
+          <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{data['year'][clickedItem]}</p>
+        </div>
+        {!briefMode && <div className='infoBar'>
+            {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
+        </div>}
       </div>}
     </div>
   )
@@ -867,11 +828,10 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
   });
   return null
 }
+
 */
 
 /*App-------------------------------------------------------------------------*/
-
-const placeholderArray = new Array(1000).fill(0);
 
 export default function App() {
   const [model, setModel] = useState('grid');
@@ -896,10 +856,12 @@ export default function App() {
   const [gridMode, setGridMode] = useState(false);
   const [lightMode, setLightMode] = useState(false);
   const [briefMode, setBriefMode] = useState(false);
+  const [textMode, setTextMode] = useState(true);
   const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
   const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
   const [texture, setTexture] = useState(false);
+  const [svgRadar, setSvgRadar] = useState(false);
   const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [slide, setSlide] = useState(0);
@@ -950,9 +912,11 @@ export default function App() {
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
         {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
         {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
-        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false)}} >format_color_fill</button>
-        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false)}} >texture</button>
-        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false)}} >image</button>
+        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false)}} >format_color_fill</button>
+        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false)}} >texture</button>
+        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false)}} >image</button>
+        <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false)}} >radar</button>
+        <button title='overlay text' className={textMode ? 'material-icons active' : 'material-icons'} onClick={() => setTextMode(!textMode)} >title</button>
         <button title='decrease font size' className='material-icons' onClick={() => infoPanelFontSize > 1 && setInfoPanelFontSize(infoPanelFontSize - 1)} >text_fields</button>
         <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
@@ -971,6 +935,7 @@ export default function App() {
                                                glyph={glyph}
                                                groupColors={groupColors}
                                                briefMode={briefMode}
+                                               textMode={textMode}
                                                raisedItem={raisedItem}
                                                setRaisedItem={setRaisedItem}
                                                gridMode={gridMode}
@@ -978,6 +943,7 @@ export default function App() {
                                                backgroundColor={backgroundColor}
                                                texture={texture}
                                                packageImage={packageImage}
+                                               svgRadar={svgRadar}
                                                smallItem={smallItem}
                                                key={i}
                                                />
