@@ -10,8 +10,6 @@ import { transition } from 'd3-transition';
 import { orderBy, compact, max, min, cloneDeep } from 'lodash';
 import { data } from './data';
 
-console.log(max(data['thickness']));
-
 /*Misc functions--------------------------------------------------------------*/
 
 function returnDomain() {
@@ -50,6 +48,7 @@ data['colorGroupThickWord'] = makeGroupLabels('thicknessWord');
 data['colorGroupTextureWord'] = makeGroupLabels('textureWord');
 data['colorGroupGlossWord'] = makeGroupLabels('glossWord');
 data['colorGroupMan'] = makeGroupLabels('man');
+data['colorGroupColl'] = makeGroupLabels('coll');
 
 /*Metadata value counts-------------------------------------------------------*/
 
@@ -190,8 +189,8 @@ function radarNormals(glyphGroup) {
 
 function getUniverse(dataU) {
   return [
-      min(dataU['color']),
-      max(dataU['color']),
+      min(dataU['dmin']),
+      max(dataU['dmin']),
       min(dataU['thickness']),
       max(dataU['thickness']),
       min(dataU['roughness']),
@@ -212,7 +211,7 @@ function rankTransform(arr) {
 }
 
 const dataU = {
-  color: rankTransform(data['color']),
+  dmin: rankTransform(data['dmin']),
   thickness: rankTransform(data['thickness']),
   roughness: rankTransform(data['roughness']),
   gloss: rankTransform(data['gloss'])
@@ -224,7 +223,7 @@ function polygonPoints(dataU, clickedItem, svgSide) {
 
     let p1,p2,p3,p4;
 
-    p1 = dataU['color'][clickedItem];
+    p1 = dataU['dmin'][clickedItem];
     p2 = dataU['thickness'][clickedItem];
     p3 = dataU['roughness'][clickedItem];
     p4 = dataU['gloss'][clickedItem];
@@ -423,7 +422,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR, groupSelect }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -447,7 +446,8 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     } else if ( model === 'scatter' ) {
       targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
     } else {
-      const gepCoords = slide === -2 ? 'gep50' : slide === -1 ? 'gep75' : slide === 0 ? 'gep' : slide === 1 ? 'gep125' : 'gep150';
+      let gepCoords = slide === -2 ? 'gep100' : slide === -1 ? 'gep150' : slide === 0 ? 'gep200' : slide === 1 ? 'gep250' : 'gep300';
+      gepCoords = !toggleMR ? gepCoords + 'n' : gepCoords;
       targetCoords = cloneDeep(data[gepCoords]);
     }
 
@@ -517,7 +517,10 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         which again is a color. If the latter, then we get a groupColor, and
         these are generated randomly.
         */
-        const colorVal = groupColors[colorVals[item]] || colorVals[item];
+        let colorVal = groupColors[colorVals[item]] || colorVals[item];
+        if ( colorVal === '' ) {
+          colorVal = 0x66ff00;
+        }
         colorSubstrate.set(colorVal);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
@@ -663,7 +666,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem, detailScreen, setDetailScreen }) {
 
   let blankInfo;
   const writeInfoArray = globalInstanceId => {
@@ -756,8 +759,12 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
     }
   }
 
-  const imgStringTexture = returnDomain() + 'img/t' + data['catalog'][clickedItem] + '.jpg';
-  const imgString = returnDomain() + 'img/' + data['catalog'][clickedItem] + '.jpg';
+  const coll = data['coll'][clickedItem];
+  const idx = data['idx'][clickedItem];
+
+  const imgStringTexture = coll==='lml' && !smallItem ? returnDomain()+'texture_512/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'texture_256/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_texture_512/'+idx+'.jpg' : returnDomain()+'mr_texture_256/'+idx+'.jpg';
+  const imgString = coll==='lml' && !smallItem ? returnDomain()+'packages_1024/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'packages_512/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_prints_crop_512/'+idx+'.jpg' : returnDomain()+'mr_prints_crop_256/'+idx+'.jpg';
+  const detailImgString = coll==='lml' && texture ? returnDomain()+'texture/'+idx+'.jpg' : coll==='lml' && packageImage ? returnDomain()+'packages_2048/'+idx+'.jpg' : coll==='mr' && texture ? returnDomain()+'mr_texture/'+idx+'.jpg' : coll==='mr' && packageImage ? returnDomain()+'mr_prints/'+idx+'.jpg' : '';
 
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
   const sSixth = svgSide / 6;
@@ -769,7 +776,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
   const stroke = "#595959";
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['colorString'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
       {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
 
           <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
@@ -794,6 +801,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -804,8 +812,12 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
           <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{data['year'][clickedItem]}</p>
         </div>
         {!briefMode && <div className='infoBar'>
-            {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalewhite)'}} key={i}>{d}</p>)}
+            {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalemidlightgray)'}} key={i}>{d}</p>)}
         </div>}
+      </div>}
+      {detailScreen && <div id='detailScreen' >
+        <img id='detailImage' src={detailImgString}></img>
+        <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
       </div>}
     </div>
   )
@@ -836,13 +848,13 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 export default function App() {
   const [model, setModel] = useState('grid');
   const [filter, setFilter] = useState(false);
-  const [toggleMR, setToggleMR] = useState(false);
+  const [toggleMR, setToggleMR] = useState(true);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
   const [toggleLAB, setToggleLAB] = useState(false);
   const [toggleExpand, setToggleExpand] = useState(false);
-  const [xcol, setXcol] = useState('colorGroupBinder');
-  const [ycol, setYcol] = useState('colorGroupBinder');
+  const [xcol, setXcol] = useState('year');
+  const [ycol, setYcol] = useState('year');
   const [zcol, setZcol] = useState('none');
   const [facet, setFacet] = useState('3d');
   const [facetcol, setFacetCol] = useState('none');
@@ -850,7 +862,7 @@ export default function App() {
   const [xcolAsc, setXcolAsc] = useState(true);
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
-  const [group, setGroup] = useState('colorGroupBinder');
+  const [group, setGroup] = useState('dminHex');
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
   const [gridMode, setGridMode] = useState(false);
@@ -874,9 +886,11 @@ export default function App() {
   const [branExpand, setBranExpand] = useState(false);
   const [yearSlide, setYearSlide] = useState([min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]);
   const [thicknessSlide, setThicknessSlide] = useState([min(data['thickness']),max(data['thickness'])]);
-  const [colorSlide, setColorSlide] = useState([min(data['color']),max(data['color'])]);
+  const [colorSlide, setColorSlide] = useState([min(data['dmin']),max(data['dmin'])]);
   const [roughnessSlide, setRoughnessSlide] = useState([min(data['roughness']),max(data['roughness'])]);
   const [glossSlide, setGlossSlide] = useState([min(data['gloss']),max(data['gloss'])]);
+  const [detailScreen,setDetailScreen] = useState(false);
+  const [groupSelect,setGroupSelect] = useState(false);
 
   // key code constants
   const ALT_KEY = 18;
@@ -946,6 +960,8 @@ export default function App() {
                                                svgRadar={svgRadar}
                                                smallItem={smallItem}
                                                key={i}
+                                               detailScreen={detailScreen}
+                                               setDetailScreen={setDetailScreen}
                                                />
                                              )}
       </div>
@@ -982,6 +998,7 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
+                     toggleMR={toggleMR}
                      />
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
@@ -1072,6 +1089,7 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
+                     groupSelect={groupSelect}
                      />
           })}
           <OrbitControls
@@ -1113,19 +1131,20 @@ export default function App() {
           <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
           <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
+          <button title='group select mode' onClick={() => setGroupSelect(!groupSelect)} className={groupSelect ? 'material-icons active' : 'material-icons' }>groups</button>
         </div>
       </div>
       <div id='bottomControls'>
         <div className='controls' id='axisMenus'>
           {model==='grid' &&
             <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-              <option value='colorGroupBinder'>binder</option>
               <option value='year'>year</option>
               <option value='thickness'>thickness</option>
               <option value='gloss'>gloss</option>
-              <option value='color'>color</option>
+              <option value='dmin'>color</option>
               <option value='roughness'>roughness</option>
               <option value='expressiveness'>expressiveness</option>
+              <option value='colorGroupColl'>collection</option>
               <option value='colorGroupMan'>manufacturer</option>
               <option value='colorGroupTextureWord'>texture description</option>
               <option value='colorGroupColorWord'>base color description</option>
@@ -1135,11 +1154,10 @@ export default function App() {
           }
           {model!=='grid' &&
             <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-              <option value='colorGroupBinder'>binder</option>
               <option value='year'>year</option>
               <option value='thickness'>thickness</option>
               <option value='gloss'>gloss</option>
-              <option value='color'>color</option>
+              <option value='dmin'>color</option>
               <option value='roughness'>roughness</option>
               <option value='expressiveness'>expressiveness</option>
             </select>
@@ -1147,11 +1165,10 @@ export default function App() {
           {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} >arrow_downward</button>}
           {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} >arrow_upward</button>}
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
-            <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
-            <option value='color'>color</option>
+            <option value='dmin'>color</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
@@ -1159,26 +1176,24 @@ export default function App() {
           {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} >arrow_upward</button>}
           <select value={zcol} onChange={e => setZcol(e.target.value)} title='z-axis'>
             <option value='none'>no z-axis</option>
-            <option value='colorGroupBinder'>binder</option>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
-            <option value='color'>color</option>
+            <option value='dmin'>color</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
           {zcolAsc && <button className={'material-icons'} title='sort z-axis descending' onClick={() => setZcolAsc(false)} >arrow_downward</button>}
           {!zcolAsc && <button className={'material-icons active'} title='sort z-axis ascending' onClick={() => setZcolAsc(true)} >arrow_upward</button>}
           <select value={group} onChange={e => setGroup(e.target.value)} title='glyph color'>
-            <option value='colorGroupBinder'>binder</option>
+            <option value='dminHex'>base color</option>
+            <option value='dmaxHex'>tone</option>
+            <option value='colorGroupColl'>collection</option>
             <option value='colorGroupMan'>manufacturer</option>
             <option value='colorGroupTextureWord'>texture description</option>
             <option value='colorGroupColorWord'>base color description</option>
             <option value='colorGroupGlossWord'>gloss description</option>
             <option value='colorGroupThickWord'>weight description</option>
-            <option value='colorString'>color</option>
-            <option value='colorStringSat'>saturation</option>
-            <option value='colorStringHue'>hue</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
             <option value='roughness'>roughness</option>
@@ -1192,7 +1207,7 @@ export default function App() {
             <option value='expressivenessGroup'>expressiveness</option>
             <option value='isoGroup'>color and thickness</option>
             <option value='radarGroup'>radar group</option>
-            <option value='colorGroupBinder'>binder</option>
+            <option value='colorGroupColl'>collection</option>
             <option value='colorGroupMan'>manufacturer</option>
             <option value='colorGroupTextureWord'>texture description</option>
             <option value='colorGroupColorWord'>base color description</option>
@@ -1207,7 +1222,7 @@ export default function App() {
         <button title='grid montage' className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
-        <button title='cluster plot' className={model === 'gep75' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep75')} >bubble_chart</button>
+        <button title='cluster plot' className={model === 'gep100' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep100')} >bubble_chart</button>
       </div>
       <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
@@ -1223,7 +1238,7 @@ export default function App() {
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
-          {['Man Ray','László Moholy-Nagy','August Sander','Harry Callahan','Lola Alvarez-Bravo'].map((d,i) => <div key={i} style={{display:'block'}}><Switch /><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
+          {['Man Ray'].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={() => setToggleMR(!toggleMR)}/><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
@@ -1254,7 +1269,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
-          <div className='sliderContainer'><Slider color='primary' onChange={e => setColorSlide(e.target.value)} defaultValue={[Number(min(data['color']).toFixed(2)),Number(max(data['color']).toFixed(2))]} valueLabelDisplay="on" min={Number(min(data['color']).toFixed(2))} max={Number(max(data['color']).toFixed(2))} step={0.01}/></div>
+          <div className='sliderContainer'><Slider color='primary' onChange={e => setColorSlide(e.target.value)} defaultValue={[Number(min(data['dmin']).toFixed(2)),Number(max(data['dmin']).toFixed(2))]} valueLabelDisplay="on" min={Number(min(data['dmin']).toFixed(2))} max={Number(max(data['dmin']).toFixed(2))} step={0.01}/></div>
           {colorValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>

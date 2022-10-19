@@ -16,5 +16,6 @@ fonts
 utils/pycache
 utils/.ipynb_checkpoints
 utils/*.ipynb
+utils/_collections
 src/assets/json
 src/assets/csv

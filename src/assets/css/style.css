@@ -146,25 +146,6 @@ button {
   display: inline-block;
 }
 
-img {
-  height: 100%;
-  width: auto;
-}
-
-.imgmat {
-  width: 15vh;
-  height: 15vh;
-  display: inline-block;
-}
-
-.pgkimg {
-  margin-right: 5vw;
-}
-
-.txtimg {
-
-}
-
 svg {
   margin-right: 5vw;
 }
@@ -222,7 +203,21 @@ svg {
   color: transparent;
 }
 
+.openDetailScreen {
+  font-size: 2vh;
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.25rem;
+  border: none;
+  background: none;
+  color: transparent;
+}
+
 .panelItem:hover > .selectionRemove {
+  color: var(--yalemidgray);
+}
+
+.panelItem:hover > .openDetailScreen {
   color: var(--yalemidgray);
 }
 
@@ -324,6 +319,35 @@ svg {
 
 .boxWordSmall {
   font-size: 1vh;
+}
+
+#detailScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(34,34,34,0.75);
+  z-index: 10;
+}
+
+#detailImage {
+  margin: 0 auto;
+  height: 100%;
+  width: auto;
+  display: block;
+  z-index: 11;
+}
+
+.detailScreenRemove {
+  font-size: 6vh;
+  position: fixed;
+  top: 4vh;
+  right: 4vh;
+  z-index: 10;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
 }
 
 #cameraReset {
