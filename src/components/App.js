@@ -666,7 +666,7 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem, detailScreen, setDetailScreen }) {
+function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem, detailScreen, setDetailScreen, detailImageStringState, setDetailImageStringState }) {
 
   let blankInfo;
   const writeInfoArray = globalInstanceId => {
@@ -766,6 +766,8 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
   const imgString = coll==='lml' && !smallItem ? returnDomain()+'packages_1024/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'packages_512/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_prints_crop_512/'+idx+'.jpg' : returnDomain()+'mr_prints_crop_256/'+idx+'.jpg';
   const detailImgString = coll==='lml' && texture ? returnDomain()+'texture/'+idx+'.jpg' : coll==='lml' && packageImage ? returnDomain()+'packages_2048/'+idx+'.jpg' : coll==='mr' && texture ? returnDomain()+'mr_texture/'+idx+'.jpg' : coll==='mr' && packageImage ? returnDomain()+'mr_prints/'+idx+'.jpg' : '';
 
+  console.log(detailImgString);
+
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
   const sSixth = svgSide / 6;
   const sThird = svgSide / 3;
@@ -801,7 +803,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true)}} >open_in_full</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -814,10 +816,6 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
         {!briefMode && <div className='infoBar'>
             {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalemidlightgray)'}} key={i}>{d}</p>)}
         </div>}
-      </div>}
-      {detailScreen && <div id='detailScreen' >
-        <img id='detailImage' src={detailImgString}></img>
-        <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
       </div>}
     </div>
   )
@@ -890,6 +888,7 @@ export default function App() {
   const [roughnessSlide, setRoughnessSlide] = useState([min(data['roughness']),max(data['roughness'])]);
   const [glossSlide, setGlossSlide] = useState([min(data['gloss']),max(data['gloss'])]);
   const [detailScreen,setDetailScreen] = useState(false);
+  const [detailImageStringState,setDetailImageStringState] = useState('');
   const [groupSelect,setGroupSelect] = useState(false);
 
   // key code constants
@@ -962,6 +961,8 @@ export default function App() {
                                                key={i}
                                                detailScreen={detailScreen}
                                                setDetailScreen={setDetailScreen}
+                                               detailImageStringState={detailImageStringState}
+                                               setDetailImageStringState={setDetailImageStringState}
                                                />
                                              )}
       </div>
@@ -1113,6 +1114,10 @@ export default function App() {
       <div className='controls' id='cameraReset'>
         <button title='reset camera' className={'material-icons'} onClick={() => orbitRef.current.reset()} >flip_camera_ios</button>
       </div>
+      {detailScreen && <div id='detailScreen' >
+        <img id='detailImage' src={detailImageStringState}></img>
+        <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
+      </div>}
       <div id='topControls'>
         <div className='controls' id='spreadControls'>
           <Slider
