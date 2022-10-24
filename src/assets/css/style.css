@@ -350,6 +350,28 @@ svg {
   color: var(--yalemidlightgray);
 }
 
+#previousPanelItem {
+  font-size: 12vh;
+  position: fixed;
+  top: 44vh;
+  left: 1vw;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
+#nextPanelItem {
+  font-size: 12vh;
+  position: fixed;
+  top: 44vh;
+  right: 1vw;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
 #cameraReset {
   position: fixed;
   top: 8vh;

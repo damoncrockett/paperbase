@@ -666,7 +666,38 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, glyph, groupColors, briefMode, textMode, raisedItem, setRaisedItem, gridMode, infoPanelFontSize, backgroundColor, texture, packageImage, svgRadar, smallItem, detailScreen, setDetailScreen, detailImageStringState, setDetailImageStringState }) {
+function getDetailImageString(texture,packageImage,i) {
+  const idx = data['idx'][i];
+  const coll = data['coll'][i];
+  const detailImgString = coll==='lml' && texture ? returnDomain()+'texture/'+idx+'.jpg' : coll==='lml' && packageImage ? returnDomain()+'packages_2048/'+idx+'.jpg' : coll==='mr' && texture ? returnDomain()+'mr_texture/'+idx+'.jpg' : coll==='mr' && packageImage ? returnDomain()+'mr_prints/'+idx+'.jpg' : '';
+
+  return detailImgString
+}
+
+function PanelItem({
+  clickedItem,
+  clickedItems,
+  setClickedItems,
+  multiClick,
+  glyph,
+  groupColors,
+  briefMode,
+  textMode,
+  raisedItem,
+  setRaisedItem,
+  gridMode,
+  infoPanelFontSize,
+  backgroundColor,
+  texture,
+  packageImage,
+  svgRadar,
+  smallItem,
+  detailScreen,
+  setDetailScreen,
+  detailImageStringState,
+  setDetailImageStringState,
+  setDetailImageIndex
+}) {
 
   let blankInfo;
   const writeInfoArray = globalInstanceId => {
@@ -764,9 +795,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 
   const imgStringTexture = coll==='lml' && !smallItem ? returnDomain()+'texture_512/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'texture_256/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_texture_512/'+idx+'.jpg' : returnDomain()+'mr_texture_256/'+idx+'.jpg';
   const imgString = coll==='lml' && !smallItem ? returnDomain()+'packages_1024/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'packages_512/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_prints_crop_512/'+idx+'.jpg' : returnDomain()+'mr_prints_crop_256/'+idx+'.jpg';
-  const detailImgString = coll==='lml' && texture ? returnDomain()+'texture/'+idx+'.jpg' : coll==='lml' && packageImage ? returnDomain()+'packages_2048/'+idx+'.jpg' : coll==='mr' && texture ? returnDomain()+'mr_texture/'+idx+'.jpg' : coll==='mr' && packageImage ? returnDomain()+'mr_prints/'+idx+'.jpg' : '';
-
-  console.log(detailImgString);
+  const detailImgString = getDetailImageString(texture,packageImage,clickedItem);
 
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
   const sSixth = svgSide / 6;
@@ -803,7 +832,7 @@ function PanelItem({ clickedItem, clickedItems, setClickedItems, multiClick, gly
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString)}} >open_in_full</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -889,6 +918,7 @@ export default function App() {
   const [glossSlide, setGlossSlide] = useState([min(data['gloss']),max(data['gloss'])]);
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
+  const [detailImageIndex, setDetailImageIndex] = useState('');
   const [groupSelect,setGroupSelect] = useState(false);
 
   // key code constants
@@ -917,6 +947,29 @@ export default function App() {
       mesh.instanceColor.needsUpdate = true;
     });
   }
+
+  const handleDetailScreenNav = (e) => {
+
+      e.stopPropagation();
+      const label = e.target.innerText;
+      const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
+
+      let newClickedItemsPositionIndex;
+      if ( label === 'navigate_before' ) {
+        newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
+      } else if ( label === 'navigate_next' ) {
+        newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
+      }
+
+      if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
+        const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
+        setDetailImageIndex(newDetailImageIndex);
+
+        const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
+        setDetailImageStringState(newDetailImageString);
+      }
+
+    }
 
   return (
     <div id='app'>
@@ -963,6 +1016,7 @@ export default function App() {
                                                setDetailScreen={setDetailScreen}
                                                detailImageStringState={detailImageStringState}
                                                setDetailImageStringState={setDetailImageStringState}
+                                               setDetailImageIndex={setDetailImageIndex}
                                                />
                                              )}
       </div>
@@ -1117,6 +1171,8 @@ export default function App() {
       {detailScreen && <div id='detailScreen' >
         <img id='detailImage' src={detailImageStringState}></img>
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
+        <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_before</button>
+        <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_next</button>
       </div>}
       <div id='topControls'>
         <div className='controls' id='spreadControls'>
