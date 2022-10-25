@@ -422,7 +422,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR, groupSelect }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -832,7 +832,7 @@ function PanelItem({
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem)}} >open_in_full</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); console.log(document.activeElement)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{'#'+data['catalog'][clickedItem]}</p>
@@ -919,7 +919,6 @@ export default function App() {
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
   const [detailImageIndex, setDetailImageIndex] = useState('');
-  const [groupSelect,setGroupSelect] = useState(false);
 
   // key code constants
   const ALT_KEY = 18;
@@ -970,6 +969,35 @@ export default function App() {
       }
 
     }
+
+  useEffect(() => {
+    if ( detailScreen ) {
+      function advanceNav(e) {
+        const keyCode = e.keyCode;
+        const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
+        let newClickedItemsPositionIndex;
+        if ( keyCode === 37 ) {
+          newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
+        } else if ( keyCode === 39 ) {
+          newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
+        }
+
+        if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
+          const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
+          setDetailImageIndex(newDetailImageIndex);
+
+          const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
+          setDetailImageStringState(newDetailImageString);
+        }
+      }
+
+      document.addEventListener("keydown", advanceNav);
+
+      return function cleanup() {
+      document.removeEventListener("keydown", advanceNav);
+    };
+  }
+},[detailScreen, detailImageIndex])
 
   return (
     <div id='app'>
@@ -1144,7 +1172,6 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
-                     groupSelect={groupSelect}
                      />
           })}
           <OrbitControls
@@ -1192,7 +1219,6 @@ export default function App() {
           <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
           <button title='radar glyph' onClick={() => setGlyph('radar')} className={glyph === 'radar' ? 'material-icons active' : 'material-icons' }>radar</button>
-          <button title='group select mode' onClick={() => setGroupSelect(!groupSelect)} className={groupSelect ? 'material-icons active' : 'material-icons' }>groups</button>
         </div>
       </div>
       <div id='bottomControls'>
