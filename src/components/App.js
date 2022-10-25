@@ -1200,6 +1200,7 @@ export default function App() {
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
         <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_before</button>
         <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_next</button>
+        <div id='detailScreenInfoBar'><p>{'#'+data['catalog'][detailImageIndex] + " " + data['man'][detailImageIndex] + " " + data['bran'][detailImageIndex] + " " + data['year'][detailImageIndex]}</p></div>
       </div>}
       <div id='topControls'>
         <div className='controls' id='spreadControls'>
