@@ -13,9 +13,6 @@
 .DS_Store
 dist
 fonts
-utils/pycache
-utils/.ipynb_checkpoints
-utils/*.ipynb
-utils/_collections
+utils
 src/assets/json
 src/assets/csv
