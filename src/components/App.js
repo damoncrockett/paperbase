@@ -4,17 +4,18 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
-import { select } from 'd3-selection';
 import { bin } from 'd3-array';
-import { transition } from 'd3-transition';
 import { orderBy, compact, max, min, cloneDeep } from 'lodash';
 import { data } from './data';
+
+// Man Ray's indices are from 5624 to the end of data
+const allManRayGlobalInstanceIds = Array.from({length: data['isoGroup'].length}, (_, i) => i).slice(5624);
 
 /*Misc functions--------------------------------------------------------------*/
 
 function returnDomain() {
   const production = process.env.NODE_ENV === 'production';
-  return production ? '' : 'http://localhost:8888/'
+  return production ? '' : 'http://localhost:8000/'
 }
 
 const n = data['isoGroup'].length; // nrows in data; 'isgoGroup' could be any col
@@ -296,7 +297,7 @@ function getStandardDeviation(arr) {
   return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
 }
 
-function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide) {
+function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin) {
 
   let scratchArray = [];
 
@@ -310,7 +311,7 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide) {
 
   const std = getStandardDeviation(scratchArray.map(d => d.val));
   const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
-  const binner = bin().thresholds(histBins).value(d => d.val ? d.val : arrmax + std);
+  const binner = bin().thresholds(histBins).value(d => d.val ? d.val : arrmax + std); // if val is null, put it one standard deviation above the max
   const binnedData = binner(scratchArray);
 
   if ( xcolAsc === false ) {
@@ -319,12 +320,34 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide) {
 
   scratchArray = [];
   binnedData.forEach((bin, binidx) => {
-    if (bin.length > 0) {
+    if (bin.length > 0) { // ignores x0 and x1, the bin edges (which are included, even in empty bins), somehow
       bin = orderBy(bin,['ycol'],[ycolAsc ? 'asc' : 'desc'])
       bin.forEach((item, itemidx) => {
-        const x = binidx - binnedData.length / 2; // we need negative x and y positions too
-        const y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2);
+        let x, y;
+        if ( columnsPerBin === 1 ) { // 1 is a special case because there is no empty space between bins
+          
+          x = binidx;
+          y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2); // we plot both above and below the x axis, so we alternate between positive and negative values
+
+          // x adjustment because we center the histogram at (0,0)
+          x = x - (binnedData.length - 1) / 2;
+
+        } else { // all other cases require a space between bins
+          
+          const zeroPoint = binidx * ( columnsPerBin + 1 );
+          const col = itemidx % columnsPerBin;
+          
+          y = itemidx < 2 ? 0 : Math.round(itemidx / (columnsPerBin * 2));
+          const ySign = Math.floor(itemidx / (columnsPerBin * 2)) === y ? 1 : -1;
+          y = ySign * y;
+          
+          x = zeroPoint + col;
+          x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
+
+        }
+        
         scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
+
       });
     }
   });
@@ -442,13 +465,14 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     if ( model === 'grid' ) {
       targetCoords = makeGrid(xcol,xcolAsc,slide);
     } else if ( model === 'hist' ) {
-      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,slide);
+      const columnsPerBin = xcol === 'year' ? 3 : 1;
+      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin);
     } else if ( model === 'scatter' ) {
       targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
-    } else {
+    } else if ( model === 'gep' ) {
       let gepCoords = slide === -2 ? 'gep100' : slide === -1 ? 'gep150' : slide === 0 ? 'gep200' : slide === 1 ? 'gep250' : 'gep300';
-      gepCoords = !toggleMR ? gepCoords + 'n' : gepCoords;
-      targetCoords = cloneDeep(data[gepCoords]);
+      //gepCoords = !toggleMR ? gepCoords + 'n' : gepCoords;
+      targetCoords = cloneDeep(data[gepCoords]); 
     }
 
     if ( facetcol !== 'none' ) {
@@ -530,7 +554,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     });
     meshRef.current.instanceColor.needsUpdate = true;
     invalidate();
-  }, [group, groupColors]);
+  }, [group, groupColors, toggleMR]);
 
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
@@ -875,7 +899,7 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 export default function App() {
   const [model, setModel] = useState('grid');
   const [filter, setFilter] = useState(false);
-  const [toggleMR, setToggleMR] = useState(true);
+  const [toggleMR, setToggleMR] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
   const [toggleLAB, setToggleLAB] = useState(false);
@@ -968,6 +992,23 @@ export default function App() {
         setDetailImageStringState(newDetailImageString);
       }
 
+    }
+
+  const handleToggleMR = (e) => {
+      e.stopPropagation();
+      
+      if ( toggleMR ) {
+        
+        setClickedItems(clickedItems.filter(d => !allManRayGlobalInstanceIds.includes(d)));
+        setToggleMR(false);
+
+      } else if ( !toggleMR ) {
+
+        setClickedItems([...clickedItems, ...allManRayGlobalInstanceIds]);
+        setToggleMR(true);
+        setMultiClick(true);
+
+      }
     }
 
   useEffect(() => {
@@ -1112,6 +1153,7 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
+                     toggleMR={toggleMR}
                      />
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
@@ -1142,6 +1184,7 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
+                     toggleMR={toggleMR}
                      />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
@@ -1172,6 +1215,7 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
+                     toggleMR={toggleMR}
                      />
           })}
           <OrbitControls
@@ -1310,7 +1354,7 @@ export default function App() {
         <button title='grid montage' className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
-        <button title='cluster plot' className={model === 'gep100' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep100')} >bubble_chart</button>
+        <button title='cluster plot' className={model === 'gep' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep')} >bubble_chart</button>
       </div>
       <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
@@ -1326,7 +1370,7 @@ export default function App() {
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
-          {['Man Ray'].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={() => setToggleMR(!toggleMR)}/><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
+          {['Man Ray'].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={handleToggleMR}/><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
