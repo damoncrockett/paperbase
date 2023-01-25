@@ -114,6 +114,7 @@ const textureValCounts = valueCounts('textureWord');
 const glossValCounts = valueCounts('glossWord');
 const manValCounts = valueCounts('man');
 const branValCounts = valueCounts('bran');
+const radarGroupValCounts = valueCounts('radarGroup');
 
 const thicknessValues = Object.keys(thicknessValCounts).sort();
 const thicknessCounts = thicknessValues.map(d => thicknessValCounts[d]);
@@ -138,6 +139,10 @@ const manCountsScaled = featureScale(manCounts);
 const branValues = Object.keys(branValCounts).sort();
 const branCounts = branValues.map(d => branValCounts[d]);
 const branCountsScaled = featureScale(branCounts);
+
+const radarGroupValues = Object.keys(radarGroupValCounts).sort();
+const radarGroupCounts = radarGroupValues.map(d => radarGroupValCounts[d]);
+const radarGroupCountsScaled = featureScale(radarGroupCounts);
 
 /*groupMaps-------------------------------------------------------------------*/
 
@@ -905,7 +910,7 @@ function PanelItem({
   const stroke = "#595959";
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={clickedItem} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={data['radarGroup'][clickedItem]} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
       {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
 
           <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
@@ -1008,7 +1013,7 @@ export default function App() {
   const itemSize = 3;
   const [filter, setFilter] = useState(false);
   const [filterList, setFilterList] = useState(
-    {'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]}
+    {'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]}
     );
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
@@ -1514,7 +1519,7 @@ export default function App() {
       <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
-        <button title='remove all filters' className='material-icons' onClick={() => {setFilterIdxList([]);setFilterList({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});setFilter(false)}} >filter_alt_off</button>
+        <button title='remove all filters' className='material-icons' onClick={() => {setFilterIdxList([]);setFilterList({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});setFilter(false)}} >filter_alt_off</button>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='open' && filterLightMode ? 'open lightMode' : filterModal==='open' && !filterLightMode ? 'open darkMode' : filterModal==='expanded' && filterLightMode ? 'expanded lightMode' : 'expanded darkMode'}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
@@ -1576,6 +1581,10 @@ export default function App() {
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
           <div className='sliderContainer'><Slider color='primary' onChange={e => setGlossSlide(e.target.value)} defaultValue={[Math.round(min(data['gloss'])),Math.round(max(data['gloss']))]} valueLabelDisplay="on" min={Math.round(min(data['gloss']))} max={Math.round(max(data['gloss']))} /></div>
           {glossValues.map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >RADAR GROUP</p></div>
+          {radarGroupValues.map((d,i) => <button key={i} data-cat='radarGroup' data-val={d} onClick={handleFilter} className={filterList['radarGroup'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-radarGroupCountsScaled[i]*100)+'%)',color:radarGroupCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
       </div>}
     </div>
