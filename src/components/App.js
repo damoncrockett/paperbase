@@ -5,11 +5,59 @@ import { Object3D, Color, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
 import { bin } from 'd3-array';
-import { orderBy, compact, max, min, cloneDeep } from 'lodash';
+import { orderBy, compact, max, min, cloneDeep, intersection } from 'lodash';
 import { data } from './data';
 
 // Man Ray's indices are from 5624 to the end of data
 const allManRayGlobalInstanceIds = Array.from({length: data['isoGroup'].length}, (_, i) => i).slice(5624);
+
+data['year'][5667] = "1920";
+
+// additional Man Ray dates
+const manRayDates = {
+  "JP1997.03":"1922",
+  "JP1997.04":"1923",
+  "JP2002.14":"1926",
+  "BL2005.02":"1922",
+  "BL2005.10":"1923",
+  "BL2006.15":"1922",
+  "BL2007.27":"1926",
+  "BL2007.32":"1924",
+  "BL2007.33":"1930",
+  "F7":"1929",
+  "F4":"1923",
+  "BL2012.06":"1922",
+  "BL2011.02":"1922",
+  "BL2011.07":"1933",
+  "BL2011.17":"1928",
+  "BL2012.03":"1922"
+};
+
+function fillDate(data,catalog,date) {
+  const catalogIndex = data['catalog'].indexOf(catalog);
+  const currentDate = data['year'][catalogIndex];
+  console.log(catalog,catalogIndex,currentDate);
+  data['year'][catalogIndex] = date;
+}
+
+Object.keys(manRayDates).forEach((catalog) => {
+  fillDate(data,catalog,manRayDates[catalog])
+});
+
+// new array in `data` filled with empty strings
+data['photoProcess'] = Array.from({length: data['isoGroup'].length}, () => "");
+
+const photogramCatalogNumbers = [
+  "JP1997.03","JP1999.0","JP2004.05","BL2005.10","BL2006.15","BL2007.27","BL2007.32","F2","F4","BL2011.02","BL2012.03","BL2012.06","82.151","89.120"
+];
+
+// fill in photogram process
+photogramCatalogNumbers.forEach((catalog) => {
+  const catalogIndex = data['catalog'].indexOf(catalog);
+  data['photoProcess'][catalogIndex] = "photogram";
+});
+
+data['photoProcess'][5686] = "photogram"; // Hand and Egg
 
 /*Misc functions--------------------------------------------------------------*/
 
@@ -320,38 +368,29 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin) {
 
   scratchArray = [];
   binnedData.forEach((bin, binidx) => {
-    if (bin.length > 0) { // ignores x0 and x1, the bin edges (which are included, even in empty bins), somehow
+    if (bin.length > 0) { // ignores x0 and x1, the bin edges (which are included for every bin)
       bin = orderBy(bin,['ycol'],[ycolAsc ? 'asc' : 'desc'])
       bin.forEach((item, itemidx) => {
         let x, y;
         if ( columnsPerBin === 1 ) { // 1 is a special case because there is no empty space between bins
-          
           x = binidx;
+          x = x - (binnedData.length - 1) / 2; // x adjustment because we center the histogram at (0,0)
           y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2); // we plot both above and below the x axis, so we alternate between positive and negative values
-
-          // x adjustment because we center the histogram at (0,0)
-          x = x - (binnedData.length - 1) / 2;
-
         } else { // all other cases require a space between bins
-          
           const zeroPoint = binidx * ( columnsPerBin + 1 );
-          const col = itemidx % columnsPerBin;
+          const col = itemidx % columnsPerBin; // simple alternation between 0 and 1
           
-          y = itemidx < 2 ? 0 : Math.round(itemidx / (columnsPerBin * 2));
-          const ySign = Math.floor(itemidx / (columnsPerBin * 2)) === y ? 1 : -1;
+          y = itemidx < 2 ? 0 : Math.round(itemidx / (columnsPerBin * 2)); // produces 0,0,1,1,1,1,2,2,2,2,... when columnsPerBin = 2
+          const ySign = Math.floor(itemidx / (columnsPerBin * 2)) === y ? 1 : -1; // the smaller two (out of 4) end up y-1 after flooring, the larger ones y
           y = ySign * y;
           
           x = zeroPoint + col;
           x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
-
         }
-        
         scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
-
       });
     }
   });
-
   scratchArray = orderBy(scratchArray,['idx'],['asc']);
   return scratchArray.map(d => d.pos)
 }
@@ -445,7 +484,28 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR }) {
+function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
+
+  if ( filter ) {
+    if ( group === 'dminHex' ) {
+      if ( filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, 0.1, -0.4);
+      } else {
+        colorSubstrate.offsetHSL(0, -0.2, -0.8);
+      } 
+    } else {
+      if ( !filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, -0.2, -0.2);
+      }
+    }
+  } else {
+    if ( group === 'dminHex' ) {
+      colorSubstrate.offsetHSL(0, 0.1, -0.4);
+    }
+  }
+}
+
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR, filter, filterIdxList, invalidateSignal }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -546,6 +606,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
           colorVal = 0x66ff00;
         }
         colorSubstrate.set(colorVal);
+        applyFilterColors(item, colorSubstrate, filter, group, filterIdxList);
         meshRef.current.setColorAt(i, colorSubstrate);
       } else {
         colorSubstrate.set(highlightColor);
@@ -554,7 +615,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     });
     meshRef.current.instanceColor.needsUpdate = true;
     invalidate();
-  }, [group, groupColors, toggleMR]);
+  }, [group, groupColors, toggleMR, filter, filterIdxList, invalidateSignal]);
 
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
@@ -579,6 +640,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
             // basically, this case handles items that need to be set to whatever color they had before
             if ( globalInstanceId !== globalIndex ) {
               colorSubstrate.set(colorVal);
+              applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
               mesh.setColorAt(j, colorSubstrate);
             } else if ( globalInstanceId === globalIndex ) { // loop iteration item IS ALSO the item we just clicked
               if ( !clickedItems.includes(globalInstanceId) ) { // if this item not already clicked, highlight it
@@ -587,6 +649,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
                 setClickedItems([globalInstanceId]);
               } else { // if already clicked, unclick
                 colorSubstrate.set(colorVal);
+                applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
                 mesh.setColorAt(j, colorSubstrate);
                 setClickedItems([]);
                 if ( raisedItem !== null && raisedItem === globalInstanceId ) {
@@ -610,6 +673,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
               // if the item we're considering in this loop iteration is not already clicked, set to its normal color
               if ( !clickedItems.includes(globalIndex) ) {
                 colorSubstrate.set(colorVal);
+                applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
                 mesh.setColorAt(j, colorSubstrate);
               } else { // but if it is clicked, set to highlight color
                 colorSubstrate.set(highlightColor);
@@ -622,6 +686,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
                 setClickedItems([...clickedItems, globalInstanceId]);
               } else { // if already clicked, unclick
                 colorSubstrate.set(colorVal);
+                applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
                 mesh.setColorAt(j, colorSubstrate);
                 setClickedItems(clickedItems.filter(d => d !== globalInstanceId));
                 if ( raisedItem !== null && raisedItem === globalInstanceId ) {
@@ -720,7 +785,12 @@ function PanelItem({
   setDetailScreen,
   detailImageStringState,
   setDetailImageStringState,
-  setDetailImageIndex
+  setDetailImageIndex,
+  filter,
+  group,
+  filterIdxList,
+  invalidateSignal,
+  setInvalidateSignal,
 }) {
 
   let blankInfo;
@@ -768,6 +838,7 @@ function PanelItem({
         glyphMap[item].forEach((globalIndex, j) => {
           const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
           colorSubstrate.set(colorVal);
+          applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
           mesh.setColorAt(j, colorSubstrate);
         });
         mesh.instanceColor.needsUpdate = true;
@@ -787,6 +858,7 @@ function PanelItem({
             // if the item we're considering in this loop iteration is not already clicked, set to its normal color
             if ( !clickedItems.includes(globalIndex) ) {
               colorSubstrate.set(colorVal);
+              applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
               mesh.setColorAt(j, colorSubstrate);
             } else { // but if it is clicked, set to highlight color
               colorSubstrate.set(highlightColor);
@@ -794,6 +866,7 @@ function PanelItem({
             }
           } else if ( clickedItem === globalIndex ) { // loop iteration item IS ALSO the item we just clicked
               colorSubstrate.set(colorVal);
+              applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
               mesh.setColorAt(j, colorSubstrate);
           }
         });
@@ -802,6 +875,7 @@ function PanelItem({
 
       setClickedItems(clickedItems.filter(d => d!==clickedItem));
     }
+    setInvalidateSignal(!invalidateSignal);
   }
 
   const handlePanelItemClick = e => {
@@ -896,9 +970,10 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 
 /*App-------------------------------------------------------------------------*/
 
+console.log(data);
+
 export default function App() {
   const [model, setModel] = useState('grid');
-  const [filter, setFilter] = useState(false);
   const [toggleMR, setToggleMR] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
@@ -931,6 +1006,11 @@ export default function App() {
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
+  const [filter, setFilter] = useState(false);
+  const [filterList, setFilterList] = useState(
+    {'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]}
+    );
+  const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
   const [filterLightMode, setFilterLightMode] = useState(false);
   const [manExpand, setManExpand] = useState(false);
@@ -943,6 +1023,7 @@ export default function App() {
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
   const [detailImageIndex, setDetailImageIndex] = useState('');
+  const [invalidateSignal, setInvalidateSignal] = useState(false);
 
   // key code constants
   const ALT_KEY = 18;
@@ -957,20 +1038,7 @@ export default function App() {
 
   const orbitRef = useRef();
   //const setPosition = useStore(state => state.setPosition);
-
-  const glyphMap = glyphToMap[glyph];
-  const clearSelection = () => {
-    Object.keys(glyphMap).forEach((item, i) => {
-      const mesh = meshList[item];
-      glyphMap[item].forEach((globalIndex, j) => {
-        const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
-        colorSubstrate.set(colorVal);
-        mesh.setColorAt(j, colorSubstrate);
-      });
-      mesh.instanceColor.needsUpdate = true;
-    });
-  }
-
+  
   const handleDetailScreenNav = (e) => {
 
       e.stopPropagation();
@@ -1010,6 +1078,76 @@ export default function App() {
 
       }
     }
+
+  const handleFilter = (e) => {
+    e.stopPropagation();
+
+    const dataCat = e.target.getAttribute('data-cat');
+    const dataVal = e.target.getAttribute('data-val');
+
+    const alreadyInFilterList = filterList[dataCat].includes(dataVal);
+    let newFilterList = {...filterList};
+
+    if ( alreadyInFilterList ) {
+      newFilterList[dataCat] = newFilterList[dataCat].filter(d => d !== dataVal); // remove from filter
+    } else {
+      newFilterList[dataCat].push(dataVal); // add to filter
+    }
+
+    const newFilterIdxList = applyFilterList(newFilterList);
+
+    setFilterIdxList(newFilterIdxList);
+    setFilterList(newFilterList);
+
+    // if filterList is empty, then set filter to false
+    if ( Object.values(newFilterList).every(d => d.length === 0) ) {
+      setFilter(false);
+    } else {
+      setFilter(true);
+    }
+
+  }
+
+  function applyFilterList( newFilterList ) {
+
+    let newFilterIdxList = [];
+
+    // this is getting OR for each filter category
+    Object.keys(newFilterList).forEach((cat, i) => {
+      let catList = []; // probably not necessary to initialize as a list but whatevs
+      if ( newFilterList[cat].length === 0 ) {
+        catList = data['idx'].map((d,i) => i); // [...Array(n).keys()] was returning an array iterator for some reason
+      } else {
+        data[cat].forEach((val, i) => {
+          if ( newFilterList[cat].includes(val) ) {
+            catList.push(i);
+          }
+        });
+      }
+      newFilterIdxList = [ ...newFilterIdxList, catList ];
+    });
+
+    // this is getting AND for all filter categories
+    newFilterIdxList = intersection(...newFilterIdxList);
+
+    return newFilterIdxList;
+
+  }
+  
+  const handleFilterToSelection = (e) => {
+    e.stopPropagation();
+    const addMode = e.target.innerText;
+
+    if ( addMode === 'queue' ) {
+      setClickedItems([...clickedItems,...filterIdxList]);
+      setInvalidateSignal(!invalidateSignal);
+    } else if ( addMode === 'open_in_new' ) {
+      setClickedItems(filterIdxList);
+      setInvalidateSignal(!invalidateSignal);
+    }
+
+    setMultiClick(true);
+  }
 
   useEffect(() => {
     if ( detailScreen ) {
@@ -1059,7 +1197,7 @@ export default function App() {
         {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
         {!lightMode && <button title='switch to light mode' className={'material-icons'} onClick={() => setLightMode(true)} >light_mode</button>}
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
-        <button title='clear selection' className='material-icons' onClick={() => {clearSelection(); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
+        <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
       </div>
       <div id='infoPanel' className={lightMode && gridMode ? 'lightMode grid' : lightMode && !gridMode ? 'lightMode list' : !lightMode && gridMode ? 'darkMode grid' : 'darkMode list'}>
         {clickedItems.map((clickedItem,i) => <PanelItem
@@ -1086,6 +1224,11 @@ export default function App() {
                                                detailImageStringState={detailImageStringState}
                                                setDetailImageStringState={setDetailImageStringState}
                                                setDetailImageIndex={setDetailImageIndex}
+                                               filter={filter}
+                                               group={group}
+                                               filterIdxList={filterIdxList}
+                                               invalidateSignal={invalidateSignal}
+                                               setInvalidateSignal={setInvalidateSignal}
                                                />
                                              )}
       </div>
@@ -1123,6 +1266,9 @@ export default function App() {
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
                      toggleMR={toggleMR}
+                     filter={filter}
+                     filterIdxList={filterIdxList}
+                     invalidateSignal={invalidateSignal}
                      />
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
@@ -1154,6 +1300,9 @@ export default function App() {
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
                      toggleMR={toggleMR}
+                     filter={filter}
+                     filterIdxList={filterIdxList}
+                     invalidateSignal={invalidateSignal}
                      />
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
@@ -1185,6 +1334,9 @@ export default function App() {
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
                      toggleMR={toggleMR}
+                     filter={filter}
+                     filterIdxList={filterIdxList}
+                     invalidateSignal={invalidateSignal}
                      />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
@@ -1216,6 +1368,9 @@ export default function App() {
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
                      toggleMR={toggleMR}
+                     filter={filter}
+                     filterIdxList={filterIdxList}
+                     invalidateSignal={invalidateSignal}
                      />
           })}
           <OrbitControls
@@ -1357,11 +1512,15 @@ export default function App() {
         <button title='cluster plot' className={model === 'gep' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep')} >bubble_chart</button>
       </div>
       <div className='controls' id='filterControls'>
-        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor:'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
+        {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
-        <button title='remove all filters' className='material-icons' onClick={() => setFilter(false)} >filter_alt_off</button>
+        <button title='remove all filters' className='material-icons' onClick={() => {setFilterIdxList([]);setFilterList({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});setFilter(false)}} >filter_alt_off</button>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='open' && filterLightMode ? 'open lightMode' : filterModal==='open' && !filterLightMode ? 'open darkMode' : filterModal==='expanded' && filterLightMode ? 'expanded lightMode' : 'expanded darkMode'}>
+        {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
+        {filterModal==='expanded' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
+        {filterModal==='open' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >queue</button>}
+        {filterModal==='expanded' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >queue</button>}
         {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
         {filterLightMode && filterModal==='open' && <button title='switch to dark mode' style={{right:'28vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
@@ -1370,11 +1529,15 @@ export default function App() {
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
-          {['Man Ray'].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={handleToggleMR}/><button className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d}</button></div>)}
+          {[{t:'Man Ray',v:'mr'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={handleToggleMR}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
           {['LML Packages','LML Sample Books'].map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)'}} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PROCESS TYPE</p></div>
+          {[{t:'Photogram',v:"photogram"}].map((d,i) => <button key={i} data-cat='photoProcess' data-val={d.v} onClick={handleFilter} className={filterList['photoProcess'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
@@ -1382,37 +1545,37 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
-          {!manExpand && manValues.slice(0,20).map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!manExpand && manValues.slice(0,20).map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
           {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(true)} >more_horiz</button>}
-          {manExpand && manValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {manExpand && manValues.map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
           {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(false)} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
-          {!branExpand && branValues.slice(0,20).map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!branExpand && branValues.slice(0,20).map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
           {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={() => setBranExpand(true)} >more_horiz</button>}
-          {branExpand && branValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {branExpand && branValues.map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
           {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => setBranExpand(false)} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
           <div className='sliderContainer'><Slider color='primary' onChange={e => {setThicknessSlide(e.target.value);console.log(e.target.value)}} defaultValue={[min(data['thickness']),max(data['thickness'])]} valueLabelDisplay="on" min={min(data['thickness'])} max={max(data['thickness'])} step={0.001} /></div>
-          {thicknessValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessCountsScaled[i]*100)+'%)',color:thicknessCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {thicknessValues.map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessCountsScaled[i]*100)+'%)',color:thicknessCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
           <div className='sliderContainer'><Slider color='primary' onChange={e => setColorSlide(e.target.value)} defaultValue={[Number(min(data['dmin']).toFixed(2)),Number(max(data['dmin']).toFixed(2))]} valueLabelDisplay="on" min={Number(min(data['dmin']).toFixed(2))} max={Number(max(data['dmin']).toFixed(2))} step={0.01}/></div>
-          {colorValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {colorValues.map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
           <div className='sliderContainer'><Slider color='primary' onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[Math.round(min(data['roughness'])),Math.round(max(data['roughness']))]} valueLabelDisplay="on" min={Math.round(min(data['roughness']))} max={Math.round(max(data['roughness']))} /></div>
-          {textureValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureCountsScaled[i]*100)+'%)',color:textureCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {textureValues.map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureCountsScaled[i]*100)+'%)',color:textureCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
           <div className='sliderContainer'><Slider color='primary' onChange={e => setGlossSlide(e.target.value)} defaultValue={[Math.round(min(data['gloss'])),Math.round(max(data['gloss']))]} valueLabelDisplay="on" min={Math.round(min(data['gloss']))} max={Math.round(max(data['gloss']))} /></div>
-          {glossValues.map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {glossValues.map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
       </div>}
     </div>

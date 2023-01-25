@@ -13,6 +13,7 @@
   --ripplingwhite: #fefefe;
   --yalelightblue: #63aaff;
   --yaleorange: #bd5319;
+  --filterHighlight: #FF5F1F;
 }
 
 #landing {
@@ -233,10 +234,6 @@ svg {
 .panelItem::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
     width: 0;
     height: 0;
-}
-
-.panelItem:hover {
-
 }
 
 .grid {
@@ -512,8 +509,21 @@ svg {
   font-size: 1.5vh;
 }
 
+.filterButtonActive {
+  background-color: var(--yalewhite);
+  padding: 1vh;
+  margin: 0.25vh;
+  color: var(--yalemidgray);
+  border-radius: 2vh;
+  border-width: 1px;
+  border-color: var(--filterHighlight);
+  border-style: solid;
+  font-family: 'Archivo';
+  font-size: 1.5vh;
+}
+
 .filterButton:hover {
-  border-color: var(--yalewhite);
+  border-color: var(--yalewhite) !important;
 }
 
 .filterCategoryHeading {
@@ -545,11 +555,47 @@ svg {
   margin-top: 1vh;
 }
 
+.replaceFilterWithSelection {
+  background-color: var(--yalewhite);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-color: transparent;
+  border-style: solid;
+  color: var(--yalemidlightgray);
+  position: fixed;
+  top: 27vh;
+  padding: 1vh;
+  font-size: 3vh;
+}
+
+.replaceFilterWithSelection:hover {
+  border-color: var(--yalewhite);
+  color: var(--yaledarkgray);
+}
+
+.addFilterToSelection {
+  background-color: var(--yalewhite);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-color: transparent;
+  border-style: solid;
+  color: var(--yalemidlightgray);
+  position: fixed;
+  top: 33vh;
+  padding: 1vh;
+  font-size: 3vh;
+}
+
+.addFilterToSelection:hover {
+  border-color: var(--yalewhite);
+  color: var(--yaledarkgray);
+}
+
 .expandButtons {
   background-color: var(--yalewhite);
   border-radius: 1vh;
   border-width: 1px;
-  border-color: var(--yalemidlightgray);
+  border-color: transparent;
   border-style: solid;
   color: var(--yalemidlightgray);
   position: fixed;
@@ -560,6 +606,7 @@ svg {
 
 .expandButtons:hover {
   border-color: var(--yalewhite);
+  color: var(--yaledarkgray);
 }
 
 .expanded {
@@ -573,7 +620,7 @@ svg {
 .filterLightMode {
   border-radius: 1vh;
   border-width: 1px;
-  border-color: var(--yalemidlightgray);
+  border-color: transparent;
   border-style: solid;
   position: fixed;
   top: 45vh;
@@ -585,6 +632,7 @@ svg {
 
 .filterLightMode:hover {
   border-color: var(--yalewhite);
+  color: var(--yaledarkgray);
 }
 
 .filterLightMode.active {
