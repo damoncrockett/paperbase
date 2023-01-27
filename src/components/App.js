@@ -8,10 +8,14 @@ import { bin } from 'd3-array';
 import { orderBy, compact, max, min, cloneDeep, intersection } from 'lodash';
 import { data } from './data';
 
-// Man Ray's indices are from 5624 to the end of data
-const allManRayGlobalInstanceIds = Array.from({length: data['isoGroup'].length}, (_, i) => i).slice(5624);
-
 data['year'][5667] = "1920";
+
+// zeroes in thickness are actually missing data
+data['thickness'].forEach((item, i) => {
+  if (item === 0) {
+    data['thickness'][i] = "_"
+  }
+});
 
 // additional Man Ray dates
 const manRayDates = {
@@ -35,8 +39,6 @@ const manRayDates = {
 
 function fillDate(data,catalog,date) {
   const catalogIndex = data['catalog'].indexOf(catalog);
-  const currentDate = data['year'][catalogIndex];
-  console.log(catalog,catalogIndex,currentDate);
   data['year'][catalogIndex] = date;
 }
 
@@ -66,7 +68,7 @@ function returnDomain() {
   return production ? '' : 'http://localhost:8000/'
 }
 
-const n = data['isoGroup'].length; // nrows in data; 'isgoGroup' could be any col
+const n = data['idx'].length; // nrows in data; 'idx' could be any column
 
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -260,8 +262,11 @@ function uScale(uMin,uMax,val) {
 }
 
 function rankTransform(arr) {
-  const sorted = [...arr].sort((a, b) => a - b);
-  return arr.map((x) => sorted.indexOf(x) + 1)
+  
+  const nanReplace = arr.map(x => isNaN(x) ? 9999 : x); // 9999 is a value that will never be used
+  const sorted = [...nanReplace].sort((a, b) => a - b); // since NaNs (as 9999s) end up at the *end* and not the beginning, they don't affect the rank indices we collect in the next line
+  return nanReplace.map(x => x === 9999 ? NaN : sorted.indexOf(x)) // switch 9999 back to NaN after sorting
+ 
 }
 
 const dataU = {
@@ -272,6 +277,8 @@ const dataU = {
 };
 
 const universe = getUniverse(dataU);
+
+const checkNaN = d => !isNaN(d);
 
 function polygonPoints(dataU, clickedItem, svgSide) {
 
@@ -302,7 +309,24 @@ function polygonPoints(dataU, clickedItem, svgSide) {
     const p4x = zeroPoint + zeroPoint * p4;
     const p4y = zeroPoint;
 
-    const s = p1x.toString()+','+p1y.toString()+' '+p2x.toString()+','+p2y.toString()+' '+p3x.toString()+','+p3y.toString()+' '+p4x.toString()+','+p4y.toString();
+    const polygonPointList = [];
+    if ( [p1x,p1y].every(checkNaN) ) {
+      polygonPointList.push(p1x.toString()+','+p1y.toString());
+    }
+
+    if ( [p2x,p2y].every(checkNaN) ) {
+      polygonPointList.push(p2x.toString()+','+p2y.toString());
+    }
+
+    if ( [p3x,p3y].every(checkNaN) ) {
+      polygonPointList.push(p3x.toString()+','+p3y.toString());
+    }
+
+    if ( [p4x,p4y].every(checkNaN) ) {
+      polygonPointList.push(p4x.toString()+','+p4y.toString());
+    }
+
+    const s = polygonPointList.join(' ');
 
     return s
 }
@@ -333,8 +357,9 @@ function makeGrid(xcol,xcolAsc,slide) {
   const gridArray = gridCoords(n,ncols);
 
   data[xcol].forEach((item, i) => {
-    sortingArray[i] = { 'idx': i, 'val': item }
+    sortingArray[i] = { 'idx': i, 'val': parseFloat(item) } // creates NaNs in cases where I used "_" as a placeholder
   });
+
   sortingArray = orderBy(sortingArray,['val'],[xcolAsc ? 'asc' : 'desc']);
   sortingArray.forEach((item, i) => {
     sortingArray[i]['pos'] = gridArray[i]
@@ -364,7 +389,7 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin) {
 
   const std = getStandardDeviation(scratchArray.map(d => d.val));
   const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
-  const binner = bin().thresholds(histBins).value(d => d.val ? d.val : arrmax + std); // if val is null, put it one standard deviation above the max
+  const binner = bin().thresholds(histBins).value(d => isNaN(d.val) ? arrmax + std : d.val); // if val is null, put it one standard deviation above the max
   const binnedData = binner(scratchArray);
 
   if ( xcolAsc === false ) {
@@ -406,7 +431,7 @@ function featureScale(col) {
   const colmax = max(col);
   const colrange = colmax - colmin;
   const std = getStandardDeviation(col);
-  return col.map(d => d ? (d - colmin) / colrange : colmax + std) // if d is null, we add sigma to the max to send it to the right, off screen
+  return col.map(d => isNaN(d) ? colmax + std : (d - colmin) / colrange) // if d is NaN, we add sigma to the max to send it to the right, off screen
 }
 
 function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide) {
@@ -474,12 +499,19 @@ const continuousColorCols = ['thickness','gloss','roughness','expressiveness','y
 let colorVals;
 
 function valToColor(arr) {
-  arr = arr.map(d => parseFloat(d));
-  const arrmax = max(arr);
-  const arrmin = min(arr);
+  
+  arr = arr.map(d => parseFloat(d)); // empty strings and underscores are converted to NaN
+  const arrRanked = rankTransform(arr); // returns `arr` with ranks, and keeps NaNs as they are
+  
+  // these functions, from lodash, ignore NaNs
+  const arrmax = max(arrRanked);
+  const arrmin = min(arrRanked);
   const arrrange = arrmax - arrmin;
-  const arrnorm = arr.map(d => (d - arrmin) / arrrange);
-  const arrhsl = arrnorm.map(d => d ? "hsl(0,0%," + parseInt(d*100).toString() + "%)" : 0xbd590f);
+  
+  const arrnorm = arrRanked.map(d => (d - arrmin) / arrrange);
+  const arrhsl = arrnorm.map(d => isNaN(d) ? 0x66ff00 : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
+
+  console.log(arrRanked,arrnorm,arrhsl);
 
   return arrhsl
 }
@@ -510,7 +542,7 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
   }
 }
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, toggleMR, filter, filterIdxList, invalidateSignal }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -536,7 +568,6 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
     } else if ( model === 'gep' ) {
       let gepCoords = slide === -2 ? 'gep100' : slide === -1 ? 'gep150' : slide === 0 ? 'gep200' : slide === 1 ? 'gep250' : 'gep300';
-      //gepCoords = !toggleMR ? gepCoords + 'n' : gepCoords;
       targetCoords = cloneDeep(data[gepCoords]); 
     }
 
@@ -620,7 +651,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     });
     meshRef.current.instanceColor.needsUpdate = true;
     invalidate();
-  }, [group, groupColors, toggleMR, filter, filterIdxList, invalidateSignal]);
+  }, [group, groupColors, filter, filterIdxList, invalidateSignal]);
 
   const handleClick = e => {
     // this appears to select first raycast intersection, but not sure
@@ -980,10 +1011,11 @@ console.log(data);
 export default function App() {
   const [model, setModel] = useState('grid');
   const [toggleMR, setToggleMR] = useState(false);
+  const [toggleLMN, setToggleLMN] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
   const [toggleLAB, setToggleLAB] = useState(false);
-  const [toggleExpand, setToggleExpand] = useState(false);
+  const [toggleRM, setToggleRM] = useState(false);
   const [xcol, setXcol] = useState('year');
   const [ycol, setYcol] = useState('year');
   const [zcol, setZcol] = useState('none');
@@ -1065,23 +1097,6 @@ export default function App() {
         setDetailImageStringState(newDetailImageString);
       }
 
-    }
-
-  const handleToggleMR = (e) => {
-      e.stopPropagation();
-      
-      if ( toggleMR ) {
-        
-        setClickedItems(clickedItems.filter(d => !allManRayGlobalInstanceIds.includes(d)));
-        setToggleMR(false);
-
-      } else if ( !toggleMR ) {
-
-        setClickedItems([...clickedItems, ...allManRayGlobalInstanceIds]);
-        setToggleMR(true);
-        setMultiClick(true);
-
-      }
     }
 
   const handleFilter = (e) => {
@@ -1270,7 +1285,6 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
-                     toggleMR={toggleMR}
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
@@ -1304,7 +1318,6 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
-                     toggleMR={toggleMR}
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
@@ -1338,7 +1351,6 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
-                     toggleMR={toggleMR}
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
@@ -1372,7 +1384,6 @@ export default function App() {
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
-                     toggleMR={toggleMR}
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
@@ -1534,7 +1545,7 @@ export default function App() {
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
-          {[{t:'Man Ray',v:'mr'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={handleToggleMR}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
+          {[{t:'Man Ray',v:'mr'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={()=>console.log('checked')} onChange={()=>console.log('chenged')}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
