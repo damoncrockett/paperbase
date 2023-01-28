@@ -70,6 +70,27 @@ function returnDomain() {
 
 const n = data['idx'].length; // nrows in data; 'idx' could be any column
 
+// parse and round measurement values in `data`
+data['year'] = data['year'].map(d => parseInt(d));
+data['thickness'] = data['thickness'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+data['gloss'] = data['gloss'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+data['roughness'] = data['roughness'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+data['dmin'] = data['dmin'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+data['dmax'] = data['dmax'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+
+console.log(data);
+
+const yearMin = min(data['year']);
+const yearMax = max(data['year']);
+const thicknessMin = min(data['thickness']);
+const thicknessMax = max(data['thickness']);
+const glossMin = min(data['gloss']);
+const glossMax = max(data['gloss']);
+const roughnessMin = min(data['roughness']);
+const roughnessMax = max(data['roughness']);
+const colorMin = min(data['dmin']);
+const colorMax = max(data['dmin']);
+
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
   return rgbString
@@ -349,15 +370,16 @@ function gridCoords(n,ncol) {
   return coords;
 }
 
-function makeGrid(xcol,xcolAsc,slide) {
+function makeGrid(xcol,xcolAsc,spreadSlide) {
   let sortingArray = [];
   const ncolsSquare = Math.ceil(Math.sqrt(n));
   const ncolsIncrement = Math.ceil(ncolsSquare / 5);
-  const ncols = slide === -2 ? ncolsSquare - ncolsIncrement * 2 : slide === -1 ? ncolsSquare - ncolsIncrement : slide === 0 ? ncolsSquare : slide === 1 ? ncolsSquare + ncolsIncrement : ncolsSquare + ncolsIncrement * 2;
+  const ncols = spreadSlide === -2 ? ncolsSquare - ncolsIncrement * 2 : spreadSlide === -1 ? ncolsSquare - ncolsIncrement : spreadSlide === 0 ? ncolsSquare : spreadSlide === 1 ? ncolsSquare + ncolsIncrement : ncolsSquare + ncolsIncrement * 2;
   const gridArray = gridCoords(n,ncols);
 
   data[xcol].forEach((item, i) => {
-    sortingArray[i] = { 'idx': i, 'val': parseFloat(item) } // creates NaNs in cases where I used "_" as a placeholder
+   //sortingArray[i] = { 'idx': i, 'val': parseFloat(item) }
+    sortingArray[i] = { 'idx': i, 'val': item }
   });
 
   sortingArray = orderBy(sortingArray,['val'],[xcolAsc ? 'asc' : 'desc']);
@@ -375,17 +397,18 @@ function getStandardDeviation(arr) {
   return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
 }
 
-function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin) {
+function makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin) {
 
   let scratchArray = [];
 
   data[xcol].forEach((item, i) => {
-    scratchArray[i] = { 'idx': i, 'val': parseFloat(item), 'ycol': parseFloat(data[ycol][i]) }
+    //scratchArray[i] = { 'idx': i, 'val': parseFloat(item), 'ycol': parseFloat(data[ycol][i]) }
+    scratchArray[i] = { 'idx': i, 'val': item, 'ycol': data[ycol][i] }
   });
 
   const histBinsMid = 200;
   const histBinsIncrement = 50;
-  const histBins = slide === -2 ? histBinsMid - histBinsIncrement * 2 : slide === -1 ? histBinsMid - histBinsIncrement : slide === 0 ? histBinsMid : slide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
+  const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
 
   const std = getStandardDeviation(scratchArray.map(d => d.val));
   const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
@@ -426,7 +449,8 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin) {
 }
 
 function featureScale(col) {
-  col = col.map(d => parseFloat(d));
+  //col = col.map(d => parseFloat(d));
+  col = col.map(d => d);
   const colmin = min(col);
   const colmax = max(col);
   const colrange = colmax - colmin;
@@ -434,7 +458,7 @@ function featureScale(col) {
   return col.map(d => isNaN(d) ? colmax + std : (d - colmin) / colrange) // if d is NaN, we add sigma to the max to send it to the right, off screen
 }
 
-function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide) {
+function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,spreadSlide) {
   let xArray = featureScale(data[xcol]);
   let yArray = featureScale(data[ycol]);
   let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
@@ -453,7 +477,7 @@ function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide) {
 
   const scatterFactorMid = 250;
   const scatterFactorIncrement = 50;
-  const scatterFactor = slide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : slide === -1 ? scatterFactorMid - scatterFactorIncrement : slide === 0 ? scatterFactorMid : slide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
+  const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : spreadSlide === 0 ? scatterFactorMid : spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
 
   const scratchArray = [];
   xArray.forEach((item, i) => {
@@ -500,7 +524,8 @@ let colorVals;
 
 function valToColor(arr) {
   
-  arr = arr.map(d => parseFloat(d)); // empty strings and underscores are converted to NaN
+  //arr = arr.map(d => parseFloat(d)); // empty strings and underscores are converted to NaN
+  arr = arr.map(d => d);
   const arrRanked = rankTransform(arr); // returns `arr` with ranks, and keeps NaNs as they are
   
   // these functions, from lodash, ignore NaNs
@@ -510,8 +535,6 @@ function valToColor(arr) {
   
   const arrnorm = arrRanked.map(d => (d - arrmin) / arrrange);
   const arrhsl = arrnorm.map(d => isNaN(d) ? 0x66ff00 : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
-
-  console.log(arrRanked,arrnorm,arrhsl);
 
   return arrhsl
 }
@@ -542,7 +565,7 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
   }
 }
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, slide, groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal }) {
+function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal }) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -560,14 +583,14 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
 
   useLayoutEffect(() => {
     if ( model === 'grid' ) {
-      targetCoords = makeGrid(xcol,xcolAsc,slide);
+      targetCoords = makeGrid(xcol,xcolAsc,spreadSlide);
     } else if ( model === 'hist' ) {
       const columnsPerBin = xcol === 'year' ? 3 : 1;
-      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,slide,columnsPerBin);
+      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin);
     } else if ( model === 'scatter' ) {
-      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,slide);
+      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,spreadSlide);
     } else if ( model === 'gep' ) {
-      let gepCoords = slide === -2 ? 'gep100' : slide === -1 ? 'gep150' : slide === 0 ? 'gep200' : slide === 1 ? 'gep250' : 'gep300';
+      let gepCoords = spreadSlide === -2 ? 'gep100' : spreadSlide === -1 ? 'gep150' : spreadSlide === 0 ? 'gep200' : spreadSlide === 1 ? 'gep250' : 'gep300';
       targetCoords = cloneDeep(data[gepCoords]); 
     }
 
@@ -593,7 +616,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       targetCoords[raisedItem][2] = 2
     }
 
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide, raisedItem])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, spreadSlide, raisedItem])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -609,7 +632,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, slide, raisedItem]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, spreadSlide, raisedItem]);
 
   useLayoutEffect(() => {
 
@@ -1006,7 +1029,7 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 
 /*App-------------------------------------------------------------------------*/
 
-console.log(data);
+let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 
 export default function App() {
   const [model, setModel] = useState('grid');
@@ -1039,7 +1062,7 @@ export default function App() {
   const [svgRadar, setSvgRadar] = useState(false);
   const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
-  const [slide, setSlide] = useState(0);
+  const [spreadSlide, setSpreadSlide] = useState(0);
   const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
@@ -1052,11 +1075,11 @@ export default function App() {
   const [filterLightMode, setFilterLightMode] = useState(false);
   const [manExpand, setManExpand] = useState(false);
   const [branExpand, setBranExpand] = useState(false);
-  const [yearSlide, setYearSlide] = useState([min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]);
-  const [thicknessSlide, setThicknessSlide] = useState([min(data['thickness']),max(data['thickness'])]);
-  const [colorSlide, setColorSlide] = useState([min(data['dmin']),max(data['dmin'])]);
-  const [roughnessSlide, setRoughnessSlide] = useState([min(data['roughness']),max(data['roughness'])]);
-  const [glossSlide, setGlossSlide] = useState([min(data['gloss']),max(data['gloss'])]);
+  const [yearSlide, setYearSlide] = useState([yearMin,yearMax]);
+  const [thicknessSlide, setThicknessSlide] = useState([thicknessMin,thicknessMax]);
+  const [colorSlide, setColorSlide] = useState([colorMin,colorMax]);
+  const [roughnessSlide, setRoughnessSlide] = useState([roughnessMin,roughnessMax]);
+  const [glossSlide, setGlossSlide] = useState([glossMin,glossMax]);
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
   const [detailImageIndex, setDetailImageIndex] = useState('');
@@ -1076,30 +1099,56 @@ export default function App() {
   const orbitRef = useRef();
   //const setPosition = useStore(state => state.setPosition);
   
-  const handleDetailScreenNav = (e) => {
+  const handleDetailScreenNav = e => {
 
-      e.stopPropagation();
-      const label = e.target.innerText;
-      const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
+    e.stopPropagation();
+    const label = e.target.innerText;
+    const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
 
-      let newClickedItemsPositionIndex;
-      if ( label === 'navigate_before' ) {
-        newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
-      } else if ( label === 'navigate_next' ) {
-        newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
-      }
-
-      if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
-        const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
-        setDetailImageIndex(newDetailImageIndex);
-
-        const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
-        setDetailImageStringState(newDetailImageString);
-      }
-
+    let newClickedItemsPositionIndex;
+    if ( label === 'navigate_before' ) {
+      newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
+    } else if ( label === 'navigate_next' ) {
+      newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
     }
 
-  const handleFilter = (e) => {
+    if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
+      const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
+      setDetailImageIndex(newDetailImageIndex);
+
+      const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
+      setDetailImageStringState(newDetailImageString);
+    }
+  }
+
+  const sliderMap = {
+    'year':yearSlide,
+    'thickness':thicknessSlide,
+    'dmin':colorSlide,
+    'roughness':roughnessSlide,
+    'gloss':glossSlide
+  };
+
+  const handleSliderFilter = e => {
+    e.stopPropagation();
+    
+    const newFilterIdxList = applyFilterList(filterList); // filterList itself doesn't change here, so no need to setFilterList
+    setFilterIdxList(newFilterIdxList);
+    
+    // if all sliders are back to their extrema, then set filter to false
+    if ( yearSlide[0] === yearMin && yearSlide[1] === yearMax &&
+      thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
+      colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
+      roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
+      glossSlide[0] === glossMin && glossSlide[1] === glossMax ) {
+        setFilter(false);
+      } else {
+        setFilter(true);
+    }
+    setInvalidateSignal(!invalidateSignal);
+  };
+
+  const handleFilter = e => {
     e.stopPropagation();
 
     const dataCat = e.target.getAttribute('data-cat');
@@ -1125,10 +1174,27 @@ export default function App() {
     } else {
       setFilter(true);
     }
-
   }
 
   function applyFilterList( newFilterList ) {
+
+    // collect keepers for each slider
+    let allKeeperLists = [];
+    Object.keys(sliderMap).forEach(col => {
+      const sliderVal = sliderMap[col];
+      const keepersForThisSlider = [];
+      data[col].forEach((d,i) => {
+        if ( isNaN(d) ) {
+          keepersForThisSlider.push(i); // NaNs satisfy all filters
+        } else if ( d >= sliderVal[0] && d <= sliderVal[1] ) {
+          keepersForThisSlider.push(i);
+        }
+      });
+      allKeeperLists = [...allKeeperLists,keepersForThisSlider];
+    });
+
+    // get intersection of all keepers
+    const keepers = intersection(...allKeeperLists);
 
     let newFilterIdxList = [];
 
@@ -1136,22 +1202,19 @@ export default function App() {
     Object.keys(newFilterList).forEach((cat, i) => {
       let catList = []; // probably not necessary to initialize as a list but whatevs
       if ( newFilterList[cat].length === 0 ) {
-        catList = data['idx'].map((d,i) => i); // [...Array(n).keys()] was returning an array iterator for some reason
+        catList = data['coll'].map((_,i) => i).filter(d => keepers.includes(d));
       } else {
         data[cat].forEach((val, i) => {
-          if ( newFilterList[cat].includes(val) ) {
+          if ( newFilterList[cat].includes(val) && keepers.includes(i) ) {
             catList.push(i);
           }
         });
       }
-      newFilterIdxList = [ ...newFilterIdxList, catList ];
+      newFilterIdxList = [...newFilterIdxList,catList];
     });
-
     // this is getting AND for all filter categories
     newFilterIdxList = intersection(...newFilterIdxList);
-
     return newFilterIdxList;
-
   }
   
   const handleFilterToSelection = (e) => {
@@ -1165,9 +1228,34 @@ export default function App() {
       setClickedItems(filterIdxList);
       setInvalidateSignal(!invalidateSignal);
     }
-
     setMultiClick(true);
   }
+
+  const removeAllFilters = () => {
+
+    setFilterIdxList([]);
+    
+    setFilterList({
+      'coll':[],
+      'photoProcess':[],
+      'year':[],
+      'man':[],
+      'bran':[],
+      'thickness':[],
+      'thicknessWord':[],
+      'dmin':[],
+      'colorWord':[],
+      'roughness':[],
+      'textureWord':[],
+      'gloss':[],
+      'glossWord':[],
+      'radarGroup':[]
+    });
+    
+    setFilter(false);
+    sliderKey+=1;
+
+  };
 
   useEffect(() => {
     if ( detailScreen ) {
@@ -1281,7 +1369,7 @@ export default function App() {
                      normals={null}
                      itemSize={null}
                      s={null}
-                     slide={slide}
+                     spreadSlide={spreadSlide}
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
@@ -1314,7 +1402,7 @@ export default function App() {
                      normals={null}
                      itemSize={null}
                      s={exprStringToFloat(d)}
-                     slide={slide}
+                     spreadSlide={spreadSlide}
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
@@ -1347,7 +1435,7 @@ export default function App() {
                      normals={null}
                      itemSize={null}
                      s={null}
-                     slide={slide}
+                     spreadSlide={spreadSlide}
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
@@ -1380,7 +1468,7 @@ export default function App() {
                      normals={radarNormals(d)}
                      itemSize={itemSize}
                      s={null}
-                     slide={slide}
+                     spreadSlide={spreadSlide}
                      groupColors={groupColors}
                      raisedItem={raisedItem}
                      setRaisedItem={setRaisedItem}
@@ -1421,7 +1509,7 @@ export default function App() {
         <div className='controls' id='spreadControls'>
           <Slider
             color='primary'
-            onChange={e => setSlide(e.target.value)}
+            onChange={e => setSpreadSlide(e.target.value)}
             defaultValue={0}
             valueLabelDisplay="auto"
             step={1}
@@ -1530,7 +1618,7 @@ export default function App() {
       <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
-        <button title='remove all filters' className='material-icons' onClick={() => {setFilterIdxList([]);setFilterList({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});setFilter(false)}} >filter_alt_off</button>
+        <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal==='open' && filterLightMode ? 'open lightMode' : filterModal==='open' && !filterLightMode ? 'open darkMode' : filterModal==='expanded' && filterLightMode ? 'expanded lightMode' : 'expanded darkMode'}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
@@ -1562,7 +1650,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
-          <div className='sliderContainer'><Slider color='primary' data-cat='year' onChange={e => {setYearSlide(e.target.value);console.log(e.target.value)}} defaultValue={[min(data['year'].map(d=>parseInt(d))),max(data['year'].map(d=>parseInt(d)))]} valueLabelDisplay="on" min={min(data['year'].map(d=>parseInt(d)))} max={max(data['year'].map(d=>parseInt(d)))} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='year' onChangeCommitted={handleSliderFilter} onChange={e => setYearSlide(e.target.value)} defaultValue={[yearMin,yearMax]} valueLabelDisplay="on" min={yearMin} max={yearMax} /></div>
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
@@ -1580,22 +1668,22 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
-          <div className='sliderContainer'><Slider color='primary' data-cat='thickness' onChange={e => {setThicknessSlide(e.target.value);console.log(e.target.value)}} defaultValue={[min(data['thickness']),max(data['thickness'])]} valueLabelDisplay="on" min={min(data['thickness'])} max={max(data['thickness'])} step={0.001} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='thickness' onChangeCommitted={handleSliderFilter} onChange={e => setThicknessSlide(e.target.value)} defaultValue={[thicknessMin,thicknessMax]} valueLabelDisplay="on" min={thicknessMin} max={thicknessMax} step={0.001} /></div>
           {thicknessValues.map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-thicknessCountsScaled[i]*100)+'%)',color:thicknessCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
-          <div className='sliderContainer'><Slider color='primary' data-cat='dmin' onChange={e => setColorSlide(e.target.value)} defaultValue={[Number(min(data['dmin']).toFixed(2)),Number(max(data['dmin']).toFixed(2))]} valueLabelDisplay="on" min={Number(min(data['dmin']).toFixed(2))} max={Number(max(data['dmin']).toFixed(2))} step={0.01}/></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} /></div>
           {colorValues.map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
-          <div className='sliderContainer'><Slider color='primary' data-cat='roughness' onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[Math.round(min(data['roughness'])),Math.round(max(data['roughness']))]} valueLabelDisplay="on" min={Math.round(min(data['roughness']))} max={Math.round(max(data['roughness']))} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} max={roughnessMax} /></div>
           {textureValues.map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-textureCountsScaled[i]*100)+'%)',color:textureCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
-          <div className='sliderContainer'><Slider color='primary' data-cat='gloss' onChange={e => setGlossSlide(e.target.value)} defaultValue={[Math.round(min(data['gloss'])),Math.round(max(data['gloss']))]} valueLabelDisplay="on" min={Math.round(min(data['gloss']))} max={Math.round(max(data['gloss']))} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} /></div>
           {glossValues.map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
