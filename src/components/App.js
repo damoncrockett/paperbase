@@ -411,7 +411,7 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin) {
   const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
 
   const std = getStandardDeviation(scratchArray.map(d => d.val));
-  const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null
+  const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null/NaN values
   const binner = bin().thresholds(histBins).value(d => isNaN(d.val) ? arrmax + std : d.val); // if val is null, put it one standard deviation above the max
   const binnedData = binner(scratchArray);
 
@@ -931,7 +931,6 @@ function PanelItem({
         });
         mesh.instanceColor.needsUpdate = true;
       });
-
       setClickedItems(clickedItems.filter(d => d!==clickedItem));
     }
     setInvalidateSignal(!invalidateSignal);
@@ -1140,7 +1139,8 @@ export default function App() {
       thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
       colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
       roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
-      glossSlide[0] === glossMin && glossSlide[1] === glossMax ) {
+      glossSlide[0] === glossMin && glossSlide[1] === glossMax &&
+      Object.values(filterList).every(d => d.length === 0) ) {
         setFilter(false);
       } else {
         setFilter(true);
@@ -1169,7 +1169,12 @@ export default function App() {
     setFilterList(newFilterList);
 
     // if filterList is empty, then set filter to false
-    if ( Object.values(newFilterList).every(d => d.length === 0) ) {
+    if ( Object.values(newFilterList).every(d => d.length === 0 ) &&
+      yearSlide[0] === yearMin && yearSlide[1] === yearMax &&
+      thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
+      colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
+      roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
+      glossSlide[0] === glossMin && glossSlide[1] === glossMax ) {
       setFilter(false);
     } else {
       setFilter(true);
