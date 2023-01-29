@@ -78,8 +78,6 @@ data['roughness'] = data['roughness'].map(d => parseFloat(parseFloat(d).toFixed(
 data['dmin'] = data['dmin'].map(d => parseFloat(parseFloat(d).toFixed(3)));
 data['dmax'] = data['dmax'].map(d => parseFloat(parseFloat(d).toFixed(3)));
 
-console.log(data);
-
 const yearMin = min(data['year']);
 const yearMax = max(data['year']);
 const thicknessMin = min(data['thickness']);
@@ -91,21 +89,31 @@ const roughnessMax = max(data['roughness']);
 const colorMin = min(data['dmin']);
 const colorMax = max(data['dmin']);
 
+/*
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
   return rgbString
 };
+*/
 
-let categoricalColors = ["#8de4d3", "#fd9f9f", "#a2f968", "#f09bf1", "#34f50e", "#fea53b", "#8dbcf9", "#ece860", "#24ffcd", "#f4dfd0"];
+// 17 colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgorical
+let categoricalColors = [
+  "#78b4c6", "#c66a5a", "#52dea9", "#b5a3cf", 
+  "#f228a0", "#a1d832", "#f59ae7", "#698e4e", 
+  "#f4bb8f", "#00d618", "#ea3ffc", "#2282f5", 
+  "#f24219", "#9a63ff", "#fe8f06", "#9d7f50", "#f4d403"];
 
-const grayArray = Array.from({length: 100}, () => "#ffffff");
-categoricalColors = [...categoricalColors, ...grayArray];
-
-function makeColorArray(colorList) {
-  colorList = colorList.sort(function () {
+let categoricalColorArray;
+function makeColorArray() {
+  categoricalColorArray = categoricalColors.sort(function () {
     return Math.random() - 0.5;
   });
-  return colorList
+
+  const lastColor = categoricalColorArray[categoricalColorArray.length - 1];
+  const lastColorArray = Array.from({length: 100}, () => lastColor);
+  categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
+
+  return categoricalColorArray
 }
 
 /*
@@ -532,8 +540,12 @@ function updatePositions({ globalIndicesForThisMesh, mesh }) {
 //const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
 
 const highlightColor = 0xff00ff;
+const missingColor = 0xcc4700;
+const missingColorTone = 0xffffff;
 const colorSubstrate = new Color();
 const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
+const groupColorCols = ['colorGroupColl','colorGroupMan','colorGroupThickWord','colorGroupGlossWord',
+                        'colorGroupColorWord','colorGroupTextureWord','radarColor'];
 let colorVals;
 
 function valToColor(arr) {
@@ -548,7 +560,7 @@ function valToColor(arr) {
   const arrrange = arrmax - arrmin;
   
   const arrnorm = arrRanked.map(d => (d - arrmin) / arrrange);
-  const arrhsl = arrnorm.map(d => isNaN(d) ? 0x66ff00 : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
+  const arrhsl = arrnorm.map(d => isNaN(d) ? missingColor : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
 
   return arrhsl
 }
@@ -558,46 +570,42 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
-/*
 function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
 
   if ( filter ) {
     if ( group === 'dminHex' ) {
       if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0.1, -0.4);
+        colorSubstrate.offsetHSL(0, 0.2, -0.4);
       } else {
         colorSubstrate.offsetHSL(0, -0.2, -0.8);
       } 
-    } else {
-      if ( !filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, -0.2, -0.2);
+    } else if ( group === 'dmaxHex' ) {
+      if ( filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, 0.6, 0);
+      } else {
+        colorSubstrate.set(0x4a4a4a);
+        colorSubstrate.offsetHSL(0, 0, -0.2);
       }
-    }
+    } else if ( groupColorCols.includes(group) ) {
+      if ( filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, 0, -0.2);
+      } else {
+        colorSubstrate.set(0x4a4a4a);
+        colorSubstrate.offsetHSL(0, 0, -0.2);
+      }
+    } else if ( continuousColorCols.includes(group) ) {
+      if ( filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.set(0x63aaff);
+        colorSubstrate.offsetHSL(0, 0.2, -0.2);
+      }
+    } 
   } else {
     if ( group === 'dminHex' ) {
-      colorSubstrate.offsetHSL(0, 0.1, -0.4);
-    }
-  }
-}
-*/
-
-function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
-
-  if ( filter ) {
-    if ( group === 'dminHex' || group === 'colorGroupGlossWord' ) {
-      if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0, -0.1);
-      } else {
-        colorSubstrate.offsetHSL(0, -0.8, -0.8);
-      } 
-    } else {
-      if ( !filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, -0.5, -0.5);
-      }
-    }
-  } else {
-    if ( group === 'dminHex' || group === 'colorGroupGlossWord' ) {
-      colorSubstrate.offsetHSL(0, 0, -0.1);
+      colorSubstrate.offsetHSL(0, 0.2, -0.4);
+    } else if ( group === 'dmaxHex' ) {
+      colorSubstrate.offsetHSL(0, 0.6, 0);
+    } else if ( groupColorCols.includes(group) ) {
+      colorSubstrate.offsetHSL(0, 0, -0.2);
     }
   }
 }
@@ -699,7 +707,11 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         */
         let colorVal = groupColors[colorVals[item]] || colorVals[item];
         if ( colorVal === '' ) {
-          colorVal = 0x66ff00;
+          if ( group === 'dmaxHex' ) {
+            colorVal = missingColorTone;
+          } else {
+            colorVal = missingColor;
+          }
         }
         colorSubstrate.set(colorVal);
         applyFilterColors(item, colorSubstrate, filter, group, filterIdxList);
@@ -1067,6 +1079,8 @@ function MyCameraReactsToStateChanges({ orbitRef }) {
 
 let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 
+console.log(data);
+
 export default function App() {
   const [model, setModel] = useState('grid');
   const [toggleMR, setToggleMR] = useState(false);
@@ -1099,7 +1113,7 @@ export default function App() {
   const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [spreadSlide, setSpreadSlide] = useState(0);
-  const [groupColors, setGroupColors] = useState(categoricalColors);
+  const [groupColors, setGroupColors] = useState(makeColorArray());
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
   const [filter, setFilter] = useState(false);
@@ -1656,7 +1670,7 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
-          <button title='group color shuffle' onClick={() => setGroupColors(categoricalColors)} className={'material-icons'}>shuffle</button>
+          <button title='group color shuffle' onClick={() => setGroupColors(makeColorArray())} className={'material-icons'}>shuffle</button>
           <select value={facetcol} onChange={e => setFacetCol(e.target.value)} title='facet group'>
             <option value='none'>no facet axis</option>
             <option value='expressivenessGroup'>expressiveness</option>
