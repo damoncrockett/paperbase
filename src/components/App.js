@@ -96,10 +96,24 @@ const randomRGB = () => {
   return rgbString
 };
 
+let categoricalColors = ["#8de4d3", "#fd9f9f", "#a2f968", "#f09bf1", "#34f50e", "#fea53b", "#8dbcf9", "#ece860", "#24ffcd", "#f4dfd0"];
+
+const grayArray = Array.from({length: 100}, () => "#ffffff");
+categoricalColors = [...categoricalColors, ...grayArray];
+
+function makeColorArray(colorList) {
+  colorList = colorList.sort(function () {
+    return Math.random() - 0.5;
+  });
+  return colorList
+}
+
+/*
 function makeColorArray(k) {
   const colorArray = Array.from({length: k}, () => randomRGB());
   return colorArray
 }
+*/
 
 /*Color groups----------------------------------------------------------------*/
 
@@ -544,6 +558,7 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
+/*
 function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
 
   if ( filter ) {
@@ -561,6 +576,28 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
   } else {
     if ( group === 'dminHex' ) {
       colorSubstrate.offsetHSL(0, 0.1, -0.4);
+    }
+  }
+}
+*/
+
+function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
+
+  if ( filter ) {
+    if ( group === 'dminHex' || group === 'colorGroupGlossWord' ) {
+      if ( filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, 0, -0.1);
+      } else {
+        colorSubstrate.offsetHSL(0, -0.8, -0.8);
+      } 
+    } else {
+      if ( !filterIdxList.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, -0.5, -0.5);
+      }
+    }
+  } else {
+    if ( group === 'dminHex' || group === 'colorGroupGlossWord' ) {
+      colorSubstrate.offsetHSL(0, 0, -0.1);
     }
   }
 }
@@ -991,12 +1028,12 @@ function PanelItem({
       <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); console.log(document.activeElement)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
-          <p>{'#'+data['catalog'][clickedItem]}</p>
+          <p>{data['catalog'][clickedItem]==='_' ? '#' : '#' + data['catalog'][clickedItem]}</p>
         </div>}
         <div className='titleBar'>
           <p className={infoPanelFontSize===1 && ( svgRadar || packageImage ) ? 'titleBarSmall man lightman' : infoPanelFontSize===1 && !svgRadar && !packageImage ? 'titleBarSmall man' : infoPanelFontSize===2 && ( svgRadar || packageImage ) ? 'titleBarMid man lightman' : infoPanelFontSize===2 && !svgRadar && !packageImage ? 'titleBarMid man' : ( svgRadar || packageImage ) ? 'man lightman' : 'man'}>{data['man'][clickedItem]}</p>
-          <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]}</p>
-          <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{data['year'][clickedItem]}</p>
+          <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]==='_' ? '' : data['bran'][clickedItem]}</p>
+          <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{isNaN(data['year'][clickedItem]) ? '' : data['year'][clickedItem]}</p>
         </div>
         {!briefMode && <div className='infoBar'>
             {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalemidlightgray)'}} key={i}>{d}</p>)}
@@ -1062,7 +1099,7 @@ export default function App() {
   const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [spreadSlide, setSpreadSlide] = useState(0);
-  const [groupColors, shuffleGroupColors] = useState(makeColorArray(50));
+  const [groupColors, setGroupColors] = useState(categoricalColors);
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
   const [filter, setFilter] = useState(false);
@@ -1121,11 +1158,11 @@ export default function App() {
   }
 
   const sliderMap = {
-    'year':yearSlide,
-    'thickness':thicknessSlide,
-    'dmin':colorSlide,
-    'roughness':roughnessSlide,
-    'gloss':glossSlide
+    'year':[yearSlide,yearMin,yearMax],
+    'thickness':[thicknessSlide,thicknessMin,thicknessMax],
+    'color':[colorSlide,colorMin,colorMax],
+    'roughness':[roughnessSlide,roughnessMin,roughnessMax],
+    'gloss':[glossSlide,glossMin,glossMax]
   };
 
   const handleSliderFilter = e => {
@@ -1168,7 +1205,7 @@ export default function App() {
     setFilterIdxList(newFilterIdxList);
     setFilterList(newFilterList);
 
-    // if filterList is empty, then set filter to false
+    // if filterList is empty and the sliders are all at their extrema, then set filter to false
     if ( Object.values(newFilterList).every(d => d.length === 0 ) &&
       yearSlide[0] === yearMin && yearSlide[1] === yearMax &&
       thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
@@ -1186,20 +1223,42 @@ export default function App() {
     // collect keepers for each slider
     let allKeeperLists = [];
     Object.keys(sliderMap).forEach(col => {
-      const sliderVal = sliderMap[col];
-      const keepersForThisSlider = [];
-      data[col].forEach((d,i) => {
-        if ( isNaN(d) ) {
-          keepersForThisSlider.push(i); // NaNs satisfy all filters
-        } else if ( d >= sliderVal[0] && d <= sliderVal[1] ) {
-          keepersForThisSlider.push(i);
-        }
-      });
-      allKeeperLists = [...allKeeperLists,keepersForThisSlider];
+      const sliderVal = sliderMap[col][0];
+      const sliderMin = sliderMap[col][1];
+      const sliderMax = sliderMap[col][2];
+      
+      /*
+      There is a sublety here. If the slider is at its extrema, then we don't want to filter on it.
+      Why? Because the dataset is ultimately filtered on the *intersection* of all filters. Thus, if,
+      say, we are missing a year value for some item, filtering on the year extrema will remove that
+      item from the filtered dataset. But if the user hasn't set a year filter, why should we eliminate
+      that item? This has the effect, for example, of leaving out any Man Ray prints that are missing
+      a year value when we filter on "Man Ray": they don't make it to the "year" list, and thus they don't
+      make it to the final list, because in order to make it to the final list, you have to appear on all lists.
+      But if all the user wants is to see the Man Ray prints, she doesn't care that some of them are missing
+      a year value. She will only care about that if she has set a year filter. 
+      */
+
+      if ( sliderVal[0] !== sliderMin || sliderVal[1] !== sliderMax ) {
+        const keepersForThisSlider = [];
+        data[col].forEach((d,i) => {
+          if ( isNaN(d) ) {
+            console.log("NaN");
+          } else if ( d >= sliderVal[0] && d <= sliderVal[1] ) {
+            keepersForThisSlider.push(i);
+          }
+        });
+        allKeeperLists = [...allKeeperLists,keepersForThisSlider];
+      }
     });
 
     // get intersection of all keepers
-    const keepers = intersection(...allKeeperLists);
+    let keepers = intersection(...allKeeperLists);
+    
+    // if no sliders are set, then keepers will be empty. In that case, we want to keep all items.
+    if ( keepers.length === 0 ) {
+      keepers = data['idx'].map((_,i) => i);
+    }
 
     let newFilterIdxList = [];
 
@@ -1597,7 +1656,7 @@ export default function App() {
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
-          <button title='group color shuffle' onClick={() => shuffleGroupColors(makeColorArray(50))} className={'material-icons'}>shuffle</button>
+          <button title='group color shuffle' onClick={() => setGroupColors(categoricalColors)} className={'material-icons'}>shuffle</button>
           <select value={facetcol} onChange={e => setFacetCol(e.target.value)} title='facet group'>
             <option value='none'>no facet axis</option>
             <option value='expressivenessGroup'>expressiveness</option>
