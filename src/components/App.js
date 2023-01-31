@@ -97,12 +97,11 @@ const randomRGB = () => {
 };
 */
 
-// 17 colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgorical
+// colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgorical
+// had to eliminate two colors [#f228a0,#f24219] because they were too close to our highlight magenta
 let categoricalColors = [
-  "#78b4c6", "#c66a5a", "#52dea9", "#b5a3cf", 
-  "#f228a0", "#a1d832", "#f59ae7", "#698e4e", 
-  "#f4bb8f", "#00d618", "#ea3ffc", "#2282f5", 
-  "#f24219", "#9a63ff", "#fe8f06", "#9d7f50", "#f4d403"];
+  "#78b4c6", "#c66a5a", "#52dea9", "#b5a3cf", "#a1d832", "#f59ae7", "#698e4e", 
+  "#f4bb8f", "#00d618", "#2282f5", "#f24219", "#9a63ff", "#fe8f06", "#9d7f50", "#f4d403"];
 
 let categoricalColorArray;
 function makeColorArray() {
@@ -114,8 +113,12 @@ function makeColorArray() {
   const lastColorArray = Array.from({length: 600}, () => lastColor); // there are 600 distinct 'bran' values, so we are adding 600 here to be safe
   categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
 
+  console.log(categoricalColorArray);
+
   return categoricalColorArray
 }
+
+const initialGroupColors = makeColorArray();
 
 /*
 function makeColorArray(k) {
@@ -144,6 +147,8 @@ function makeGroupLabels(groupCol) {
     mapGroupValueToInteger[d['groupValue']] = i;
   });
   mapGroupValueToInteger['_'] = 9999;
+
+  console.log(mapGroupValueToInteger);
   
   return groupCol.map(d => mapGroupValueToInteger[d])
 }
@@ -1138,7 +1143,7 @@ export default function App() {
   const [packageImage, setPackageImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [spreadSlide, setSpreadSlide] = useState(0);
-  const [groupColors, setGroupColors] = useState(makeColorArray());
+  const [groupColors, setGroupColors] = useState(initialGroupColors);
   const [raisedItem, setRaisedItem] = useState(null);
   const itemSize = 3;
   const [filter, setFilter] = useState(false);

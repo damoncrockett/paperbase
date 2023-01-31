@@ -503,7 +503,7 @@ svg {
   margin: 0.25vh;
   color: var(--yalemidgray);
   border-radius: 2vh;
-  border-width: 1px;
+  border-width: 2px;
   border-color: var(--yalemidlightgray);
   border-style: solid;
   font-family: 'Archivo';
@@ -516,8 +516,8 @@ svg {
   margin: 0.25vh;
   color: var(--yalemidgray);
   border-radius: 2vh;
-  border-width: 1px;
-  border-color: var(--filterHighlight);
+  border-width: 2px;
+  border-color: var(--yalelightblue);
   border-style: solid;
   font-family: 'Archivo';
   font-size: 1.5vh;
