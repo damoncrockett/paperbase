@@ -11,6 +11,7 @@ import { data } from './data';
 data['year'][5667] = "1920";
 
 // zeroes in thickness are actually missing data
+// note that this correction does nothing to correct the expressiveness values, radar groups, etc.
 data['thickness'].forEach((item, i) => {
   if (item === 0) {
     data['thickness'][i] = "_"
@@ -110,7 +111,7 @@ function makeColorArray() {
   });
 
   const lastColor = categoricalColorArray[categoricalColorArray.length - 1];
-  const lastColorArray = Array.from({length: 100}, () => lastColor);
+  const lastColorArray = Array.from({length: 600}, () => lastColor); // there are 600 distinct 'bran' values, so we are adding 600 here to be safe
   categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
 
   return categoricalColorArray
@@ -127,39 +128,51 @@ function makeColorArray(k) {
 
 // for making integer labels for character-variable groups, used in glyph group colors
 function makeGroupLabels(groupCol) {
-  const valGroups = Array.from(new Set(data[groupCol]));
-  const groupDict = {};
-  valGroups.forEach((item, i) => {
-    groupDict[item] = i
+  const groupColFiltered = groupCol.filter(d => d !== '_');
+  const valCounts = valueCounts(groupColFiltered);
+  let valCountsList = [];
+  Object.keys(valCounts).forEach((key,i) => {
+    const scratchObject = {};
+    scratchObject['groupValue'] = key;
+    scratchObject['valueCount'] = valCounts[key];
+    valCountsList.push(scratchObject);
   });
 
-  return data[groupCol].map(d => groupDict[d])
+  valCountsList = orderBy(valCountsList,'valueCount', 'desc');
+  const mapGroupValueToInteger = {};
+  valCountsList.forEach((d,i) => {
+    mapGroupValueToInteger[d['groupValue']] = i;
+  });
+  mapGroupValueToInteger['_'] = 9999;
+  
+  return groupCol.map(d => mapGroupValueToInteger[d])
 }
 
-data['radarColor'] = makeGroupLabels('radarGroup');
-data['colorGroupColorWord'] = makeGroupLabels('colorWord');
-data['colorGroupThickWord'] = makeGroupLabels('thicknessWord');
-data['colorGroupTextureWord'] = makeGroupLabels('textureWord');
-data['colorGroupGlossWord'] = makeGroupLabels('glossWord');
-data['colorGroupMan'] = makeGroupLabels('man');
-data['colorGroupColl'] = makeGroupLabels('coll');
+data['radarColor'] = makeGroupLabels(data['radarGroup']);
+data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
+data['colorGroupThickWord'] = makeGroupLabels(data['thicknessWord']);
+data['colorGroupTextureWord'] = makeGroupLabels(data['textureWord']);
+data['colorGroupGlossWord'] = makeGroupLabels(data['glossWord']);
+data['colorGroupMan'] = makeGroupLabels(data['man']);
+data['colorGroupBran'] = makeGroupLabels(data['bran']);
+data['colorGroupColl'] = makeGroupLabels(data['coll']);
 
 /*Metadata value counts-------------------------------------------------------*/
 
 function valueCounts(col) {
-  const occurrences = data[col].reduce(function (acc, curr) {
+  const occurrences = col.reduce(function (acc, curr) {
     return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
   }, {});
   return occurrences
 }
 
-const thicknessValCounts = valueCounts('thicknessWord');
-const colorValCounts = valueCounts('colorWord');
-const textureValCounts = valueCounts('textureWord');
-const glossValCounts = valueCounts('glossWord');
-const manValCounts = valueCounts('man');
-const branValCounts = valueCounts('bran');
-const radarGroupValCounts = valueCounts('radarGroup');
+const thicknessValCounts = valueCounts(data['thicknessWord']);
+const colorValCounts = valueCounts(data['colorWord']);
+const textureValCounts = valueCounts(data['textureWord']);
+const glossValCounts = valueCounts(data['glossWord']);
+const manValCounts = valueCounts(data['man']);
+const branValCounts = valueCounts(data['bran']);
+const radarGroupValCounts = valueCounts(data['radarGroup']);
 
 const thicknessValues = Object.keys(thicknessValCounts).sort();
 const thicknessCounts = thicknessValues.map(d => thicknessValCounts[d]);
@@ -544,9 +557,9 @@ const missingColor = 0xcc4700;
 const missingColorTone = 0xffffff;
 const colorSubstrate = new Color();
 const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
-const groupColorCols = ['colorGroupColl','colorGroupMan','colorGroupThickWord','colorGroupGlossWord',
+const groupColorCols = ['colorGroupColl','colorGroupMan','colorGroupBran','colorGroupThickWord','colorGroupGlossWord',
                         'colorGroupColorWord','colorGroupTextureWord','radarColor'];
-let colorVals;
+let colorVals; //this gets used in many places
 
 function valToColor(arr) {
   
@@ -581,7 +594,7 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
       } 
     } else if ( group === 'dmaxHex' ) {
       if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0.6, 0);
+        colorSubstrate.offsetHSL(0, 0.6, -0.1);
       } else {
         colorSubstrate.set(0x4a4a4a);
         colorSubstrate.offsetHSL(0, 0, -0.2);
@@ -603,14 +616,29 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
     if ( group === 'dminHex' ) {
       colorSubstrate.offsetHSL(0, 0.2, -0.4);
     } else if ( group === 'dmaxHex' ) {
-      colorSubstrate.offsetHSL(0, 0.6, 0);
+      colorSubstrate.offsetHSL(0, 0.6, -0.1);
     } else if ( groupColorCols.includes(group) ) {
       colorSubstrate.offsetHSL(0, 0, -0.2);
     }
   }
 }
 
-function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal }) {
+function getColorVal( groupColors, colorVals, item ) {
+
+  let colorVal = colorVals[item];
+  if ( colorVal === 9999 ) {
+    return 0x000000;
+  } else {
+    return groupColors[colorVals[item]] || colorVals[item];
+  }
+}
+
+function Glyphs({ 
+  glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
+  facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, 
+  vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, 
+  filter, filterIdxList, invalidateSignal 
+}) {
 
   /*
   Each call to `Glyphs` produces glyphs for a single mesh, which are defined by
@@ -695,6 +723,9 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
       colorVals = valToColor(baseData);
     } else {
       colorVals = data[group];
+      if ( group === 'dmaxHex') {
+        colorVals = colorVals.map(d => d === '' ? missingColorTone : d);
+      }
     }
 
     globalIndicesForThisMesh.forEach((item, i) => {
@@ -705,14 +736,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         which again is a color. If the latter, then we get a groupColor, and
         these are generated randomly.
         */
-        let colorVal = groupColors[colorVals[item]] || colorVals[item];
-        if ( colorVal === '' ) {
-          if ( group === 'dmaxHex' ) {
-            colorVal = missingColorTone;
-          } else {
-            colorVal = missingColor;
-          }
-        }
+        const colorVal = getColorVal(groupColors,colorVals,item);
         colorSubstrate.set(colorVal);
         applyFilterColors(item, colorSubstrate, filter, group, filterIdxList);
         meshRef.current.setColorAt(i, colorSubstrate);
@@ -723,6 +747,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
     });
     meshRef.current.instanceColor.needsUpdate = true;
     invalidate();
+
   }, [group, groupColors, filter, filterIdxList, invalidateSignal]);
 
   const handleClick = e => {
@@ -743,7 +768,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         Object.keys(glyphMap).forEach((item, i) => {
           const mesh = meshList[item];
           glyphMap[item].forEach((globalIndex, j) => {
-            const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+            const colorVal = getColorVal(groupColors,colorVals,globalIndex);
             // if the item we are considering in this loop iteration is not identical to the item we just clicked
             // basically, this case handles items that need to be set to whatever color they had before
             if ( globalInstanceId !== globalIndex ) {
@@ -774,7 +799,7 @@ function Glyphs({ glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolA
         Object.keys(glyphMap).forEach((item, i) => {
           const mesh = meshList[item];
           glyphMap[item].forEach((globalIndex, j) => {
-            const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+            const colorVal = getColorVal(groupColors,colorVals,globalIndex);
             // if the item we are considering in this loop iteration is not identical to the item we just clicked
             // basically, this case handles items that need to be set to whatever color they had before
             if ( globalInstanceId !== globalIndex ) {
@@ -944,7 +969,7 @@ function PanelItem({
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
-          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          const colorVal = getColorVal(groupColors,colorVals,globalIndex);
           colorSubstrate.set(colorVal);
           applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
           mesh.setColorAt(j, colorSubstrate);
@@ -959,7 +984,7 @@ function PanelItem({
       Object.keys(glyphMap).forEach((item, i) => {
         const mesh = meshList[item];
         glyphMap[item].forEach((globalIndex, j) => {
-          const colorVal = groupColors[colorVals[globalIndex]] || colorVals[globalIndex];
+          const colorVal = getColorVal(groupColors,colorVals,globalIndex);
           // if the item we are considering in this loop iteration is not identical to the item we just clicked
           // basically, this case handles items that need to be set to whatever color they had before
           if ( clickedItem !== globalIndex ) {
@@ -1174,7 +1199,7 @@ export default function App() {
   const sliderMap = {
     'year':[yearSlide,yearMin,yearMax],
     'thickness':[thicknessSlide,thicknessMin,thicknessMax],
-    'color':[colorSlide,colorMin,colorMax],
+    'dmin':[colorSlide,colorMin,colorMax],
     'roughness':[roughnessSlide,roughnessMin,roughnessMax],
     'gloss':[glossSlide,glossMin,glossMax]
   };
@@ -1331,6 +1356,12 @@ export default function App() {
     });
     
     setFilter(false);
+
+    setYearSlide([yearMin,yearMax]);
+    setThicknessSlide([thicknessMin,thicknessMax]);
+    setColorSlide([colorMin,colorMax]);
+    setRoughnessSlide([roughnessMin,roughnessMax]);
+    setGlossSlide([glossMin,glossMax]);
     sliderKey+=1;
 
   };
@@ -1605,41 +1636,41 @@ export default function App() {
       </div>
       <div id='bottomControls'>
         <div className='controls' id='axisMenus'>
-          {model==='grid' &&
-            <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-              <option value='year'>year</option>
-              <option value='thickness'>thickness</option>
-              <option value='gloss'>gloss</option>
-              <option value='dmin'>color</option>
-              <option value='roughness'>roughness</option>
-              <option value='expressiveness'>expressiveness</option>
-              <option value='colorGroupColl'>collection</option>
-              <option value='colorGroupMan'>manufacturer</option>
-              <option value='colorGroupTextureWord'>texture description</option>
-              <option value='colorGroupColorWord'>base color description</option>
-              <option value='colorGroupGlossWord'>gloss description</option>
-              <option value='colorGroupThickWord'>weight description</option>
-            </select>
-          }
-          {model!=='grid' &&
-            <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-              <option value='year'>year</option>
-              <option value='thickness'>thickness</option>
-              <option value='gloss'>gloss</option>
-              <option value='dmin'>color</option>
-              <option value='roughness'>roughness</option>
-              <option value='expressiveness'>expressiveness</option>
-            </select>
-          }
+          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
+            <option value='year'>year</option>
+            <option value='thickness'>thickness</option>
+            <option value='gloss'>gloss</option>
+            <option value='dmin'>base color</option>
+            <option value='dmax'>tone</option>
+            <option value='roughness'>roughness</option>
+            <option value='expressiveness'>expressiveness</option>
+            <option value='colorGroupColl'>collection</option>
+            <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorGroupBran'>brand</option>
+            <option value='colorGroupTextureWord'>texture description</option>
+            <option value='colorGroupColorWord'>base color description</option>
+            <option value='colorGroupGlossWord'>gloss description</option>
+            <option value='colorGroupThickWord'>weight description</option>
+            <option value='radarColor'>radar group</option>
+          </select>
           {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} >arrow_downward</button>}
           {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} >arrow_upward</button>}
           <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
-            <option value='dmin'>color</option>
+            <option value='dmin'>base color</option>
+            <option value='dmax'>tone</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
+            <option value='colorGroupColl'>collection</option>
+            <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorGroupBran'>brand</option>
+            <option value='colorGroupTextureWord'>texture description</option>
+            <option value='colorGroupColorWord'>base color description</option>
+            <option value='colorGroupGlossWord'>gloss description</option>
+            <option value='colorGroupThickWord'>weight description</option>
+            <option value='radarColor'>radar group</option>
           </select>
           {ycolAsc && <button className={'material-icons'} title='sort y-axis descending' onClick={() => setYcolAsc(false)} >arrow_downward</button>}
           {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} >arrow_upward</button>}
@@ -1648,7 +1679,8 @@ export default function App() {
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
             <option value='gloss'>gloss</option>
-            <option value='dmin'>color</option>
+            <option value='dmin'>base color</option>
+            <option value='dmax'>tone</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
           </select>
@@ -1659,6 +1691,7 @@ export default function App() {
             <option value='dmaxHex'>tone</option>
             <option value='colorGroupColl'>collection</option>
             <option value='colorGroupMan'>manufacturer</option>
+            <option value='colorGroupBran'>brand</option>
             <option value='colorGroupTextureWord'>texture description</option>
             <option value='colorGroupColorWord'>base color description</option>
             <option value='colorGroupGlossWord'>gloss description</option>
