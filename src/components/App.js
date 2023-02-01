@@ -113,8 +113,6 @@ function makeColorArray() {
   const lastColorArray = Array.from({length: 600}, () => lastColor); // there are 600 distinct 'bran' values, so we are adding 600 here to be safe
   categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
 
-  console.log(categoricalColorArray);
-
   return categoricalColorArray
 }
 
@@ -147,8 +145,6 @@ function makeGroupLabels(groupCol) {
     mapGroupValueToInteger[d['groupValue']] = i;
   });
   mapGroupValueToInteger['_'] = 9999;
-
-  console.log(mapGroupValueToInteger);
   
   return groupCol.map(d => mapGroupValueToInteger[d])
 }
@@ -1023,6 +1019,8 @@ function PanelItem({
     } else {
       setRaisedItem(null);
     }
+
+    console.log(targetCoords[clickedItem]);
   }
 
   const coll = data['coll'][clickedItem];
@@ -1455,7 +1453,7 @@ export default function App() {
                                              )}
       </div>
       <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 20000 }} frameloop="demand">
+        <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 4000 }} frameloop="demand">
           <color attach="background" args={[0x4a4a4a]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
@@ -1593,6 +1591,7 @@ export default function App() {
           })}
           <OrbitControls
             ref={orbitRef}
+            maxDistance={4000}
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
