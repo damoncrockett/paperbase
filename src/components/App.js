@@ -132,14 +132,14 @@ function makeGroupLabels(groupCol) {
   const groupColFiltered = groupCol.filter(d => d !== '_');
   const valCounts = valueCounts(groupColFiltered);
   let valCountsList = [];
-  Object.keys(valCounts).forEach((key,i) => {
+  Object.keys(valCounts).forEach(key => {
     const scratchObject = {};
     scratchObject['groupValue'] = key;
-    scratchObject['valueCount'] = valCounts[key];
+    scratchObject['frequency'] = valCounts[key];
     valCountsList.push(scratchObject);
   });
 
-  valCountsList = orderBy(valCountsList,'valueCount', 'desc');
+  valCountsList = orderBy(valCountsList,'frequency', 'desc');
   const mapGroupValueToInteger = {};
   valCountsList.forEach((d,i) => {
     mapGroupValueToInteger[d['groupValue']] = i;
@@ -160,10 +160,32 @@ data['colorGroupColl'] = makeGroupLabels(data['coll']);
 
 /*Metadata value counts-------------------------------------------------------*/
 
-function valueCounts(col) {
+function valueCounts(col, normalized = true) {
   const occurrences = col.reduce(function (acc, curr) {
     return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
   }, {});
+  
+  if (normalized) {
+
+    if (Object.keys(occurrences).length === 1) {
+      Object.keys(occurrences).forEach(key => {
+        occurrences[key] = 1;
+      });
+    } else {
+      const countMin = min(Object.values(occurrences));
+      const countMax = max(Object.values(occurrences));
+      if (countMin === countMax) {
+        Object.keys(occurrences).forEach(key => {
+          occurrences[key] = 0.5; // all middle gray
+        });
+      } else {
+        Object.keys(occurrences).forEach(key => {
+          occurrences[key] = (occurrences[key] - countMin) / (countMax - countMin);
+        });
+      }
+    }
+  }
+  
   return occurrences
 }
 
@@ -174,34 +196,6 @@ const glossValCounts = valueCounts(data['glossWord']);
 const manValCounts = valueCounts(data['man']);
 const branValCounts = valueCounts(data['bran']);
 const radarGroupValCounts = valueCounts(data['radarGroup']);
-
-const thicknessValues = Object.keys(thicknessValCounts).sort();
-const thicknessCounts = thicknessValues.map(d => thicknessValCounts[d]);
-const thicknessCountsScaled = featureScale(thicknessCounts);
-
-const colorValues = Object.keys(colorValCounts).sort();
-const colorCounts = colorValues.map(d => colorValCounts[d]);
-const colorCountsScaled = featureScale(colorCounts);
-
-const textureValues = Object.keys(textureValCounts).sort();
-const textureCounts = textureValues.map(d => textureValCounts[d]);
-const textureCountsScaled = featureScale(textureCounts);
-
-const glossValues = Object.keys(glossValCounts).sort();
-const glossCounts = glossValues.map(d => glossValCounts[d]);
-const glossCountsScaled = featureScale(glossCounts);
-
-const manValues = Object.keys(manValCounts).sort();
-const manCounts = manValues.map(d => manValCounts[d]);
-const manCountsScaled = featureScale(manCounts);
-
-const branValues = Object.keys(branValCounts).sort();
-const branCounts = branValues.map(d => branValCounts[d]);
-const branCountsScaled = featureScale(branCounts);
-
-const radarGroupValues = Object.keys(radarGroupValCounts).sort();
-const radarGroupCounts = radarGroupValues.map(d => radarGroupValCounts[d]);
-const radarGroupCountsScaled = featureScale(radarGroupCounts);
 
 /*groupMaps-------------------------------------------------------------------*/
 
@@ -1141,20 +1135,13 @@ export default function App() {
   const [colorSlide, setColorSlide] = useState([colorMin,colorMax]);
   const [roughnessSlide, setRoughnessSlide] = useState([roughnessMin,roughnessMax]);
   const [glossSlide, setGlossSlide] = useState([glossMin,glossMax]);
-  const [filteredThicknessWords, setFilteredThicknessWords] = useState(thicknessValues);
-  const [filteredColorWords, setFilteredColorWords] = useState(colorValues);
-  const [filteredTextureWords, setFilteredTextureWords] = useState(textureValues);
-  const [filteredGlossWords, setFilteredGlossWords] = useState(glossValues);
-  const [filteredMans, setFilteredMans] = useState(manValues);
-  const [filteredBrans, setFilteredBrans] = useState(branValues);
-  const [filteredRadarGroups, setFilteredRadarGroups] = useState(radarGroupValues);
-  const [filteredThicknessFrequencies, setFilteredThicknessFrequencies] = useState(thicknessCountsScaled);
-  const [filteredColorFrequencies, setFilteredColorFrequencies] = useState(colorCountsScaled);
-  const [filteredTextureFrequencies, setFilteredTextureFrequencies] = useState(textureCountsScaled);
-  const [filteredGlossFrequencies, setFilteredGlossFrequencies] = useState(glossCountsScaled);
-  const [filteredManFrequencies, setFilteredManFrequencies] = useState(manCountsScaled);
-  const [filteredBranFrequencies, setFilteredBranFrequencies] = useState(branCountsScaled);
-  const [filteredRadarGroupFrequencies, setFilteredRadarGroupFrequencies] = useState(radarGroupCountsScaled);
+  const [filteredThicknessFrequencies, setFilteredThicknessFrequencies] = useState(thicknessValCounts);
+  const [filteredColorFrequencies, setFilteredColorFrequencies] = useState(colorValCounts);
+  const [filteredTextureFrequencies, setFilteredTextureFrequencies] = useState(textureValCounts);
+  const [filteredGlossFrequencies, setFilteredGlossFrequencies] = useState(glossValCounts);
+  const [filteredManFrequencies, setFilteredManFrequencies] = useState(manValCounts);
+  const [filteredBranFrequencies, setFilteredBranFrequencies] = useState(branValCounts);
+  const [filteredRadarGroupFrequencies, setFilteredRadarGroupFrequencies] = useState(radarGroupValCounts);
 
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
@@ -1174,76 +1161,25 @@ export default function App() {
 
   const orbitRef = useRef();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
 
     const workingIdxList = filterIdxList.length === 0 ? data['idx'].map((_,i) => i) : filterIdxList;
 
-    const filteredData = {
-      'man': data['man'].filter((_,i) => workingIdxList.includes(i)),
-      'bran': data['bran'].filter((_,i) => workingIdxList.includes(i)),
-      'thicknessWord': data['thicknessWord'].filter((_,i) => workingIdxList.includes(i)),
-      'colorWord': data['colorWord'].filter((_,i) => workingIdxList.includes(i)),
-      'textureWord': data['textureWord'].filter((_,i) => workingIdxList.includes(i)),
-      'glossWord': data['glossWord'].filter((_,i) => workingIdxList.includes(i)),
-      'radarGroup': data['radarGroup'].filter((_,i) => workingIdxList.includes(i)),
-    };
+    const filteredThicknessValCounts = valueCounts(data['thicknessWord'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredColorValCounts = valueCounts(data['colorWord'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredTextureValCounts = valueCounts(data['textureWord'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredGlossValCounts = valueCounts(data['glossWord'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredManValCounts = valueCounts(data['man'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredBranValCounts = valueCounts(data['bran'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredRadarGroupValCounts = valueCounts(data['radarGroup'].filter((_,i) => workingIdxList.includes(i)));
 
-    const filteredThicknessValCounts = valueCounts(filteredData['thicknessWord']);
-    const filteredColorValCounts = valueCounts(filteredData['colorWord']);
-    const filteredTextureValCounts = valueCounts(filteredData['textureWord']);
-    const filteredGlossValCounts = valueCounts(filteredData['glossWord']);
-    const filteredManValCounts = valueCounts(filteredData['man']);
-    const filteredBranValCounts = valueCounts(filteredData['bran']);
-    const filteredRadarGroupValCounts = valueCounts(filteredData['radarGroup']);
-
-    const filteredThicknessValues = Object.keys(filteredThicknessValCounts).sort();
-    const filteredThicknessCounts = filteredThicknessValues.map(d => filteredThicknessValCounts[d]);
-    const filteredThicknessCountsScaled = featureScale(filteredThicknessCounts);
-
-    setFilteredThicknessWords(filteredThicknessValues);
-    setFilteredThicknessFrequencies(filteredThicknessCountsScaled);
-
-    const filteredColorValues = Object.keys(filteredColorValCounts).sort();
-    const filteredColorCounts = filteredColorValues.map(d => filteredColorValCounts[d]);
-    const filteredColorCountsScaled = featureScale(filteredColorCounts);
-
-    setFilteredColorWords(filteredColorValues);
-    setFilteredColorFrequencies(filteredColorCountsScaled);
-
-    const filteredTextureValues = Object.keys(filteredTextureValCounts).sort();
-    const filteredTextureCounts = filteredTextureValues.map(d => filteredTextureValCounts[d]);
-    const filteredTextureCountsScaled = featureScale(filteredTextureCounts);
-
-    setFilteredTextureWords(filteredTextureValues);
-    setFilteredTextureFrequencies(filteredTextureCountsScaled);
-
-    const filteredGlossValues = Object.keys(filteredGlossValCounts).sort();
-    const filteredGlossCounts = filteredGlossValues.map(d => filteredGlossValCounts[d]);
-    const filteredGlossCountsScaled = featureScale(filteredGlossCounts);
-
-    setFilteredGlossWords(filteredGlossValues);
-    setFilteredGlossFrequencies(filteredGlossCountsScaled);
-
-    const filteredManValues = Object.keys(filteredManValCounts).sort();
-    const filteredManCounts = filteredManValues.map(d => filteredManValCounts[d]);
-    const filteredManCountsScaled = featureScale(filteredManCounts);
-
-    setFilteredMans(filteredManValues);
-    setFilteredManFrequencies(filteredManCountsScaled);
-
-    const filteredBranValues = Object.keys(filteredBranValCounts).sort();
-    const filteredBranCounts = filteredBranValues.map(d => filteredBranValCounts[d]);
-    const filteredBranCountsScaled = featureScale(filteredBranCounts);
-
-    setFilteredBrans(filteredBranValues);
-    setFilteredBranFrequencies(filteredBranCountsScaled);
-
-    const filteredRadarGroupValues = Object.keys(filteredRadarGroupValCounts).sort();
-    const filteredRadarGroupCounts = filteredRadarGroupValues.map(d => filteredRadarGroupValCounts[d]);
-    const filteredRadarGroupCountsScaled = featureScale(filteredRadarGroupCounts);
-
-    setFilteredRadarGroups(filteredRadarGroupValues);
-    setFilteredRadarGroupFrequencies(filteredRadarGroupCountsScaled);
+    setFilteredThicknessFrequencies(filteredThicknessValCounts);
+    setFilteredColorFrequencies(filteredColorValCounts);    
+    setFilteredTextureFrequencies(filteredTextureValCounts);
+    setFilteredGlossFrequencies(filteredGlossValCounts);
+    setFilteredManFrequencies(filteredManValCounts);
+    setFilteredBranFrequencies(filteredBranValCounts);
+    setFilteredRadarGroupFrequencies(filteredRadarGroupValCounts);
 
   },[filterIdxList]);
   
@@ -1839,43 +1775,63 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
-          {!manExpand && manValues.slice(0,20).map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredMans.includes(d) ? 'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)' : 'transparent',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!manExpand && Object.keys(manValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
           {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(true)} >more_horiz</button>}
-          {manExpand && manValues.map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredMans.includes(d) ? 'hsl(0,0%,'+parseInt(100-manCountsScaled[i]*100)+'%)' : 'transparent',color:manCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {manExpand && Object.keys(manValCounts).sort().map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
           {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(false)} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
-          {!branExpand && branValues.slice(0,20).map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredBrans.includes(d) ? 'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)' : 'transparent',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {!branExpand && Object.keys(branValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
           {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={() => setBranExpand(true)} >more_horiz</button>}
-          {branExpand && branValues.map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredBrans.includes(d) ? 'hsl(0,0%,'+parseInt(100-branCountsScaled[i]*100)+'%)' : 'transparent',color:branCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {branExpand && Object.keys(branValCounts).sort().map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
           {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => setBranExpand(false)} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='thickness' onChangeCommitted={handleSliderFilter} onChange={e => setThicknessSlide(e.target.value)} defaultValue={[thicknessMin,thicknessMax]} valueLabelDisplay="on" min={thicknessMin} max={thicknessMax} step={0.001} /></div>
-          {thicknessValues.map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredThicknessWords.includes(d) ? 'hsl(0,0%,'+parseInt(100-thicknessCountsScaled[i]*100)+'%)' : 'transparent',color:thicknessCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {Object.keys(thicknessValCounts).sort().map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredThicknessFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} /></div>
-          {colorValues.map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredColorWords.includes(d) ? 'hsl(0,0%,'+parseInt(100-colorCountsScaled[i]*100)+'%)' : 'transparent',color:colorCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {Object.keys(colorValCounts).sort().map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredColorFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} max={roughnessMax} /></div>
-          {textureValues.map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredTextureWords.includes(d) ? 'hsl(0,0%,'+parseInt(100-textureCountsScaled[i]*100)+'%)' : 'transparent',color:textureCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {Object.keys(textureValCounts).sort().map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredTextureFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} /></div>
-          {glossValues.map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredGlossWords.includes(d) ? 'hsl(0,0%,'+parseInt(100-glossCountsScaled[i]*100)+'%)' : 'transparent',color:glossCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {Object.keys(glossValCounts).sort().map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredGlossFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >RADAR GROUP</p></div>
-          {radarGroupValues.map((d,i) => <button key={i} data-cat='radarGroup' data-val={d} onClick={handleFilter} className={filterList['radarGroup'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:filteredRadarGroups.includes(d) ? 'hsl(0,0%,'+parseInt(100-radarGroupCountsScaled[i]*100)+'%)' : 'transparent',color:radarGroupCountsScaled[i]>0.5 ? 'var(--yalewhite)' : 'var(--yaledarkgray)'}} >{d}</button>)}
+          {Object.keys(radarGroupValCounts).sort().map((d,i) => <button key={i} data-cat='radarGroup' data-val={d} onClick={handleFilter} className={filterList['radarGroup'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredRadarGroupFrequencies,d)} >{d}</button>)}
         </div>
       </div>}
     </div>
   )
+}
+
+function filterButtonStyle(filteredFrequencies, d) {
+
+  const style = {};
+
+  if (Object.keys(filteredFrequencies).includes(d)) {
+    style.backgroundColor = `hsl(0,0%,${parseInt(100 - filteredFrequencies[d] * 100)}%)`;
+  } else {
+    style.backgroundColor = 'transparent';
+  }
+
+  if (filteredFrequencies[d] > 0.5) {
+    style.color = 'var(--yalewhite)';
+  } else {
+    style.color = 'var(--yaledarkgray)';
+  }
+
+  return style;
+
 }
