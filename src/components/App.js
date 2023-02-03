@@ -1122,9 +1122,7 @@ export default function App() {
   const itemSize = 3;
 
   const [filter, setFilter] = useState(false);
-  const [filterList, setFilterList] = useState(
-    {'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]}
-    );
+  const [filterList, setFilterList] = useState({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
   const [filterLightMode, setFilterLightMode] = useState(false);
@@ -1135,6 +1133,11 @@ export default function App() {
   const [colorSlide, setColorSlide] = useState([colorMin,colorMax]);
   const [roughnessSlide, setRoughnessSlide] = useState([roughnessMin,roughnessMax]);
   const [glossSlide, setGlossSlide] = useState([glossMin,glossMax]);
+  const [yearSlideMarks, setYearSlideMarks] = useState(null);
+  const [thicknessSlideMarks, setThicknessSlideMarks] = useState(null);
+  const [colorSlideMarks, setColorSlideMarks] = useState(null);
+  const [roughnessSlideMarks, setRoughnessSlideMarks] = useState(null);
+  const [glossSlideMarks, setGlossSlideMarks] = useState(null);
   const [filteredThicknessFrequencies, setFilteredThicknessFrequencies] = useState(thicknessValCounts);
   const [filteredColorFrequencies, setFilteredColorFrequencies] = useState(colorValCounts);
   const [filteredTextureFrequencies, setFilteredTextureFrequencies] = useState(textureValCounts);
@@ -1163,7 +1166,7 @@ export default function App() {
 
   useLayoutEffect(() => {
 
-    const workingIdxList = filterIdxList.length === 0 ? data['idx'].map((_,i) => i) : filterIdxList;
+    const workingIdxList = filterIdxList.length === 0 && filter ? [] : filterIdxList.length === 0 && !filter ? data['idx'].map((_,i) => i) : filterIdxList;
 
     const filteredThicknessValCounts = valueCounts(data['thicknessWord'].filter((_,i) => workingIdxList.includes(i)));
     const filteredColorValCounts = valueCounts(data['colorWord'].filter((_,i) => workingIdxList.includes(i)));
@@ -1181,6 +1184,53 @@ export default function App() {
     setFilteredBranFrequencies(filteredBranValCounts);
     setFilteredRadarGroupFrequencies(filteredRadarGroupValCounts);
 
+    const filteredYears = data['year'].filter((_,i) => workingIdxList.includes(i));
+    const filteredThicknesses = data['thickness'].filter((_,i) => workingIdxList.includes(i));
+    const filteredColors = data['dmin'].filter((_,i) => workingIdxList.includes(i));
+    const filteredRoughnesses = data['roughness'].filter((_,i) => workingIdxList.includes(i));
+    const filteredGlosses = data['gloss'].filter((_,i) => workingIdxList.includes(i));
+
+    const filteredYearsMin = min(filteredYears);
+    const filteredYearsMax = max(filteredYears);
+    const filteredThicknessesMin = min(filteredThicknesses);
+    const filteredThicknessesMax = max(filteredThicknesses);
+    const filteredColorsMin = min(filteredColors);
+    const filteredColorsMax = max(filteredColors);
+    const filteredRoughnessesMin = min(filteredRoughnesses);
+    const filteredRoughnessesMax = max(filteredRoughnesses);
+    const filteredGlossesMin = min(filteredGlosses);
+    const filteredGlossesMax = max(filteredGlosses);
+
+    if ( filteredYearsMin == null || filteredYearsMax == null ) {
+      setYearSlideMarks(null);
+    } else {
+      setYearSlideMarks([{value: filteredYearsMin, label: filteredYearsMin.toString()},{value: filteredYearsMax, label: filteredYearsMax.toString()}])
+    }
+
+    if ( filteredThicknessesMin == null || filteredThicknessesMax == null ) {
+      setThicknessSlideMarks(null);
+    } else {
+      setThicknessSlideMarks([{value: filteredThicknessesMin, label: filteredThicknessesMin.toString()},{value: filteredThicknessesMax, label: filteredThicknessesMax.toString()}])
+    }
+
+    if ( filteredColorsMin == null || filteredColorsMax == null ) {
+      setColorSlideMarks(null);
+    } else {
+      setColorSlideMarks([{value: filteredColorsMin, label: filteredColorsMin.toString()},{value: filteredColorsMax, label: filteredColorsMax.toString()}])
+    }
+
+    if ( filteredRoughnessesMin == null || filteredRoughnessesMax == null ) {
+      setRoughnessSlideMarks(null);
+    } else {
+      setRoughnessSlideMarks([{value: filteredRoughnessesMin, label: filteredRoughnessesMin.toString()},{value: filteredRoughnessesMax, label: filteredRoughnessesMax.toString()}])
+    }
+
+    if ( filteredGlossesMin == null || filteredGlossesMax == null ) {
+      setGlossSlideMarks(null);
+    } else {
+      setGlossSlideMarks([{value: filteredGlossesMin, label: filteredGlossesMin.toString()},{value: filteredGlossesMax, label: filteredGlossesMax.toString()}])
+    }
+    
   },[filterIdxList]);
   
   const handleDetailScreenNav = e => {
@@ -1771,7 +1821,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='year' onChangeCommitted={handleSliderFilter} onChange={e => setYearSlide(e.target.value)} defaultValue={[yearMin,yearMax]} valueLabelDisplay="on" min={yearMin} max={yearMax} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='year' onChangeCommitted={handleSliderFilter} onChange={e => setYearSlide(e.target.value)} defaultValue={[yearMin,yearMax]} valueLabelDisplay="on" min={yearMin} max={yearMax} marks={yearSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
@@ -1789,22 +1839,22 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='thickness' onChangeCommitted={handleSliderFilter} onChange={e => setThicknessSlide(e.target.value)} defaultValue={[thicknessMin,thicknessMax]} valueLabelDisplay="on" min={thicknessMin} max={thicknessMax} step={0.001} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='thickness' onChangeCommitted={handleSliderFilter} onChange={e => setThicknessSlide(e.target.value)} defaultValue={[thicknessMin,thicknessMax]} valueLabelDisplay="on" min={thicknessMin} max={thicknessMax} step={0.001} marks={thicknessSlideMarks}/></div>
           {Object.keys(thicknessValCounts).sort().map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredThicknessFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} marks={colorSlideMarks}/></div>
           {Object.keys(colorValCounts).sort().map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredColorFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} max={roughnessMax} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} max={roughnessMax} marks={roughnessSlideMarks}/></div>
           {Object.keys(textureValCounts).sort().map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredTextureFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} /></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} marks={glossSlideMarks}/></div>
           {Object.keys(glossValCounts).sort().map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredGlossFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
