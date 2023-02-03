@@ -1084,7 +1084,7 @@ let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 console.log(data);
 
 export default function App() {
-  const [toggleMR, setToggleMR] = useState(false);
+  const [toggleMR, setToggleMR] = useState(true);
   const [toggleLMN, setToggleLMN] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
