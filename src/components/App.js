@@ -8,6 +8,15 @@ import { bin } from 'd3-array';
 import { orderBy, compact, max, min, cloneDeep, intersection } from 'lodash';
 import { data } from './data';
 
+const missingDminHexIdxs = [];
+const missingDminHexes = [];
+data['dminHex'].forEach((d,i) => {
+  if ( d === '' ) {
+    missingDminHexIdxs.push(i);
+    missingDminHexes.push(d);
+  }
+});
+
 /*Misc functions--------------------------------------------------------------*/
 
 function returnDomain() {
@@ -35,6 +44,8 @@ const roughnessMin = min(data['roughness']);
 const roughnessMax = max(data['roughness']);
 const colorMin = min(data['dmin']);
 const colorMax = max(data['dmin']);
+const toneMin = min(data['dmax']);
+const toneMax = max(data['dmax']);
 
 /*
 const randomRGB = () => {
@@ -172,7 +183,7 @@ const expressivenessMap = makeMap(expressivenessGroupArray,'expressivenessGroup'
 
 const isoGroupArray = Array.from(new Set(data['isoGroup']));
 const isoMap = makeMap(isoGroupArray,'isoGroup');
-const zArray = isoGroupArray.map(d => d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
+const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
 
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
 const radarMap = makeMap(radarGroupArray,'radarGroup');
@@ -195,6 +206,13 @@ function radarVertices(glyphGroup) {
   rough = axisSteps(rough, 3) * -1;
   gloss = axisSteps(gloss, 3);
   color = axisSteps(color, 4);
+
+  if ( glyphGroup === "" ) {
+    thick = 0;
+    rough = 0;
+    gloss = 0;
+    color = 0;
+  }
 
   const glyphThickness = 0.1;
 
@@ -531,7 +549,13 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
       if ( filterIdxList.includes(globalIndex) ) {
         colorSubstrate.offsetHSL(0, 0.2, -0.4);
       } else {
-        colorSubstrate.offsetHSL(0, -0.2, -0.8);
+        if ( missingDminHexIdxs.includes(globalIndex) ) {
+          colorSubstrate.offsetHSL(0, 0, -0.2); // gray
+        } else {
+          colorSubstrate.set(0x4a4a4a);
+          colorSubstrate.offsetHSL(0, 0, -0.2);
+          //colorSubstrate.offsetHSL(0, -0.2, -0.8); // cool darkening effect that doesn't work when the color is already dark
+        }
       } 
     } else if ( group === 'dmaxHex' ) {
       if ( filterIdxList.includes(globalIndex) ) {
@@ -555,7 +579,11 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
     } 
   } else {
     if ( group === 'dminHex' ) {
-      colorSubstrate.offsetHSL(0, 0.2, -0.4);
+      if ( missingDminHexIdxs.includes(globalIndex) ) {
+        colorSubstrate.offsetHSL(0, 0, -0.2); // gray
+      } else {
+        colorSubstrate.offsetHSL(0, 0.2, -0.4);
+      }
     } else if ( group === 'dmaxHex' ) {
       colorSubstrate.offsetHSL(0, 0.6, -0.1);
     } else if ( groupColorCols.includes(group) ) {
@@ -666,6 +694,8 @@ function Glyphs({
       colorVals = data[group];
       if ( group === 'dmaxHex') {
         colorVals = colorVals.map(d => d === '' ? missingColorTone : d);
+      } else if ( group === 'dminHex') {
+        colorVals = colorVals.map(d => d === '' ? 0x4a4a4a : d);
       }
     }
 
@@ -847,7 +877,7 @@ function getHoverInfo(clickedItem) {
   const gloss = data['gloss'][clickedItem];
   const roughness = data['roughness'][clickedItem];
 
-  return '[' + radarGroup + ']' + '  mm:' + thickness + '  b*:' + color + '  rgb:' + dminHex + '  GU:' + gloss + '  std:' + roughness
+  return clickedItem + ' [' + radarGroup + ']' + '  mm:' + thickness + '  b*:' + color + '  rgb:' + dminHex + '  GU:' + gloss + '  std:' + roughness
 }
 
 function PanelItem({
@@ -972,8 +1002,6 @@ function PanelItem({
     } else {
       setRaisedItem(null);
     }
-
-    console.log(targetCoords[clickedItem]);
   }
 
   const coll = data['coll'][clickedItem];
@@ -1023,7 +1051,7 @@ function PanelItem({
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); console.log(document.activeElement)}} >open_in_full</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem);}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{data['catalog'][clickedItem]==='_' ? '#' : '#' + data['catalog'][clickedItem]}</p>
@@ -1095,11 +1123,13 @@ export default function App() {
   const [yearSlide, setYearSlide] = useState([yearMin,yearMax]);
   const [thicknessSlide, setThicknessSlide] = useState([thicknessMin,thicknessMax]);
   const [colorSlide, setColorSlide] = useState([colorMin,colorMax]);
+  const [toneSlide, setToneSlide] = useState([toneMin,toneMax]);
   const [roughnessSlide, setRoughnessSlide] = useState([roughnessMin,roughnessMax]);
   const [glossSlide, setGlossSlide] = useState([glossMin,glossMax]);
   const [yearSlideMarks, setYearSlideMarks] = useState(null);
   const [thicknessSlideMarks, setThicknessSlideMarks] = useState(null);
   const [colorSlideMarks, setColorSlideMarks] = useState(null);
+  const [toneSlideMarks, setToneSlideMarks] = useState(null);
   const [roughnessSlideMarks, setRoughnessSlideMarks] = useState(null);
   const [glossSlideMarks, setGlossSlideMarks] = useState(null);
   const [filteredThicknessFrequencies, setFilteredThicknessFrequencies] = useState(thicknessValCounts);
@@ -1151,6 +1181,7 @@ export default function App() {
     const filteredYears = data['year'].filter((_,i) => workingIdxList.includes(i));
     const filteredThicknesses = data['thickness'].filter((_,i) => workingIdxList.includes(i));
     const filteredColors = data['dmin'].filter((_,i) => workingIdxList.includes(i));
+    const filteredTones = data['dmax'].filter((_,i) => workingIdxList.includes(i));
     const filteredRoughnesses = data['roughness'].filter((_,i) => workingIdxList.includes(i));
     const filteredGlosses = data['gloss'].filter((_,i) => workingIdxList.includes(i));
 
@@ -1160,6 +1191,8 @@ export default function App() {
     const filteredThicknessesMax = max(filteredThicknesses);
     const filteredColorsMin = min(filteredColors);
     const filteredColorsMax = max(filteredColors);
+    const filteredTonesMin = min(filteredTones);
+    const filteredTonesMax = max(filteredTones);
     const filteredRoughnessesMin = min(filteredRoughnesses);
     const filteredRoughnessesMax = max(filteredRoughnesses);
     const filteredGlossesMin = min(filteredGlosses);
@@ -1181,6 +1214,12 @@ export default function App() {
       setColorSlideMarks(null);
     } else {
       setColorSlideMarks([{value: filteredColorsMin, label: filteredColorsMin.toString()},{value: filteredColorsMax, label: filteredColorsMax.toString()}])
+    }
+
+    if ( filteredTonesMin == null || filteredTonesMax == null ) {
+      setToneSlideMarks(null);
+    } else {
+      setToneSlideMarks([{value: filteredTonesMin, label: filteredTonesMin.toString()},{value: filteredTonesMax, label: filteredTonesMax.toString()}])
     }
 
     if ( filteredRoughnessesMin == null || filteredRoughnessesMax == null ) {
@@ -1223,6 +1262,7 @@ export default function App() {
     'year':[yearSlide,yearMin,yearMax],
     'thickness':[thicknessSlide,thicknessMin,thicknessMax],
     'dmin':[colorSlide,colorMin,colorMax],
+    'dmax':[toneSlide,toneMin,toneMax],
     'roughness':[roughnessSlide,roughnessMin,roughnessMax],
     'gloss':[glossSlide,glossMin,glossMax]
   };
@@ -1237,6 +1277,7 @@ export default function App() {
     if ( yearSlide[0] === yearMin && yearSlide[1] === yearMax &&
       thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
       colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
+      toneSlide[0] === toneMin && toneSlide[1] === toneMax &&
       roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
       glossSlide[0] === glossMin && glossSlide[1] === glossMax &&
       Object.values(filterList).every(d => d.length === 0) ) {
@@ -1272,6 +1313,7 @@ export default function App() {
       yearSlide[0] === yearMin && yearSlide[1] === yearMax &&
       thicknessSlide[0] === thicknessMin && thicknessSlide[1] === thicknessMax &&
       colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
+      toneSlide[0] === toneMin && toneSlide[1] === toneMax &&
       roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
       glossSlide[0] === glossMin && glossSlide[1] === glossMax ) {
       setFilter(false);
@@ -1304,12 +1346,9 @@ export default function App() {
       if ( sliderVal[0] !== sliderMin || sliderVal[1] !== sliderMax ) {
         const keepersForThisSlider = [];
         data[col].forEach((d,i) => {
-          if ( isNaN(d) ) {
-            console.log("NaN");
-          } else if ( d >= sliderVal[0] && d <= sliderVal[1] ) {
+          if ( !isNaN(d) && d >= sliderVal[0] && d <= sliderVal[1] ) {
             keepersForThisSlider.push(i);
-          }
-        });
+          }});
         allKeeperLists = [...allKeeperLists,keepersForThisSlider];
       }
     });
@@ -1370,6 +1409,7 @@ export default function App() {
       'thickness':[],
       'thicknessWord':[],
       'dmin':[],
+      'dmax':[],
       'colorWord':[],
       'roughness':[],
       'textureWord':[],
@@ -1383,6 +1423,7 @@ export default function App() {
     setYearSlide([yearMin,yearMax]);
     setThicknessSlide([thicknessMin,thicknessMax]);
     setColorSlide([colorMin,colorMax]);
+    setToneSlide([toneMin,toneMax]);
     setRoughnessSlide([roughnessMin,roughnessMax]);
     setGlossSlide([glossMin,glossMax]);
     sliderKey+=1;
@@ -1788,18 +1829,18 @@ export default function App() {
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='year' onChangeCommitted={handleSliderFilter} onChange={e => setYearSlide(e.target.value)} defaultValue={[yearMin,yearMax]} valueLabelDisplay="on" min={yearMin} max={yearMax} marks={yearSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
+          <div id='manHead' className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
           {!manExpand && Object.keys(manValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
           {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(true)} >more_horiz</button>}
           {manExpand && Object.keys(manValCounts).sort().map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
-          {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(false)} >expand_less</button>}
+          {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => {setManExpand(false);document.getElementById("manHead").scrollIntoView();}} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
+          <div id='branHead' className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
           {!branExpand && Object.keys(branValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
           {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={() => setBranExpand(true)} >more_horiz</button>}
           {branExpand && Object.keys(branValCounts).sort().map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
-          {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => setBranExpand(false)} >expand_less</button>}
+          {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => {setBranExpand(false);document.getElementById("branHead").scrollIntoView();}} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
@@ -1810,6 +1851,10 @@ export default function App() {
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} marks={colorSlideMarks}/></div>
           {Object.keys(colorValCounts).sort().map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredColorFrequencies,d)} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TONE COLOR</p></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmax' onChangeCommitted={handleSliderFilter} onChange={e => setToneSlide(e.target.value)} defaultValue={[toneMin,toneMax]} valueLabelDisplay="on" min={toneMin} max={toneMax} step={0.01} marks={toneSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
