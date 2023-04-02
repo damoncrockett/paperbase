@@ -8,60 +8,6 @@ import { bin } from 'd3-array';
 import { orderBy, compact, max, min, cloneDeep, intersection } from 'lodash';
 import { data } from './data';
 
-data['year'][5667] = "1920";
-
-// zeroes in thickness are actually missing data
-// note that this correction does nothing to correct the expressiveness values, radar groups, etc.
-data['thickness'].forEach((item, i) => {
-  if (item === 0) {
-    data['thickness'][i] = "_"
-  }
-});
-
-// additional Man Ray dates
-const manRayDates = {
-  "JP1997.03":"1922",
-  "JP1997.04":"1923",
-  "JP2002.14":"1926",
-  "BL2005.02":"1922",
-  "BL2005.10":"1923",
-  "BL2006.15":"1922",
-  "BL2007.27":"1926",
-  "BL2007.32":"1924",
-  "BL2007.33":"1930",
-  "F7":"1929",
-  "F4":"1923",
-  "BL2012.06":"1922",
-  "BL2011.02":"1922",
-  "BL2011.07":"1933",
-  "BL2011.17":"1928",
-  "BL2012.03":"1922"
-};
-
-function fillDate(data,catalog,date) {
-  const catalogIndex = data['catalog'].indexOf(catalog);
-  data['year'][catalogIndex] = date;
-}
-
-Object.keys(manRayDates).forEach((catalog) => {
-  fillDate(data,catalog,manRayDates[catalog])
-});
-
-// new array in `data` filled with empty strings
-data['photoProcess'] = Array.from({length: data['isoGroup'].length}, () => "");
-
-const photogramCatalogNumbers = [
-  "JP1997.03","JP1999.0","JP2004.05","BL2005.10","BL2006.15","BL2007.27","BL2007.32","F2","F4","BL2011.02","BL2012.03","BL2012.06","82.151","89.120"
-];
-
-// fill in photogram process
-photogramCatalogNumbers.forEach((catalog) => {
-  const catalogIndex = data['catalog'].indexOf(catalog);
-  data['photoProcess'][catalogIndex] = "photogram";
-});
-
-data['photoProcess'][5686] = "photogram"; // Hand and Egg
-
 /*Misc functions--------------------------------------------------------------*/
 
 function returnDomain() {
@@ -883,12 +829,25 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function getDetailImageString(texture,packageImage,i) {
-  const idx = data['idx'][i];
+function getDetailImageString(texture,i) {
   const coll = data['coll'][i];
-  const detailImgString = coll==='lml' && texture ? returnDomain()+'texture/'+idx+'.jpg' : coll==='lml' && packageImage ? returnDomain()+'packages_2048/'+idx+'.jpg' : coll==='mr' && texture ? returnDomain()+'mr_texture/'+idx+'.jpg' : coll==='mr' && packageImage ? returnDomain()+'mr_prints/'+idx+'.jpg' : '';
+  const collString = coll==='lml' ? '' : coll+'_';
+  const idx = data['idx'][i];
+  const detailFolder = texture ? coll==='lml' ? 'texture' : collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints';
+  const detailImgString = returnDomain() + detailFolder + '/' + idx + '.jpg';
 
-  return detailImgString
+  return detailImgString;
+}
+
+function getHoverInfo(clickedItem) {
+  const radarGroup = data['radarGroup'][clickedItem];
+  const thickness = data['thickness'][clickedItem];
+  const color = data['dmin'][clickedItem];
+  const dminHex = data['dminHex'][clickedItem];
+  const gloss = data['gloss'][clickedItem];
+  const roughness = data['roughness'][clickedItem];
+
+  return '[' + radarGroup + ']' + '  mm:' + thickness + '  b*:' + color + '  rgb:' + dminHex + '  GU:' + gloss + '  std:' + roughness
 }
 
 function PanelItem({
@@ -1018,11 +977,16 @@ function PanelItem({
   }
 
   const coll = data['coll'][clickedItem];
+  const collString = coll==='lml' ? '' : coll+'_';
   const idx = data['idx'][clickedItem];
+  const textureThumbSize = smallItem ? 256 : 512;
+  const imgThumbSize = coll==='lml' ? smallItem ? 512 : 1024 : smallItem ? 256 : 512;
+  const printFolder = coll==='lml' ? 'packages' : collString + 'prints_crop';
+  const detailFolder = texture ? coll==='lml' ? 'texture' : collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints';
 
-  const imgStringTexture = coll==='lml' && !smallItem ? returnDomain()+'texture_512/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'texture_256/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_texture_512/'+idx+'.jpg' : returnDomain()+'mr_texture_256/'+idx+'.jpg';
-  const imgString = coll==='lml' && !smallItem ? returnDomain()+'packages_1024/'+idx+'.jpg' : coll==='lml' && smallItem ? returnDomain()+'packages_512/'+idx+'.jpg' : coll==='mr' && !smallItem ? returnDomain()+'mr_prints_crop_512/'+idx+'.jpg' : returnDomain()+'mr_prints_crop_256/'+idx+'.jpg';
-  const detailImgString = getDetailImageString(texture,packageImage,clickedItem);
+  const imgStringTexture = returnDomain() + collString + 'texture_' + textureThumbSize + '/' + idx + '.jpg';
+  const imgString = returnDomain() + printFolder + '_' + imgThumbSize + '/' + idx + '.jpg';
+  const detailImgString = getDetailImageString(texture,clickedItem);
 
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
   const sSixth = svgSide / 6;
@@ -1034,7 +998,7 @@ function PanelItem({
   const stroke = "#595959";
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={data['radarGroup'][clickedItem]} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
+    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={getHoverInfo(clickedItem)} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
       {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
 
           <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
@@ -1088,7 +1052,7 @@ export default function App() {
   const [toggleLMN, setToggleLMN] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
   const [toggleHC, setToggleHC] = useState(false);
-  const [toggleLAB, setToggleLAB] = useState(false);
+  const [toggleLAB, setToggleLAB] = useState(true);
   const [toggleRM, setToggleRM] = useState(false);
 
   const [model, setModel] = useState('grid');
@@ -1250,7 +1214,7 @@ export default function App() {
       const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
       setDetailImageIndex(newDetailImageIndex);
 
-      const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
+      const newDetailImageString = getDetailImageString(texture,newDetailImageIndex);
       setDetailImageStringState(newDetailImageString);
     }
   }
@@ -1441,7 +1405,7 @@ export default function App() {
           const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
           setDetailImageIndex(newDetailImageIndex);
 
-          const newDetailImageString = getDetailImageString(texture,packageImage,newDetailImageIndex);
+          const newDetailImageString = getDetailImageString(texture,newDetailImageIndex);
           setDetailImageStringState(newDetailImageString);
         }
       }
