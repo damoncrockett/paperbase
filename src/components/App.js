@@ -861,9 +861,9 @@ const glyphToMap = {
 
 function getDetailImageString(texture,i) {
   const coll = data['coll'][i];
-  const collString = coll==='lml' ? '' : coll+'_';
+  const collString = coll.includes('lml') ? '' : coll+'_';
   const idx = data['idx'][i];
-  const detailFolder = texture ? coll==='lml' ? 'texture' : collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints';
+  const detailFolder = texture ? collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints'; // modify once sample book images are available
   const detailImgString = returnDomain() + detailFolder + '/' + idx + '.jpg';
 
   return detailImgString;
@@ -1005,12 +1005,11 @@ function PanelItem({
   }
 
   const coll = data['coll'][clickedItem];
-  const collString = coll==='lml' ? '' : coll+'_';
+  const collString = coll.includes('lml') ? '' : coll+'_';
   const idx = data['idx'][clickedItem];
   const textureThumbSize = smallItem ? 256 : 512;
-  const imgThumbSize = coll==='lml' ? smallItem ? 512 : 1024 : smallItem ? 256 : 512;
-  const printFolder = coll==='lml' ? 'packages' : collString + 'prints_crop';
-  const detailFolder = texture ? coll==='lml' ? 'texture' : collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints';
+  const imgThumbSize = coll.includes('lml') ? smallItem ? 512 : 1024 : smallItem ? 256 : 512;
+  const printFolder = coll.includes('lml') ? 'packages' : collString + 'prints_crop';
 
   const imgStringTexture = returnDomain() + collString + 'texture_' + textureThumbSize + '/' + idx + '.jpg';
   const imgString = returnDomain() + printFolder + '_' + imgThumbSize + '/' + idx + '.jpg';
@@ -1818,7 +1817,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
-          {['LML Packages','LML Sample Books'].map((d,i) => <button key={i} className='filterButton' style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)'}} >{d}</button>)}
+          {[{t:'LML Packages',v:'lml'},{t:'LML Sample Books',v:'lmlsb'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PROCESS TYPE</p></div>
