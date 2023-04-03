@@ -47,6 +47,8 @@ const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
 
+console.log(thicknessMin,thicknessMax);
+
 /*
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -443,15 +445,12 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin) {
 }
 
 function featureScale(col) {
-  //col = col.map(d => parseFloat(d));
-  col = col.map(d => d);
-  console.log(col);
   const colmin = min(col);
   const colmax = max(col);
   const colrange = colmax - colmin;
-  const std = getStandardDeviation(col);
-  console.log(colmin,colmax,std,colrange);
-  return col.map(d => isNaN(d) ? colmax + std : (d - colmin) / colrange) // if d is NaN, we add sigma to the max to send it to the right, off screen
+  const adjCol = col.map(d => isNaN(d) ? 2 : (d - colmin) / colrange) // if d is NaN, we send it outside the normed max (which is 1)
+
+  return adjCol;
 }
 
 function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,spreadSlide) {
