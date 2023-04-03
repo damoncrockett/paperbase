@@ -445,10 +445,12 @@ function makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin) {
 function featureScale(col) {
   //col = col.map(d => parseFloat(d));
   col = col.map(d => d);
+  console.log(col);
   const colmin = min(col);
   const colmax = max(col);
   const colrange = colmax - colmin;
   const std = getStandardDeviation(col);
+  console.log(colmin,colmax,std,colrange);
   return col.map(d => isNaN(d) ? colmax + std : (d - colmin) / colrange) // if d is NaN, we add sigma to the max to send it to the right, off screen
 }
 
@@ -544,32 +546,38 @@ let targetCoords;
 
 function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
 
+  const baseColorOffsetS = 0.2;
+  const baseColorOffsetL = -0.2;
+  const toneOffsetS = 0.1;
+  const toneOffsetL = -0.1;
+  const grayOffsetL = -0.2;
+
   if ( filter ) {
     if ( group === 'dminHex' ) {
       if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0.2, -0.4);
+        colorSubstrate.offsetHSL(0, baseColorOffsetS, baseColorOffsetL);
       } else {
         if ( missingDminHexIdxs.includes(globalIndex) ) {
-          colorSubstrate.offsetHSL(0, 0, -0.2); // gray
+          colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
         } else {
           colorSubstrate.set(0x4a4a4a);
-          colorSubstrate.offsetHSL(0, 0, -0.2);
+          colorSubstrate.offsetHSL(0, 0, grayOffsetL);
           //colorSubstrate.offsetHSL(0, -0.2, -0.8); // cool darkening effect that doesn't work when the color is already dark
         }
       } 
     } else if ( group === 'dmaxHex' ) {
       if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0.6, -0.1);
+        colorSubstrate.offsetHSL(0, toneOffsetS, toneOffsetL);
       } else {
         colorSubstrate.set(0x4a4a4a);
-        colorSubstrate.offsetHSL(0, 0, -0.2);
+        colorSubstrate.offsetHSL(0, 0, grayOffsetL);
       }
     } else if ( groupColorCols.includes(group) ) {
       if ( filterIdxList.includes(globalIndex) ) {
         colorSubstrate.offsetHSL(0, 0, -0.2);
       } else {
         colorSubstrate.set(0x4a4a4a);
-        colorSubstrate.offsetHSL(0, 0, -0.2);
+        colorSubstrate.offsetHSL(0, 0, grayOffsetL);
       }
     } else if ( continuousColorCols.includes(group) ) {
       if ( filterIdxList.includes(globalIndex) ) {
@@ -580,12 +588,12 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
   } else {
     if ( group === 'dminHex' ) {
       if ( missingDminHexIdxs.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0, -0.2); // gray
+        colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
       } else {
-        colorSubstrate.offsetHSL(0, 0.2, -0.4);
+        colorSubstrate.offsetHSL(0, baseColorOffsetS, baseColorOffsetL);
       }
     } else if ( group === 'dmaxHex' ) {
-      colorSubstrate.offsetHSL(0, 0.6, -0.1);
+      colorSubstrate.offsetHSL(0, toneOffsetS, toneOffsetL);
     } else if ( groupColorCols.includes(group) ) {
       colorSubstrate.offsetHSL(0, 0, -0.2);
     }
@@ -1083,8 +1091,8 @@ export default function App() {
   const [toggleRM, setToggleRM] = useState(false);
 
   const [model, setModel] = useState('grid');
-  const [xcol, setXcol] = useState('year');
-  const [ycol, setYcol] = useState('year');
+  const [xcol, setXcol] = useState('dmin');
+  const [ycol, setYcol] = useState('thickness');
   const [zcol, setZcol] = useState('none');
   const [facet, setFacet] = useState('3d');
   const [facetcol, setFacetCol] = useState('none');
