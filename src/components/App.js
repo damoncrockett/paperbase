@@ -1876,7 +1876,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} max={roughnessMax} marks={roughnessSlideMarks}/></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} step={0.001} max={roughnessMax} marks={roughnessSlideMarks}/></div>
           {Object.keys(textureValCounts).sort().map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredTextureFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
