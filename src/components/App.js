@@ -47,8 +47,6 @@ const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
 
-console.log(thicknessMin,thicknessMax);
-
 /*
 const randomRGB = () => {
   const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
@@ -543,6 +541,20 @@ function valToColor(arr) {
 const meshList = {};
 let targetCoords;
 
+function adjustLightness(color, targetDarkness, weight, sOffset) {
+  const hsl = {};
+  color.getHSL(hsl);
+
+  // Linearly interpolate between current lightness and target darkness
+  const newLightness = (1 - weight) * hsl.l + weight * targetDarkness;
+
+  // Calculate the lightness offset
+  const lOffset = newLightness - hsl.l;
+
+  // Apply the offset to the color
+  color.offsetHSL(0, sOffset, lOffset);
+}
+
 function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
 
   const baseColorOffsetS = 0.2;
@@ -559,9 +571,9 @@ function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterId
         if ( missingDminHexIdxs.includes(globalIndex) ) {
           colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
         } else {
-          colorSubstrate.set(0x4a4a4a);
-          colorSubstrate.offsetHSL(0, 0, grayOffsetL);
-          //colorSubstrate.offsetHSL(0, -0.2, -0.8); // cool darkening effect that doesn't work when the color is already dark
+          //colorSubstrate.set(0x4a4a4a);
+          //colorSubstrate.offsetHSL(0, 0, grayOffsetL);
+          adjustLightness(colorSubstrate, 0.05, 0.99, -0.2);
         }
       } 
     } else if ( group === 'dmaxHex' ) {
