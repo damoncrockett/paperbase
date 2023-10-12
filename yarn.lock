@@ -4018,6 +4018,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"paperbase@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "paperbase@workspace:."
+  dependencies:
+    "@emotion/react": ^11.10.4
+    "@emotion/styled": ^11.10.4
+    "@mui/material": ^5.10.9
+    "@react-spring/three": ^9.4.4
+    "@react-three/drei": ^8.16.4
+    "@react-three/fiber": ^7.0.26
+    buble: ^0.20.0
+    buble-loader: ^0.5.1
+    css-loader: ^6.6.0
+    d3-array: ^3.1.1
+    d3-selection: ^3.0.0
+    d3-transition: ^3.0.1
+    html-webpack-plugin: ^5.5.0
+    lodash: ^4.17.21
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    style-loader: ^3.3.1
+    three: ^0.137.5
+    webpack: ^5.69.1
+    webpack-cli: ^4.9.2
+    webpack-dev-server: ^4.7.4
+  languageName: unknown
+  linkType: soft
+
 "param-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "param-case@npm:3.0.4"
@@ -4107,34 +4135,6 @@ __metadata:
   checksum: 5b1e2daa247062061325b8fdbfd1fb56dde0a448fb1455453276ea18c60685bdad23a445dc148cf87bc216be1573357509b7d4060494a6fd768c7efad833ee45
   languageName: node
   linkType: hard
-
-"phenome@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "phenome@workspace:."
-  dependencies:
-    "@emotion/react": ^11.10.4
-    "@emotion/styled": ^11.10.4
-    "@mui/material": ^5.10.9
-    "@react-spring/three": ^9.4.4
-    "@react-three/drei": ^8.16.4
-    "@react-three/fiber": ^7.0.26
-    buble: ^0.20.0
-    buble-loader: ^0.5.1
-    css-loader: ^6.6.0
-    d3-array: ^3.1.1
-    d3-selection: ^3.0.0
-    d3-transition: ^3.0.1
-    html-webpack-plugin: ^5.5.0
-    lodash: ^4.17.21
-    react: ^17.0.2
-    react-dom: ^17.0.2
-    style-loader: ^3.3.1
-    three: ^0.137.5
-    webpack: ^5.69.1
-    webpack-cli: ^4.9.2
-    webpack-dev-server: ^4.7.4
-  languageName: unknown
-  linkType: soft
 
 "picocolors@npm:^1.0.0":
   version: 1.0.0
