@@ -19,7 +19,7 @@
     "build": "webpack --mode production",
     "start": "webpack serve --hot --mode development",
     "deploy": "aws s3 sync /Users/damoncrockett/paperbase/dist/ s3://paperbase.xyz/",
-    "sync": "aws s3 sync /Users/damoncrockett/paperbase/src/assets/json/ s3://paperbase.xyz/"
+    "sync": "aws s3 sync /Users/damoncrockett/paperbase/src/assets/img/ s3://paperbase.xyz/"
   },
   "repository": {
     "type": "git",
