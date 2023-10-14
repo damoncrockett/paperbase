@@ -1,28 +1,55 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, Color, MOUSE, DoubleSide } from 'three';
+import { Object3D, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
-import { bin } from 'd3-array';
-import { orderBy, compact, max, min, cloneDeep, intersection } from 'lodash';
-import { data } from './data';
+import { max, min, cloneDeep, intersection } from 'lodash';
+import { data } from '../assets/data/data.js';
+import { returnDomain } from '../utils/img';
 
+// I forget what this is about
 const missingDminHexIdxs = [];
-const missingDminHexes = [];
 data['dminHex'].forEach((d,i) => {
   if ( d === '' ) {
     missingDminHexIdxs.push(i);
-    missingDminHexes.push(d);
   }
 });
 
-/*Misc functions--------------------------------------------------------------*/
+export { missingDminHexIdxs };
 
-function returnDomain() {
-  const production = process.env.NODE_ENV === 'production';
-  return production ? '' : 'http://localhost:8000/'
-}
+import { 
+  valueCounts,
+  uScale, 
+  rankTransform, 
+} from '../utils/stats';
+
+import { 
+  makeColorArray, 
+  highlightColor,
+  missingColorTone,
+  colorSubstrate,
+  continuousColorCols,
+  valToColor,
+  applyFilterColors,
+  getColorVal
+} from '../utils/color';
+
+import { 
+  makeGroupLabels,
+  makeMap,
+  radarVertices,
+  radarNormals
+} from '../utils/glyph';
+
+import { 
+  makeGrid,
+  makeHist,
+  makeScatter
+} from '../utils/plot';
+
+const initialGroupColors = makeColorArray();
+let colorVals; //this gets used in many places
 
 const n = data['idx'].length; // nrows in data; 'idx' could be any column
 
@@ -47,65 +74,6 @@ const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
 
-/*
-const randomRGB = () => {
-  const rgbString = "rgb(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + ")"
-  return rgbString
-};
-*/
-
-// colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgorical
-// had to eliminate two colors [#f228a0,#f24219] because they were too close to our highlight magenta
-let categoricalColors = [
-  "#78b4c6", "#c66a5a", "#52dea9", "#b5a3cf", "#a1d832", "#f59ae7", "#698e4e", 
-  "#f4bb8f", "#00d618", "#2282f5", "#f24219", "#9a63ff", "#fe8f06", "#9d7f50", "#f4d403"];
-
-let categoricalColorArray;
-function makeColorArray() {
-  categoricalColorArray = categoricalColors.sort(function () {
-    return Math.random() - 0.5;
-  });
-
-  const lastColor = categoricalColorArray[categoricalColorArray.length - 1];
-  const lastColorArray = Array.from({length: 600}, () => lastColor); // there are 600 distinct 'bran' values, so we are adding 600 here to be safe
-  categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
-
-  return categoricalColorArray
-}
-
-const initialGroupColors = makeColorArray();
-
-/*
-function makeColorArray(k) {
-  const colorArray = Array.from({length: k}, () => randomRGB());
-  return colorArray
-}
-*/
-
-/*Color groups----------------------------------------------------------------*/
-
-// for making integer labels for character-variable groups, used in glyph group colors
-function makeGroupLabels(groupCol) {
-  const groupColFiltered = groupCol.filter(d => d !== '_');
-  const valCounts = valueCounts(groupColFiltered);
-  let valCountsList = [];
-  Object.keys(valCounts).forEach(key => {
-    const scratchObject = {};
-    scratchObject['groupValue'] = key;
-    scratchObject['frequency'] = valCounts[key];
-    valCountsList.push(scratchObject);
-  });
-
-  valCountsList = orderBy(valCountsList,'frequency', 'desc');
-  const mapGroupValueToInteger = {};
-  valCountsList.forEach((d,i) => {
-    mapGroupValueToInteger[d['groupValue']] = i;
-  });
-  mapGroupValueToInteger['_'] = 9999;
-  
-  return groupCol.map(d => mapGroupValueToInteger[d])
-}
-
 data['radarColor'] = makeGroupLabels(data['radarGroup']);
 data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
 data['colorGroupThickWord'] = makeGroupLabels(data['thicknessWord']);
@@ -117,35 +85,6 @@ data['colorGroupColl'] = makeGroupLabels(data['coll']);
 
 /*Metadata value counts-------------------------------------------------------*/
 
-function valueCounts(col, normalized = true) {
-  const occurrences = col.reduce(function (acc, curr) {
-    return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
-  }, {});
-  
-  if (normalized) {
-
-    if (Object.keys(occurrences).length === 1) {
-      Object.keys(occurrences).forEach(key => {
-        occurrences[key] = 1;
-      });
-    } else {
-      const countMin = min(Object.values(occurrences));
-      const countMax = max(Object.values(occurrences));
-      if (countMin === countMax) {
-        Object.keys(occurrences).forEach(key => {
-          occurrences[key] = 0.5; // all middle gray
-        });
-      } else {
-        Object.keys(occurrences).forEach(key => {
-          occurrences[key] = (occurrences[key] - countMin) / (countMax - countMin);
-        });
-      }
-    }
-  }
-  
-  return occurrences
-}
-
 const thicknessValCounts = valueCounts(data['thicknessWord']);
 const colorValCounts = valueCounts(data['colorWord']);
 const textureValCounts = valueCounts(data['textureWord']);
@@ -154,111 +93,30 @@ const manValCounts = valueCounts(data['man']);
 const branValCounts = valueCounts(data['bran']);
 const radarGroupValCounts = valueCounts(data['radarGroup']);
 
-/*groupMaps-------------------------------------------------------------------*/
-
-/* These maps are dictionaries where the keys are groups and the values are
-lists of global indices (i.e., positions in the `data` arrays)
-*/
-
-function makeMap(groupArray,glyphGroup) {
-  const groupMap = {};
-  groupArray.forEach((item, i) => {
-    const globalIndexArray = [];
-    data[glyphGroup].forEach((groupValue, j) => {
-      if ( groupValue === item ) {
-        globalIndexArray.push(j)
-      }
-    });
-    groupMap[item] = globalIndexArray;
-  });
-  return groupMap
-}
-
 data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
-const boxMap = makeMap(boxGroupArray,'boxGroup');
+const boxMap = makeMap(data, boxGroupArray, 'boxGroup');
 
 const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
-const expressivenessMap = makeMap(expressivenessGroupArray,'expressivenessGroup');
+const expressivenessMap = makeMap(data, expressivenessGroupArray, 'expressivenessGroup');
 
 const isoGroupArray = Array.from(new Set(data['isoGroup']));
-const isoMap = makeMap(isoGroupArray,'isoGroup');
+const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
 const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
 
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
-const radarMap = makeMap(radarGroupArray,'radarGroup');
+const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
 
-/*Radar-----------------------------------------------------------------------*/
-
-// Some dimensions have 3 obvious bins, some have 4
-const axisSteps = (binNumber, numBins) => {
-  if ( numBins === 3 ) {
-    return binNumber === '0' ? 0.33/2 : binNumber === '1' ? 0.66/2 : 0.99/2
-  } else if ( numBins === 4 ) {
-    return binNumber === '0' ? 0.25/2 : binNumber === '1' ? 0.5/2 : binNumber === '2' ? 0.75/2 : 1.0/2
-  }
-}
-
-function radarVertices(glyphGroup) {
-  let [thick, rough, gloss, color] = glyphGroup.split('_');
-
-  thick = axisSteps(thick, 4) * -1;
-  rough = axisSteps(rough, 3) * -1;
-  gloss = axisSteps(gloss, 3);
-  color = axisSteps(color, 4);
-
-  if ( glyphGroup === "" ) {
-    thick = 0;
-    rough = 0;
-    gloss = 0;
-    color = 0;
-  }
-
-  const glyphThickness = 0.1;
-
-  const thicktop = [thick,0,glyphThickness];
-  const thickbottom = [thick,0,0];
-  const roughtop = [0,rough,glyphThickness];
-  const roughbottom = [0,rough,0];
-  const glosstop = [gloss,0,glyphThickness];
-  const glossbottom = [gloss,0,0];
-  const colortop = [0,color,glyphThickness];
-  const colorbottom = [0,color,0];
-
-  const bottom = [thickbottom, glossbottom, colorbottom, roughbottom, glossbottom, thickbottom];
-  const top = [thicktop, glosstop, colortop, roughtop, glosstop, thicktop];
-  const upperLeft = [colorbottom, thicktop, colortop, colorbottom, thickbottom, thicktop];
-  const upperRight = [glossbottom, colortop, glosstop, glossbottom, colorbottom, colortop];
-  const lowerLeft = [thickbottom, roughtop, thicktop, thickbottom, roughbottom, roughtop];
-  const lowerRight = [roughbottom, glosstop, roughtop, roughbottom, glossbottom, glosstop];
-
-  const rawVertices = [bottom, top, upperLeft, upperRight, lowerLeft, lowerRight];
-  return new Float32Array(rawVertices.flat(2))
-
-}
-
-function radarNormals(glyphGroup) {
-  let [thick, rough, gloss, color] = glyphGroup.split('_');
-
-  thick = axisSteps(thick, 4) * -1;
-  rough = axisSteps(rough, 3) * -1;
-  gloss = axisSteps(gloss, 3);
-  color = axisSteps(color, 4);
-
-  const rawNormals = [
-    [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom
-    [0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1], //top
-    [-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0],[-1*color,thick,0], //upperLeft
-    [color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0],[color,gloss,0], //upperRight
-    [rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0],[rough,thick,0], //lowerLeft
-    [-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0],[-1*rough,-1*gloss,0] //lowerRight
-  ];
-  return new Float32Array(rawNormals.flat())
-}
+export const dataU = {
+  dmin: rankTransform(data['dmin']),
+  thickness: rankTransform(data['thickness']),
+  roughness: rankTransform(data['roughness']),
+  gloss: rankTransform(data['gloss'])
+};
 
 // Radar used in InfoPanel, drawn by d3 instead of webGL
 
-function getUniverse(dataU) {
+function getUniverse( dataU ) {
   return [
       min(dataU['dmin']),
       max(dataU['dmin']),
@@ -271,31 +129,11 @@ function getUniverse(dataU) {
     ]
 }
 
-function uScale(uMin,uMax,val) {
-  const uRange = uMax - uMin;
-  return (val - uMin) / uRange
-}
-
-function rankTransform(arr) {
-  
-  const nanReplace = arr.map(x => isNaN(x) ? 9999 : x); // 9999 is a value that will never be used
-  const sorted = [...nanReplace].sort((a, b) => a - b); // since NaNs (as 9999s) end up at the *end* and not the beginning, they don't affect the rank indices we collect in the next line
-  return nanReplace.map(x => x === 9999 ? NaN : sorted.indexOf(x)) // switch 9999 back to NaN after sorting
- 
-}
-
-const dataU = {
-  dmin: rankTransform(data['dmin']),
-  thickness: rankTransform(data['thickness']),
-  roughness: rankTransform(data['roughness']),
-  gloss: rankTransform(data['gloss'])
-};
-
-const universe = getUniverse(dataU);
+const universe = getUniverse( dataU );
 
 const checkNaN = d => !isNaN(d);
 
-function polygonPoints(dataU, clickedItem, svgSide) {
+function polygonPoints( dataU, clickedItem, svgSide ) {
 
     let p1,p2,p3,p4;
 
@@ -350,139 +188,7 @@ function polygonPoints(dataU, clickedItem, svgSide) {
 
 const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
-function gridCoords(n,ncol) {
 
-  const nrow = Math.ceil( n / ncol )
-  const xgrid = Array(nrow).fill(Array.from(Array(ncol).keys())).flat().slice(0,n);
-  const ygrid = Array.from(Array(nrow).keys()).map(d => Array(ncol).fill(d)).flat().slice(0,n);
-
-  const coords = [];
-  xgrid.forEach((item, i) => {
-    coords[i] = [item - ncol / 2, ygrid[i] - nrow / 2, 0]
-  });
-
-  return coords;
-}
-
-function makeGrid(xcol,xcolAsc,spreadSlide) {
-  let sortingArray = [];
-  const ncolsSquare = Math.ceil(Math.sqrt(n));
-  const ncolsIncrement = Math.ceil(ncolsSquare / 5);
-  const ncols = spreadSlide === -2 ? ncolsSquare - ncolsIncrement * 2 : spreadSlide === -1 ? ncolsSquare - ncolsIncrement : spreadSlide === 0 ? ncolsSquare : spreadSlide === 1 ? ncolsSquare + ncolsIncrement : ncolsSquare + ncolsIncrement * 2;
-  const gridArray = gridCoords(n,ncols);
-
-  data[xcol].forEach((item, i) => {
-   //sortingArray[i] = { 'idx': i, 'val': parseFloat(item) }
-    sortingArray[i] = { 'idx': i, 'val': item }
-  });
-
-  sortingArray = orderBy(sortingArray,['val'],[xcolAsc ? 'asc' : 'desc']);
-  sortingArray.forEach((item, i) => {
-    sortingArray[i]['pos'] = gridArray[i]
-  });
-
-  return orderBy(sortingArray,['idx'],['asc']).map(d => d.pos);
-}
-
-function getStandardDeviation(arr) {
-  arr = compact(arr);
-  const n = arr.length;
-  const mean = arr.reduce((a, b) => a + b) / n;
-  return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
-}
-
-function makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin) {
-
-  let scratchArray = [];
-
-  data[xcol].forEach((item, i) => {
-    //scratchArray[i] = { 'idx': i, 'val': parseFloat(item), 'ycol': parseFloat(data[ycol][i]) }
-    scratchArray[i] = { 'idx': i, 'val': item, 'ycol': data[ycol][i] }
-  });
-
-  const histBinsMid = 200;
-  const histBinsIncrement = 50;
-  const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
-
-  const std = getStandardDeviation(scratchArray.map(d => d.val));
-  const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null/NaN values
-  const binner = bin().thresholds(histBins).value(d => isNaN(d.val) ? arrmax + std : d.val); // if val is null, put it one standard deviation above the max
-  const binnedData = binner(scratchArray);
-
-  if ( xcolAsc === false ) {
-    binnedData.reverse();
-  }
-
-  scratchArray = [];
-  binnedData.forEach((bin, binidx) => {
-    if (bin.length > 0) { // ignores x0 and x1, the bin edges (which are included for every bin)
-      bin = orderBy(bin,['ycol'],[ycolAsc ? 'asc' : 'desc'])
-      bin.forEach((item, itemidx) => {
-        let x, y;
-        if ( columnsPerBin === 1 ) { // 1 is a special case because there is no empty space between bins
-          x = binidx;
-          x = x - (binnedData.length - 1) / 2; // x adjustment because we center the histogram at (0,0)
-          y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2); // we plot both above and below the x axis, so we alternate between positive and negative values
-        } else { // all other cases require a space between bins
-          const zeroPoint = binidx * ( columnsPerBin + 1 );
-          const col = itemidx % columnsPerBin; // simple alternation between 0 and 1
-          
-          y = itemidx < 2 ? 0 : Math.round(itemidx / (columnsPerBin * 2)); // produces 0,0,1,1,1,1,2,2,2,2,... when columnsPerBin = 2
-          const ySign = Math.floor(itemidx / (columnsPerBin * 2)) === y ? 1 : -1; // the smaller two (out of 4) end up y-1 after flooring, the larger ones y
-          y = ySign * y;
-          
-          x = zeroPoint + col;
-          x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
-        }
-        scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
-      });
-    }
-  });
-  scratchArray = orderBy(scratchArray,['idx'],['asc']);
-  return scratchArray.map(d => d.pos)
-}
-
-function featureScale(col) {
-  const colmin = min(col);
-  const colmax = max(col);
-  const colrange = colmax - colmin;
-  const adjCol = col.map(d => isNaN(d) ? 2 : (d - colmin) / colrange) // if d is NaN, we send it outside the normed max (which is 1)
-
-  return adjCol;
-}
-
-function makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,spreadSlide) {
-  let xArray = featureScale(data[xcol]);
-  let yArray = featureScale(data[ycol]);
-  let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
-
-  if ( xcolAsc === false ) {
-    xArray = xArray.map(d => 1 - d);
-  }
-
-  if ( ycolAsc === false ) {
-    yArray = yArray.map(d => 1 - d);
-  }
-
-  if ( zArray !== null && zcolAsc === false ) {
-    zArray = zArray.map(d => 1 - d);
-  }
-
-  const scatterFactorMid = 250;
-  const scatterFactorIncrement = 50;
-  const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : spreadSlide === 0 ? scatterFactorMid : spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
-
-  const scratchArray = [];
-  xArray.forEach((item, i) => {
-    const x = item * scatterFactor - scatterFactor / 2;
-    const y = yArray[i] * scatterFactor - scatterFactor / 2;
-    const z = zArray === null ? 0 : zArray[i] * scatterFactor - scatterFactor / 2;
-    scratchArray.push([x,y,z])
-  });
-
-  return scratchArray
-
-}
 
 function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
@@ -504,122 +210,10 @@ function updatePositions({ globalIndicesForThisMesh, mesh }) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-/*Colors----------------------------------------------------------------------*/
-
-// Kodak, Agfa, Dupont, Ilford, Defender, Ansco, Darko, Forte, Luminos, Haloid, Oriental, Gevaert
-// yellow, red, blue, white, green, lightblue, black, gold, palered, maroon, orange, purple
-//const manColors = [0xfab617, 0xfd5344, 0x143b72, 0xffffff, 0x588f28, 0x6379dd, 0x111111, 0x7c6c49, 0xda947d, 0x6f282e, 0xc36335, 0x363348, 0x808080]
-
-const highlightColor = 0xff00ff;
-const missingColor = 0xcc4700;
-const missingColorTone = 0xffffff;
-const colorSubstrate = new Color();
-const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
-const groupColorCols = ['colorGroupColl','colorGroupMan','colorGroupBran','colorGroupThickWord','colorGroupGlossWord',
-                        'colorGroupColorWord','colorGroupTextureWord','radarColor'];
-let colorVals; //this gets used in many places
-
-function valToColor(arr) {
-  
-  //arr = arr.map(d => parseFloat(d)); // empty strings and underscores are converted to NaN
-  arr = arr.map(d => d);
-  const arrRanked = rankTransform(arr); // returns `arr` with ranks, and keeps NaNs as they are
-  
-  // these functions, from lodash, ignore NaNs
-  const arrmax = max(arrRanked);
-  const arrmin = min(arrRanked);
-  const arrrange = arrmax - arrmin;
-  
-  const arrnorm = arrRanked.map(d => (d - arrmin) / arrrange);
-  const arrhsl = arrnorm.map(d => isNaN(d) ? missingColor : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
-
-  return arrhsl
-}
-
 /*instancedMesh---------------------------------------------------------------*/
 
 const meshList = {};
 let targetCoords;
-
-function adjustLightness(color, targetDarkness, weight, sOffset) {
-  const hsl = {};
-  color.getHSL(hsl);
-
-  // Linearly interpolate between current lightness and target darkness
-  const newLightness = (1 - weight) * hsl.l + weight * targetDarkness;
-
-  // Calculate the lightness offset
-  const lOffset = newLightness - hsl.l;
-
-  // Apply the offset to the color
-  color.offsetHSL(0, sOffset, lOffset);
-}
-
-function applyFilterColors( globalIndex, colorSubstrate, filter, group, filterIdxList ) {
-
-  const baseColorOffsetS = 0.2;
-  const baseColorOffsetL = -0.2;
-  const toneOffsetS = 0.1;
-  const toneOffsetL = -0.1;
-  const grayOffsetL = -0.2;
-
-  if ( filter ) {
-    if ( group === 'dminHex' ) {
-      if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, baseColorOffsetS, baseColorOffsetL);
-      } else {
-        if ( missingDminHexIdxs.includes(globalIndex) ) {
-          colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
-        } else {
-          //colorSubstrate.set(0x4a4a4a);
-          //colorSubstrate.offsetHSL(0, 0, grayOffsetL);
-          adjustLightness(colorSubstrate, 0.05, 0.99, -0.2);
-        }
-      } 
-    } else if ( group === 'dmaxHex' ) {
-      if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, toneOffsetS, toneOffsetL);
-      } else {
-        colorSubstrate.set(0x4a4a4a);
-        colorSubstrate.offsetHSL(0, 0, grayOffsetL);
-      }
-    } else if ( groupColorCols.includes(group) ) {
-      if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0, -0.2);
-      } else {
-        colorSubstrate.set(0x4a4a4a);
-        colorSubstrate.offsetHSL(0, 0, grayOffsetL);
-      }
-    } else if ( continuousColorCols.includes(group) ) {
-      if ( filterIdxList.includes(globalIndex) ) {
-        colorSubstrate.set(0x63aaff);
-        colorSubstrate.offsetHSL(0, 0.2, -0.2);
-      }
-    } 
-  } else {
-    if ( group === 'dminHex' ) {
-      if ( missingDminHexIdxs.includes(globalIndex) ) {
-        colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
-      } else {
-        colorSubstrate.offsetHSL(0, baseColorOffsetS, baseColorOffsetL);
-      }
-    } else if ( group === 'dmaxHex' ) {
-      colorSubstrate.offsetHSL(0, toneOffsetS, toneOffsetL);
-    } else if ( groupColorCols.includes(group) ) {
-      colorSubstrate.offsetHSL(0, 0, -0.2);
-    }
-  }
-}
-
-function getColorVal( groupColors, colorVals, item ) {
-
-  let colorVal = colorVals[item];
-  if ( colorVal === 9999 ) {
-    return 0x000000;
-  } else {
-    return groupColors[colorVals[item]] || colorVals[item];
-  }
-}
 
 function Glyphs({ 
   glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
@@ -644,12 +238,12 @@ function Glyphs({
 
   useLayoutEffect(() => {
     if ( model === 'grid' ) {
-      targetCoords = makeGrid(xcol,xcolAsc,spreadSlide);
+      targetCoords = makeGrid(data, n, xcol, xcolAsc, spreadSlide);
     } else if ( model === 'hist' ) {
       const columnsPerBin = xcol === 'year' ? 3 : 1;
-      targetCoords = makeHist(xcol,xcolAsc,ycol,ycolAsc,spreadSlide,columnsPerBin);
+      targetCoords = makeHist(data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, columnsPerBin);
     } else if ( model === 'scatter' ) {
-      targetCoords = makeScatter(xcol,xcolAsc,ycol,ycolAsc,zcol,zcolAsc,spreadSlide);
+      targetCoords = makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide);
     } else if ( model === 'gep' ) {
       let gepCoords = spreadSlide === -2 ? 'gep100' : spreadSlide === -1 ? 'gep150' : spreadSlide === 0 ? 'gep200' : spreadSlide === 1 ? 'gep250' : 'gep300';
       targetCoords = cloneDeep(data[gepCoords]); 

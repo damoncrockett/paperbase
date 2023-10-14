@@ -1,11 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-
-function returnDomain() {
-  const production = process.env.NODE_ENV === 'production';
-  return production ? '' : 'http://localhost:8000/'
-}
+import React from 'react';
+import { Canvas } from '@react-three/fiber';
+import SpinBox from './SpinBox';
+import { returnDomain } from '../utils/img';
 
 const tileColor = 0xf9f9f9;
 //const tileColor = 0x4b2f3b;
@@ -27,39 +23,20 @@ export default function Landing({ setPage }) {
           <ambientLight intensity={0.5} />
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
           <pointLight position={[-10, -10, -10]} />
-          <Box position={[-5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[0, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[-5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[0, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[-5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[0, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
-          <Box position={[5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[-5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[0, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[5, 5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[-5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[0, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[5, 0, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[-5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[0, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
+          <SpinBox position={[5, -5, 0]} rotation={[Math.PI * 2 * Math.random(), 0, 0]} color={tileColor} isrot={true}/>
         </Canvas>
       </div>
       <div id='landingFooter'>
         <img id='jpffLogo' src={returnDomain() + 'jpff_white.png'} onError={(e) => e.target.style.display = 'none'} />
       </div>
     </div>
-  )
-}
-
-function Box({ position, rotation, color, isrot }) {
-  const ref = useRef()
-
-  if ( isrot ) {
-    useFrame((state, delta) => (ref.current.rotation.x += delta ))
-  }
-
-  return (
-    <mesh
-      position={position}
-      rotation={rotation}
-      ref={ref}
-      scale={4}>
-      <boxGeometry args={[1, 1, 0.25]} />
-      <meshLambertMaterial color={color}/>
-    </mesh>
   )
 }

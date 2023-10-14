@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import App from './App';
-import Landing from './Landing';
+import App from './components/App';
+import Landing from './components/Landing';
 
 export default function Site() {
 

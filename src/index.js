@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Site from "./components/Site.js";
+import Site from "./Site.js";
 import './assets/css/style.css';
 import { createTheme, ThemeProvider } from '@mui/material';
 
