@@ -13,6 +13,5 @@
 .DS_Store
 dist
 fonts
-utils
 src/assets/img
 src/assets/csv
