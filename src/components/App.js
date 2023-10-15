@@ -188,8 +188,6 @@ function polygonPoints( dataU, clickedItem, svgSide ) {
 
 const animatedCoords = Array.from({ length: n }, () => [0, 0, 0]);
 
-
-
 function interpolatePositions({ globalIndicesForThisMesh, targetCoords }, progress ) {
   globalIndicesForThisMesh.forEach((item, i) => {
     animatedCoords[item][0] = (1 - progress) * animatedCoords[item][0] + progress * targetCoords[globalIndicesForThisMesh[i]][0];
@@ -511,9 +509,7 @@ function PanelItem({
   packageImage,
   svgRadar,
   smallItem,
-  detailScreen,
   setDetailScreen,
-  detailImageStringState,
   setDetailImageStringState,
   setDetailImageIndex,
   filter,
