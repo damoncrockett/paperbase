@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, MOUSE, DoubleSide } from 'three';
+import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection } from 'lodash';
@@ -398,12 +398,12 @@ function Glyphs({
               if ( !clickedItems.includes(globalInstanceId) ) { // if this item not already clicked, highlight it
                 colorSubstrate.set(highlightColor);
                 mesh.setColorAt(j, colorSubstrate);
-                setClickedItems([...clickedItems, globalInstanceId]);
+                setClickedItems(clickedItems => [...clickedItems, globalInstanceId]);
               } else { // if already clicked, unclick
                 colorSubstrate.set(colorVal);
                 applyFilterColors(globalIndex, colorSubstrate, filter, group, filterIdxList);
                 mesh.setColorAt(j, colorSubstrate);
-                setClickedItems(clickedItems.filter(d => d !== globalInstanceId));
+                setClickedItems(clickedItems => clickedItems.filter(d => d !== globalInstanceId));
                 if ( raisedItem !== null && raisedItem === globalInstanceId ) {
                   setRaisedItem(null);
                 }
@@ -598,7 +598,7 @@ function PanelItem({
         });
         mesh.instanceColor.needsUpdate = true;
       });
-      setClickedItems(clickedItems.filter(d => d!==clickedItem));
+      setClickedItems(clickedItems => clickedItems.filter(d => d!==clickedItem));
     }
     setInvalidateSignal(!invalidateSignal);
   }
@@ -677,13 +677,168 @@ function PanelItem({
   )
 }
 
+/*Box Selection-------------------------------------------------------------------*/
+
+function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, setClickedItems, invalidateSignal, setInvalidateSignal }) {
+  const { camera, scene } = useThree();
+
+  useEffect(() => {
+    const handleMouseDown = (e) => {
+
+      const x = e.clientX;
+      const y = e.clientY;
+  
+      setIsSelecting(true);
+      setSelectionBox({ x: x, y: y, width: 0, height: 0 });
+  
+      // Show the selection div
+      if ( selectionDivRef.current ) {
+        selectionDivRef.current.style.left = `${x}px`;
+        selectionDivRef.current.style.top = `${y}px`;
+        selectionDivRef.current.style.width = `0px`;
+        selectionDivRef.current.style.height = `0px`;
+        selectionDivRef.current.style.display = 'block';
+      }
+    };
+  
+    const handleMouseMove = (e) => {
+      if ( !isSelecting ) return;
+    
+      setSelectionBox(prevSelectionBox => {
+        const width = e.clientX - prevSelectionBox.x;
+        const height = e.clientY - prevSelectionBox.y;
+    
+        selectionDivRef.current.style.left = `${prevSelectionBox.x}px`;
+        selectionDivRef.current.style.top = `${prevSelectionBox.y}px`;
+        selectionDivRef.current.style.width = `${width}px`;
+        selectionDivRef.current.style.height = `${height}px`;
+    
+        return {
+          x: prevSelectionBox.x,
+          y: prevSelectionBox.y,
+          width: width,
+          height: height,
+        };
+      });
+    };
+  
+    const handleMouseUp = () => {
+      if ( !isSelecting ) return;
+
+      const selectionRect = selectionDivRef.current.getBoundingClientRect();
+      const selectionWidth = selectionRect.width;
+      const selectionHeight = selectionRect.height;
+      const selectionX = selectionRect.left;
+      const selectionY = selectionRect.top;
+  
+      // Normalized Device Coordinates (NDC) have x and y coordinates between -1 and 1
+      const topLeftNDC = new Vector3(
+        (selectionX / window.innerWidth) * 2 - 1,
+        -(selectionY / window.innerHeight) * 2 + 1,
+        -1
+      );
+      const topRightNDC = new Vector3(
+        ((selectionX + selectionWidth) / window.innerWidth) * 2 - 1,
+        -(selectionY / window.innerHeight) * 2 + 1,
+        -1
+      );
+      const bottomLeftNDC = new Vector3(
+        (selectionX / window.innerWidth) * 2 - 1,
+        -((selectionY + selectionHeight) / window.innerHeight) * 2 + 1,
+        -1
+      );
+      const bottomRightNDC = new Vector3(
+        ((selectionX + selectionWidth) / window.innerWidth) * 2 - 1,
+        -((selectionY + selectionHeight) / window.innerHeight) * 2 + 1,
+        -1
+      );
+
+      const nearTopLeft = topLeftNDC.clone().unproject(camera);
+      const nearTopRight = topRightNDC.clone().unproject(camera);
+      const nearBottomLeft = bottomLeftNDC.clone().unproject(camera);
+      const nearBottomRight = bottomRightNDC.clone().unproject(camera);
+
+      // Change the NDC z-value to 1 to use the far clipping plane
+      topLeftNDC.z = 1;
+      topRightNDC.z = 1;
+      bottomLeftNDC.z = 1;
+      bottomRightNDC.z = 1;
+
+      const farTopLeft = topLeftNDC.clone().unproject(camera);
+      const farTopRight = topRightNDC.clone().unproject(camera);
+      const farBottomLeft = bottomLeftNDC.clone().unproject(camera);
+      const farBottomRight = bottomRightNDC.clone().unproject(camera);
+
+      // Counterclockwise winding order, but normals must point inward, so reverse
+      const planes = [
+        new Plane().setFromCoplanarPoints(farTopLeft, nearTopLeft, nearBottomLeft), // left
+        new Plane().setFromCoplanarPoints(farBottomRight, nearBottomRight, nearTopRight), // right
+        new Plane().setFromCoplanarPoints(farTopRight, nearTopRight, nearTopLeft), // top
+        new Plane().setFromCoplanarPoints(farBottomLeft, nearBottomLeft, nearBottomRight), // bottom
+        new Plane().setFromCoplanarPoints(nearBottomLeft, nearTopLeft, nearTopRight), // near
+        new Plane().setFromCoplanarPoints(farBottomRight, farTopRight, farTopLeft), // far
+      ];
+
+      const frustum = new Frustum(...planes);
+
+      const intersects = [];
+
+      scene.children.forEach((child) => {
+        if (child.isInstancedMesh && child.geometry) {
+
+          if (!child.geometry.boundingBox) {
+            child.geometry.computeBoundingBox();
+          }
+      
+          const instanceMatrix = new Matrix4();
+          const worldPosition = new Vector3();
+      
+          for (let i = 0; i < child.count; i++) {
+            child.getMatrixAt(i, instanceMatrix);
+            worldPosition.setFromMatrixPosition(instanceMatrix);
+      
+            // Now you can safely copy the bounding box
+            const instanceBoundingBox = new Box3().copy(child.geometry.boundingBox).applyMatrix4(instanceMatrix);
+      
+            if (frustum.intersectsBox(instanceBoundingBox)) {
+              intersects.push({ mesh: child, instanceId: i });
+            }
+          }
+        }
+      });
+  
+      setClickedItems(clickedItems => [...clickedItems, ...intersects.map(d => d.instanceId)]);
+      setInvalidateSignal(!invalidateSignal);
+      setIsSelecting(false);
+  
+      if (selectionDivRef.current) {
+        selectionDivRef.current.style.display = 'none';
+      }
+    };
+  
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isSelecting, selectionDivRef, camera, scene]);
+
+  return null;
+}
+
 /*App-------------------------------------------------------------------------*/
 
 let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 
-console.log(data);
-
 export default function App() {
+  const [boxSelectMode, setBoxSelectMode] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
   const [toggleMR, setToggleMR] = useState(true);
   const [toggleLMN, setToggleLMN] = useState(false);
   const [toggleAS, setToggleAS] = useState(false);
@@ -765,6 +920,14 @@ export default function App() {
   };
 
   const orbitRef = useRef();
+  const selectionDivRef = useRef();
+
+  useEffect(() => {
+    if (selectionDivRef.current) {
+      selectionDivRef.current.style.position = 'absolute';
+      selectionDivRef.current.style.border = '4px dashed #FFF';
+    }
+  }, []);
 
   useLayoutEffect(() => {
 
@@ -995,7 +1158,7 @@ export default function App() {
     const addMode = e.target.innerText;
 
     if ( addMode === 'queue' ) {
-      setClickedItems([...clickedItems,...filterIdxList]);
+      setClickedItems(clickedItems => [...clickedItems,...filterIdxList]);
       setInvalidateSignal(!invalidateSignal);
     } else if ( addMode === 'open_in_new' ) {
       setClickedItems(filterIdxList);
@@ -1261,9 +1424,9 @@ export default function App() {
           <OrbitControls
             ref={orbitRef}
             maxDistance={4000}
-            enablePan={true}
+            enablePan={!boxSelectMode}
             enableZoom={true}
-            enableRotate={true}
+            enableRotate={!boxSelectMode}
             keys={[
               ALT_KEY, // orbit
               CTRL_KEY, // zoom
@@ -1275,10 +1438,24 @@ export default function App() {
               RIGHT: MOUSE.ROTATE,
             }}
           />
+          {boxSelectMode && (
+            <BoxSelection
+              isSelecting={isSelecting}
+              selectionBox={selectionBox}
+              selectionDivRef={selectionDivRef}
+              setSelectionBox={setSelectionBox}
+              setIsSelecting={setIsSelecting}
+              setClickedItems={setClickedItems}
+              invalidateSignal={invalidateSignal}
+              setInvalidateSignal={setInvalidateSignal}
+            />
+          )}
         </Canvas>
       </div>
+      <div ref={selectionDivRef} style={{position: 'absolute', border: '4px dashed #F0F'}}></div>
       <div className='controls' id='cameraReset'>
         <button title='reset camera' className={'material-icons'} onClick={() => orbitRef.current.reset()} >flip_camera_ios</button>
+        <button title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>select_all</button>
       </div>
       {detailScreen && <div id='detailScreen' >
         <img id='detailImage' src={detailImageStringState}></img>

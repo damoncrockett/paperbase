@@ -388,7 +388,7 @@ svg {
 #cameraReset {
   position: fixed;
   top: 8vh;
-  right: 50vw;
+  right: 48vw;
 }
 
 #cameraReset > button {
@@ -408,7 +408,7 @@ svg {
 
 #spreadControls {
   display: inline-block;
-  width: 10vw;;
+  width: 10vw;
   margin-right: 2vw;
 }
 
