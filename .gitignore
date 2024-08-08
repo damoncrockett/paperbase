@@ -15,6 +15,9 @@ dist
 fonts
 src/assets/img
 src/assets/csv
+src/assets/tifs
 notebooks
 lux
 notes.txt
+notebooks
+schnitt.js

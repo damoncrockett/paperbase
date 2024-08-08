@@ -4,7 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
-import { max, min, cloneDeep, intersection } from 'lodash';
+import { max, min, cloneDeep, intersection, sample } from 'lodash';
 import { data } from '../assets/data/data.js';
 import { returnDomain } from '../utils/img';
 
@@ -51,7 +51,7 @@ import {
 const initialGroupColors = makeColorArray();
 let colorVals; //this gets used in many places
 
-const n = data['idx'].length; // nrows in data; 'idx' could be any column
+const n = data['catalog'].length; // nrows in data; 'catalog' could be any column
 
 // parse and round measurement values in `data`
 data['year'] = data['year'].map(d => parseInt(d));
@@ -471,11 +471,12 @@ const glyphToMap = {
 }
 
 function getDetailImageString(texture,i) {
-  const coll = data['coll'][i];
-  const collString = coll.includes('lml') ? '' : coll+'_';
-  const idx = data['idx'][i];
-  const detailFolder = texture ? collString + 'texture' : coll==='lml' ? 'packages_2048' : collString + 'prints'; // modify once sample book images are available
-  const detailImgString = returnDomain() + detailFolder + '/' + idx + '.jpg';
+  let catalog = data['catalog'][i];
+  catalog = catalog.includes('1860') ? '1860' : catalog;
+  
+  const sb = data['sb'][i];
+  const detailFolder = texture ? 'texture' : sb ? 'samplebooks_2048' : 'packages_2048'; 
+  const detailImgString = returnDomain() + detailFolder + '/' + catalog + '.jpg';
 
   return detailImgString;
 }
@@ -613,15 +614,17 @@ function PanelItem({
     }
   }
 
-  const coll = data['coll'][clickedItem];
-  const collString = coll.includes('lml') ? '' : coll+'_';
-  const idx = data['idx'][clickedItem];
+  const sb = data['sb'][clickedItem];
+  
+  let catalog = data['catalog'][clickedItem];
+  catalog = catalog.includes('1860') ? '1860' : catalog;
+  
   const textureThumbSize = smallItem ? 256 : 512;
-  const imgThumbSize = coll.includes('lml') ? smallItem ? 512 : 1024 : smallItem ? 256 : 512;
-  const printFolder = coll.includes('lml') ? 'packages' : collString + 'prints_crop';
+  const imgThumbSize = smallItem ? 512 : 1024;
+  const imgFolder = sb ? 'samplebooks' : 'packages';
 
-  const imgStringTexture = returnDomain() + collString + 'texture_' + textureThumbSize + '/' + idx + '.jpg';
-  const imgString = returnDomain() + printFolder + '_' + imgThumbSize + '/' + idx + '.jpg';
+  const imgStringTexture = returnDomain() + 'texture_' + textureThumbSize + '/' + catalog + '.jpg';
+  const imgString = returnDomain() + imgFolder + '_' + imgThumbSize + '/' + catalog + '.jpg';
   const detailImgString = getDetailImageString(texture,clickedItem);
 
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
@@ -931,7 +934,7 @@ export default function App() {
 
   useLayoutEffect(() => {
 
-    const workingIdxList = filterIdxList.length === 0 && filter ? [] : filterIdxList.length === 0 && !filter ? data['idx'].map((_,i) => i) : filterIdxList;
+    const workingIdxList = filterIdxList.length === 0 && filter ? [] : filterIdxList.length === 0 && !filter ? data['catalog'].map((_,i) => i) : filterIdxList;
 
     const filteredThicknessValCounts = valueCounts(data['thicknessWord'].filter((_,i) => workingIdxList.includes(i)));
     const filteredColorValCounts = valueCounts(data['colorWord'].filter((_,i) => workingIdxList.includes(i)));
@@ -1129,7 +1132,7 @@ export default function App() {
     
     // if no sliders are set, then keepers will be empty. In that case, we want to keep all items.
     if ( keepers.length === 0 ) {
-      keepers = data['idx'].map((_,i) => i);
+      keepers = data['catalog'].map((_,i) => i);
     }
 
     let newFilterIdxList = [];
@@ -1593,21 +1596,8 @@ export default function App() {
         {filterLightMode && filterModal==='expanded' && <button title='switch to dark mode' style={{right:'56vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PRINT COLLECTION</p></div>
-          {[{t:'Man Ray',v:'mr'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleMR} onChange={()=>setToggleMR(!toggleMR)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-          {[{t:'László Moholy-Nagy',v:'lmn'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleLMN} onChange={()=>setToggleLMN(!toggleLMN)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-          {[{t:'August Sander',v:'as'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleAS} onChange={()=>setToggleAS(!toggleAS)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-          {[{t:'Harry Callahan',v:'hc'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleHC} onChange={()=>setToggleHC(!toggleHC)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-          {[{t:'Lola Álvarez Bravo',v:'lab'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleLAB} onChange={()=>setToggleLAB(!toggleLAB)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-          {[{t:'Robert Mapplethorpe',v:'rm'}].map((d,i) => <div key={i} style={{display:'block'}}><Switch checked={toggleRM} onChange={()=>setToggleRM(!toggleRM)}/><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-        </div>
-        <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
           {[{t:'LML Packages',v:'lml'},{t:'LML Sample Books',v:'lmlsb'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
-        </div>
-        <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading topline headingMat' : 'filterCategoryHeading topline'}>PROCESS TYPE</p></div>
-          {[{t:'Photogram',v:"photogram"}].map((d,i) => <button key={i} data-cat='photoProcess' data-val={d.v} onClick={handleFilter} className={filterList['photoProcess'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
@@ -1650,10 +1640,6 @@ export default function App() {
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} marks={glossSlideMarks}/></div>
           {Object.keys(glossValCounts).sort().map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredGlossFrequencies,d)} >{d}</button>)}
-        </div>
-        <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >RADAR GROUP</p></div>
-          {Object.keys(radarGroupValCounts).sort().map((d,i) => <button key={i} data-cat='radarGroup' data-val={d} onClick={handleFilter} className={filterList['radarGroup'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredRadarGroupFrequencies,d)} >{d}</button>)}
         </div>
       </div>}
     </div>
