@@ -5,7 +5,7 @@ import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } f
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, sample } from 'lodash';
-import { data } from '../assets/data/data.js';
+import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
 
 // I forget what this is about
@@ -74,14 +74,14 @@ const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
 
-data['radarColor'] = makeGroupLabels(data['radarGroup']);
+//data['radarColor'] = makeGroupLabels(data['radarGroup']);
 data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
 data['colorGroupThickWord'] = makeGroupLabels(data['thicknessWord']);
 data['colorGroupTextureWord'] = makeGroupLabels(data['textureWord']);
 data['colorGroupGlossWord'] = makeGroupLabels(data['glossWord']);
 data['colorGroupMan'] = makeGroupLabels(data['man']);
 data['colorGroupBran'] = makeGroupLabels(data['bran']);
-data['colorGroupColl'] = makeGroupLabels(data['coll']);
+data['colorGroupColl'] = makeGroupLabels(data['sb']);
 
 /*Metadata value counts-------------------------------------------------------*/
 
@@ -91,20 +91,27 @@ const textureValCounts = valueCounts(data['textureWord']);
 const glossValCounts = valueCounts(data['glossWord']);
 const manValCounts = valueCounts(data['man']);
 const branValCounts = valueCounts(data['bran']);
-const radarGroupValCounts = valueCounts(data['radarGroup']);
+//const radarGroupValCounts = valueCounts(data['radarGroup']);
 
 data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
 const boxMap = makeMap(data, boxGroupArray, 'boxGroup');
 
-const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
-const expressivenessMap = makeMap(data, expressivenessGroupArray, 'expressivenessGroup');
+//const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
+//const expressivenessMap = makeMap(data, expressivenessGroupArray, 'expressivenessGroup');
 
-const isoGroupArray = Array.from(new Set(data['isoGroup']));
+//const isoGroupArray = Array.from(new Set(data['isoGroup']));
+//const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
+data['isoGroup'] = Array(n).fill('b');
+const isoGroupArray = ['b'];
 const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
-const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
+//const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
+const zArray = isoGroupArray.map(d => 0.75);
 
-const radarGroupArray = Array.from(new Set(data['radarGroup']));
+//const radarGroupArray = Array.from(new Set(data['radarGroup']));
+//const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
+data['radarGroup'] = Array(n).fill('b');
+const radarGroupArray = ['b'];
 const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
 
 export const dataU = {
@@ -465,7 +472,7 @@ function Glyphs({
 
 const glyphToMap = {
   'box':boxMap,
-  'exp':expressivenessMap,
+  //'exp':expressivenessMap,
   'iso':isoMap,
   'radar':radarMap
 }
@@ -482,7 +489,8 @@ function getDetailImageString(texture,i) {
 }
 
 function getHoverInfo(clickedItem) {
-  const radarGroup = data['radarGroup'][clickedItem];
+  //const radarGroup = data['radarGroup'][clickedItem];
+  const radarGroup = '';
   const thickness = data['thickness'][clickedItem];
   const color = data['dmin'][clickedItem];
   const dminHex = data['dminHex'][clickedItem];
@@ -880,7 +888,7 @@ export default function App() {
   const itemSize = 3;
 
   const [filter, setFilter] = useState(false);
-  const [filterList, setFilterList] = useState({'coll':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});
+  const [filterList, setFilterList] = useState({'sb':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
   const [filterLightMode, setFilterLightMode] = useState(false);
@@ -904,7 +912,7 @@ export default function App() {
   const [filteredGlossFrequencies, setFilteredGlossFrequencies] = useState(glossValCounts);
   const [filteredManFrequencies, setFilteredManFrequencies] = useState(manValCounts);
   const [filteredBranFrequencies, setFilteredBranFrequencies] = useState(branValCounts);
-  const [filteredRadarGroupFrequencies, setFilteredRadarGroupFrequencies] = useState(radarGroupValCounts);
+  //const [filteredRadarGroupFrequencies, setFilteredRadarGroupFrequencies] = useState(radarGroupValCounts);
 
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
@@ -942,7 +950,6 @@ export default function App() {
     const filteredGlossValCounts = valueCounts(data['glossWord'].filter((_,i) => workingIdxList.includes(i)));
     const filteredManValCounts = valueCounts(data['man'].filter((_,i) => workingIdxList.includes(i)));
     const filteredBranValCounts = valueCounts(data['bran'].filter((_,i) => workingIdxList.includes(i)));
-    const filteredRadarGroupValCounts = valueCounts(data['radarGroup'].filter((_,i) => workingIdxList.includes(i)));
 
     setFilteredThicknessFrequencies(filteredThicknessValCounts);
     setFilteredColorFrequencies(filteredColorValCounts);    
@@ -950,7 +957,6 @@ export default function App() {
     setFilteredGlossFrequencies(filteredGlossValCounts);
     setFilteredManFrequencies(filteredManValCounts);
     setFilteredBranFrequencies(filteredBranValCounts);
-    setFilteredRadarGroupFrequencies(filteredRadarGroupValCounts);
 
     const filteredYears = data['year'].filter((_,i) => workingIdxList.includes(i));
     const filteredThicknesses = data['thickness'].filter((_,i) => workingIdxList.includes(i));
@@ -1141,7 +1147,7 @@ export default function App() {
     Object.keys(newFilterList).forEach((cat, i) => {
       let catList = []; // probably not necessary to initialize as a list but whatevs
       if ( newFilterList[cat].length === 0 ) {
-        catList = data['coll'].map((_,i) => i).filter(d => keepers.includes(d));
+        catList = data['sb'].map((_,i) => i).filter(d => keepers.includes(d));
       } else {
         data[cat].forEach((val, i) => {
           if ( newFilterList[cat].includes(val) && keepers.includes(i) ) {
@@ -1175,7 +1181,7 @@ export default function App() {
     setFilterIdxList([]);
     
     setFilterList({
-      'coll':[],
+      'sb':[],
       'photoProcess':[],
       'year':[],
       'man':[],
@@ -1597,7 +1603,7 @@ export default function App() {
         {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
-          {[{t:'LML Packages',v:'lml'},{t:'LML Sample Books',v:'lmlsb'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='coll' data-val={d.v} onClick={handleFilter} className={filterList['coll'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
+          {[{t:'LML Packages',v:"0"},{t:'LML Sample Books',v:"1"}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='sb' data-val={d.v} onClick={handleFilter} className={filterList['sb'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>

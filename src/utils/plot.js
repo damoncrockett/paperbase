@@ -10,7 +10,7 @@ function gridCoords( n, ncol ) {
   
     const coords = [];
     xgrid.forEach((item, i) => {
-      coords[i] = [item - ncol / 2, ygrid[i] - nrow / 2, 0]
+      coords[i] = [item - ncol / 2, -ygrid[i] + nrow / 2, 0]
     });
   
     return coords;
@@ -46,8 +46,8 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
       scratchArray[i] = { 'idx': i, 'val': item, 'ycol': data[ycol][i] }
     });
   
-    const histBinsMid = 200;
-    const histBinsIncrement = 50;
+    const histBinsMid = 300;
+    const histBinsIncrement = 100;
     const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
   
     const std = getStandardDeviation(scratchArray.map(d => d.val));
