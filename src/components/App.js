@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } from 'three';
+import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane, LineBasicMaterial } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Switch, Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, sample } from 'lodash';
@@ -108,10 +108,7 @@ const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
 //const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
 const zArray = isoGroupArray.map(d => 0.75);
 
-//const radarGroupArray = Array.from(new Set(data['radarGroup']));
-//const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
-data['radarGroup'] = Array(n).fill('b');
-const radarGroupArray = ['b'];
+const radarGroupArray = Array.from(new Set(data['radarGroup']));
 const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
 
 export const dataU = {
@@ -1298,6 +1295,7 @@ export default function App() {
           <color attach="background" args={[0x4a4a4a]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
+          {model === 'scatter' && <axesHelper args={[1000]} />}
           {glyph==='box' && boxGroupArray.map((d,i) => {
             return <Glyphs
                      key={i}

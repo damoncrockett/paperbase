@@ -47,12 +47,23 @@ export function makeMap( data, groupArray, glyphGroup ) {
 
 /*Radar-----------------------------------------------------------------------*/
 
-// Some dimensions have 3 obvious bins, some have 4
 const axisSteps = ( binNumber, numBins ) => {
   if ( numBins === 3 ) {
     return binNumber === '0' ? 0.33/2 : binNumber === '1' ? 0.66/2 : 0.99/2
   } else if ( numBins === 4 ) {
     return binNumber === '0' ? 0.25/2 : binNumber === '1' ? 0.5/2 : binNumber === '2' ? 0.75/2 : 1.0/2
+  } else if ( numBins === 5 ) {
+    return binNumber === '0' ? 0.2/2 : binNumber === '1' ? 0.4/2 : binNumber === '2' ? 0.6/2 : binNumber === '3' ? 0.8/2 : 1.0/2
+  } else if ( numBins === 6 ) {
+    return binNumber === '0' ? 0.16/2 : binNumber === '1' ? 0.33/2 : binNumber === '2' ? 0.5/2 : binNumber === '3' ? 0.66/2 : binNumber === '4' ? 0.83/2 : 1.0/2
+  } else if ( numBins === 7 ) {
+    return binNumber === '0' ? 0.14/2 : binNumber === '1' ? 0.29/2 : binNumber === '2' ? 0.43/2 : binNumber === '3' ? 0.57/2 : binNumber === '4' ? 0.71/2 : binNumber === '5' ? 0.86/2 : 1.0/2
+  } else if ( numBins === 8 ) {
+    return binNumber === '0' ? 0.125/2 : binNumber === '1' ? 0.25/2 : binNumber === '2' ? 0.375/2 : binNumber === '3' ? 0.5/2 : binNumber === '4' ? 0.625/2 : binNumber === '5' ? 0.75/2 : binNumber === '6' ? 0.875/2 : 1.0/2
+  } else if ( numBins === 9 ) {
+    return binNumber === '0' ? 0.11/2 : binNumber === '1' ? 0.22/2 : binNumber === '2' ? 0.33/2 : binNumber === '3' ? 0.44/2 : binNumber === '4' ? 0.56/2 : binNumber === '5' ? 0.67/2 : binNumber === '6' ? 0.78/2 : binNumber === '7' ? 0.89/2 : 1.0/2
+  } else if ( numBins === 10 ) {
+    return binNumber === '0' ? 0.1/2 : binNumber === '1' ? 0.2/2 : binNumber === '2' ? 0.3/2 : binNumber === '3' ? 0.4/2 : binNumber === '4' ? 0.5/2 : binNumber === '5' ? 0.6/2 : binNumber === '6' ? 0.7/2 : binNumber === '7' ? 0.8/2 : binNumber === '9' ? 0.9/2 : 1.0/2
   }
 }
 
@@ -60,9 +71,9 @@ export function radarVertices( glyphGroup ) {
   let [thick, rough, gloss, color] = glyphGroup.split('_');
 
   thick = axisSteps(thick, 4) * -1;
-  rough = axisSteps(rough, 3) * -1;
-  gloss = axisSteps(gloss, 3);
-  color = axisSteps(color, 4);
+  rough = axisSteps(rough, 10) * -1;
+  gloss = axisSteps(gloss, 6);
+  color = axisSteps(color, 8);
 
   if ( glyphGroup === "" ) {
     thick = 0;
@@ -98,9 +109,9 @@ export function radarNormals( glyphGroup ) {
   let [thick, rough, gloss, color] = glyphGroup.split('_');
 
   thick = axisSteps(thick, 4) * -1;
-  rough = axisSteps(rough, 3) * -1;
-  gloss = axisSteps(gloss, 3);
-  color = axisSteps(color, 4);
+  rough = axisSteps(rough, 10) * -1;
+  gloss = axisSteps(gloss, 6);
+  color = axisSteps(color, 8);
 
   const rawNormals = [
     [0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1],[0,0,-1], //bottom

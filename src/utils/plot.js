@@ -46,7 +46,7 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
       scratchArray[i] = { 'idx': i, 'val': item, 'ycol': data[ycol][i] }
     });
   
-    const histBinsMid = 300;
+    const histBinsMid = 400;
     const histBinsIncrement = 100;
     const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
   
