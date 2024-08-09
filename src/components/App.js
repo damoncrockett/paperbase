@@ -76,7 +76,7 @@ const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
 
-//data['radarColor'] = makeGroupLabels(data['radarGroup']);
+data['radarColor'] = makeGroupLabels(data['radarGroup']);
 data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
 data['colorGroupThickWord'] = makeGroupLabels(data['thicknessWord']);
 data['colorGroupTextureWord'] = makeGroupLabels(data['textureWord']);
@@ -93,7 +93,6 @@ const textureValCounts = valueCounts(data['textureWord']);
 const glossValCounts = valueCounts(data['glossWord']);
 const manValCounts = valueCounts(data['man']);
 const branValCounts = valueCounts(data['bran']);
-//const radarGroupValCounts = valueCounts(data['radarGroup']);
 
 data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
@@ -550,7 +549,6 @@ function PanelItem({
   An added bonus is that it will update anytime we update the display glyph!
   */
   const glyphMap = glyphToMap[glyph];
-  console.log(glyphMap);
 
   const handleRemove = e => {
 
@@ -847,7 +845,6 @@ export default function App() {
   const [xcol, setXcol] = useState('dmin');
   const [ycol, setYcol] = useState('thickness');
   const [zcol, setZcol] = useState('none');
-  const [facet, setFacet] = useState('3d');
   const [facetcol, setFacetCol] = useState('none');
   const [facetcolAsc, setFacetcolAsc] = useState(true);
   const [xcolAsc, setXcolAsc] = useState(true);
@@ -874,7 +871,7 @@ export default function App() {
   const itemSize = 3;
 
   const [filter, setFilter] = useState(false);
-  const [filterList, setFilterList] = useState({'sb':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[],'radarGroup':[]});
+  const [filterList, setFilterList] = useState({'sb':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
   const [filterLightMode, setFilterLightMode] = useState(false);
@@ -898,7 +895,6 @@ export default function App() {
   const [filteredGlossFrequencies, setFilteredGlossFrequencies] = useState(glossValCounts);
   const [filteredManFrequencies, setFilteredManFrequencies] = useState(manValCounts);
   const [filteredBranFrequencies, setFilteredBranFrequencies] = useState(branValCounts);
-  //const [filteredRadarGroupFrequencies, setFilteredRadarGroupFrequencies] = useState(radarGroupValCounts);
 
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
@@ -1179,7 +1175,6 @@ export default function App() {
       'textureWord':[],
       'gloss':[],
       'glossWord':[],
-      'radarGroup':[]
     });
     
     setFilter(false);
