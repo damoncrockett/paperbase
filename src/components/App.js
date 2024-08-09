@@ -706,7 +706,7 @@ function PanelItem({
 
 /*Box Selection-------------------------------------------------------------------*/
 
-function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, setClickedItems, invalidateSignal, setInvalidateSignal, glyph }) {
+function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, clickedItems, setClickedItems, setMultiClick, invalidateSignal, setInvalidateSignal, glyph }) {
   const { camera, scene } = useThree();
 
   useEffect(() => {
@@ -833,7 +833,13 @@ function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSele
         }
       });
       
-      setClickedItems(clickedItems => [...clickedItems, ...intersects.map(d => d.globalIndex)]);
+      const updatedClickedItems = [...clickedItems, ...intersects.map(d => d.globalIndex)];
+      
+      if ( updatedClickedItems.length > 1 ) {
+        setMultiClick(true);
+      }
+
+      setClickedItems(updatedClickedItems);
       setInvalidateSignal(!invalidateSignal);
       setIsSelecting(false);
   
@@ -1476,7 +1482,9 @@ export default function App() {
               selectionDivRef={selectionDivRef}
               setSelectionBox={setSelectionBox}
               setIsSelecting={setIsSelecting}
+              clickedItems={clickedItems}
               setClickedItems={setClickedItems}
+              setMultiClick={setMultiClick}
               invalidateSignal={invalidateSignal}
               setInvalidateSignal={setInvalidateSignal}
               glyph={glyph}
