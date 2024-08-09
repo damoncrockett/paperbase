@@ -75,6 +75,9 @@ const colorMin = min(data['dmin']);
 const colorMax = max(data['dmin']);
 const toneMin = min(data['dmax']);
 const toneMax = max(data['dmax']);
+const uvMin = min(data['auc']);
+const uvMax = max(data['auc']);
+
 
 data['radarColor'] = makeGroupLabels(data['radarGroup']);
 data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
@@ -473,13 +476,13 @@ const glyphToMap = {
   'radar':radarMap
 }
 
-function getDetailImageString(texture,i) {
+function getDetailImageString(texture,backprintImage,i) {
   let catalog = data['catalog'][i];
   catalog = catalog.includes('1860') ? '1860' : catalog;
   
   const sb = data['sb'][i];
-  const detailFolder = texture ? 'texture' : sb ? 'samplebooks_2048' : 'packages_2048'; 
-  const detailImgString = returnDomain() + detailFolder + '/' + catalog + '.jpg';
+  const detailFolder = texture ? 'texture/' : sb ? 'samplebooks_2048/' : backprintImage ? 'backprints_detail/bp' : 'packages_2048/'; 
+  const detailImgString = returnDomain() + detailFolder + catalog + '.jpg';
 
   return detailImgString;
 }
@@ -510,6 +513,7 @@ function PanelItem({
   backgroundColor,
   texture,
   packageImage,
+  backprintImage,
   svgRadar,
   smallItem,
   setDetailScreen,
@@ -626,8 +630,9 @@ function PanelItem({
   const imgFolder = sb ? 'samplebooks' : 'packages';
 
   const imgStringTexture = returnDomain() + 'texture_' + textureThumbSize + '/' + catalog + '.jpg';
+  const imgStringBackprint = returnDomain() + 'backprints_detail_' + textureThumbSize + '/bp' + catalog + '.jpg';
   const imgString = returnDomain() + imgFolder + '_' + imgThumbSize + '/' + catalog + '.jpg';
-  const detailImgString = getDetailImageString(texture,clickedItem);
+  const detailImgString = getDetailImageString(texture,backprintImage,clickedItem);
 
   const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
   const sSixth = svgSide / 6;
@@ -639,7 +644,24 @@ function PanelItem({
   const stroke = "#595959";
 
   return (
-    <div className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} title={getHoverInfo(clickedItem)} onClick={handlePanelItemClick} style={backgroundColor ? {backgroundColor: data['dminHex'][clickedItem]} : texture ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } : packageImage ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } : svgRadar ? {backgroundColor: 'var(--yalemidgray)'} : {backgroundColor: 'var(--yalewhite)'}}>
+    <div 
+      className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} 
+      title={getHoverInfo(clickedItem)} 
+      onClick={handlePanelItemClick} 
+      style={
+        backgroundColor 
+        ? { backgroundColor: data['dminHex'][clickedItem] } 
+        : texture 
+          ? { backgroundImage: `url(${imgStringTexture})`, backgroundPosition: 'center' } 
+          : packageImage 
+            ? { backgroundImage: `url(${imgString})`, backgroundPosition: 'center' } 
+            : backprintImage
+              ? { backgroundImage: `url(${imgStringBackprint})`, backgroundPosition: 'center' }
+              : svgRadar 
+              ? { backgroundColor: 'var(--yalemidgray)' } 
+              : { backgroundColor: 'var(--yalewhite)' }
+            }
+    >
       {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
 
           <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
@@ -866,6 +888,7 @@ export default function App() {
   const [texture, setTexture] = useState(false);
   const [svgRadar, setSvgRadar] = useState(false);
   const [packageImage, setPackageImage] = useState(false);
+  const [backprintImage, setBackprintImage] = useState(false);
   const [glyph, setGlyph] = useState('box');
   const [spreadSlide, setSpreadSlide] = useState(0);
   const [groupColors, setGroupColors] = useState(initialGroupColors);
@@ -885,12 +908,14 @@ export default function App() {
   const [toneSlide, setToneSlide] = useState([toneMin,toneMax]);
   const [roughnessSlide, setRoughnessSlide] = useState([roughnessMin,roughnessMax]);
   const [glossSlide, setGlossSlide] = useState([glossMin,glossMax]);
+  const [uvSlide, setUvSlide] = useState([uvMin,uvMax]);
   const [yearSlideMarks, setYearSlideMarks] = useState(null);
   const [thicknessSlideMarks, setThicknessSlideMarks] = useState(null);
   const [colorSlideMarks, setColorSlideMarks] = useState(null);
   const [toneSlideMarks, setToneSlideMarks] = useState(null);
   const [roughnessSlideMarks, setRoughnessSlideMarks] = useState(null);
   const [glossSlideMarks, setGlossSlideMarks] = useState(null);
+  const [uvSlideMarks, setUvSlideMarks] = useState(null);
   const [filteredThicknessFrequencies, setFilteredThicknessFrequencies] = useState(thicknessValCounts);
   const [filteredColorFrequencies, setFilteredColorFrequencies] = useState(colorValCounts);
   const [filteredTextureFrequencies, setFilteredTextureFrequencies] = useState(textureValCounts);
@@ -946,6 +971,7 @@ export default function App() {
     const filteredTones = data['dmax'].filter((_,i) => workingIdxList.includes(i));
     const filteredRoughnesses = data['roughness'].filter((_,i) => workingIdxList.includes(i));
     const filteredGlosses = data['gloss'].filter((_,i) => workingIdxList.includes(i));
+    const filteredUvs = data['auc'].filter((_,i) => workingIdxList.includes(i));
 
     const filteredYearsMin = min(filteredYears);
     const filteredYearsMax = max(filteredYears);
@@ -959,6 +985,8 @@ export default function App() {
     const filteredRoughnessesMax = max(filteredRoughnesses);
     const filteredGlossesMin = min(filteredGlosses);
     const filteredGlossesMax = max(filteredGlosses);
+    const filteredUvsMin = min(filteredUvs);
+    const filteredUvsMax = max(filteredUvs);
 
     if ( filteredYearsMin == null || filteredYearsMax == null ) {
       setYearSlideMarks(null);
@@ -995,6 +1023,12 @@ export default function App() {
     } else {
       setGlossSlideMarks([{value: filteredGlossesMin, label: filteredGlossesMin.toString()},{value: filteredGlossesMax, label: filteredGlossesMax.toString()}])
     }
+
+    if ( filteredUvsMin == null || filteredUvsMax == null ) {
+      setUvSlideMarks(null);
+    } else {
+      setUvSlideMarks([{value: filteredUvsMin, label: filteredUvsMin.toString()},{value: filteredUvsMax, label: filteredUvsMax.toString()}])
+    }
     
   },[filterIdxList]);
   
@@ -1026,7 +1060,8 @@ export default function App() {
     'dmin':[colorSlide,colorMin,colorMax],
     'dmax':[toneSlide,toneMin,toneMax],
     'roughness':[roughnessSlide,roughnessMin,roughnessMax],
-    'gloss':[glossSlide,glossMin,glossMax]
+    'gloss':[glossSlide,glossMin,glossMax],
+    'auc':[uvSlide,uvMin,uvMax]
   };
 
   const handleSliderFilter = e => {
@@ -1042,6 +1077,7 @@ export default function App() {
       toneSlide[0] === toneMin && toneSlide[1] === toneMax &&
       roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
       glossSlide[0] === glossMin && glossSlide[1] === glossMax &&
+      uvSlide[0] === uvMin && uvSlide[1] === uvMax &&
       Object.values(filterList).every(d => d.length === 0) ) {
         setFilter(false);
       } else {
@@ -1077,7 +1113,8 @@ export default function App() {
       colorSlide[0] === colorMin && colorSlide[1] === colorMax &&
       toneSlide[0] === toneMin && toneSlide[1] === toneMax &&
       roughnessSlide[0] === roughnessMin && roughnessSlide[1] === roughnessMax &&
-      glossSlide[0] === glossMin && glossSlide[1] === glossMax ) {
+      glossSlide[0] === glossMin && glossSlide[1] === glossMax &&
+      uvSlide[0] === uvMin && uvSlide[1] === uvMax ) {
       setFilter(false);
     } else {
       setFilter(true);
@@ -1187,6 +1224,7 @@ export default function App() {
     setToneSlide([toneMin,toneMax]);
     setRoughnessSlide([roughnessMin,roughnessMax]);
     setGlossSlide([glossMin,glossMax]);
+    setUvSlide([uvMin,uvMax]);
     sliderKey+=1;
 
   };
@@ -1227,10 +1265,11 @@ export default function App() {
         {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
         {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
         {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
-        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false)}} >format_color_fill</button>
-        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false)}} >texture</button>
-        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false)}} >image</button>
-        <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false)}} >radar</button>
+        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >format_color_fill</button>
+        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >texture</button>
+        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >image</button>
+        <button title='add backprint image to background' className={backprintImage ? 'material-icons active' : 'material-icons'} onClick={() => {setBackprintImage(!backprintImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); packageImage && setPackageImage(false)}} >fingerprint</button>
+        <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false); backprintImage && setBackprintImage(false)}} >radar</button>
         <button title='overlay text' className={textMode ? 'material-icons active' : 'material-icons'} onClick={() => setTextMode(!textMode)} >title</button>
         <button title='decrease font size' className='material-icons' onClick={() => infoPanelFontSize > 1 && setInfoPanelFontSize(infoPanelFontSize - 1)} >text_fields</button>
         <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
@@ -1258,6 +1297,7 @@ export default function App() {
                                                backgroundColor={backgroundColor}
                                                texture={texture}
                                                packageImage={packageImage}
+                                               backprintImage={backprintImage}
                                                svgRadar={svgRadar}
                                                smallItem={smallItem}
                                                key={i}
@@ -1451,26 +1491,26 @@ export default function App() {
       </div>
       {detailScreen && <div id='detailScreen' >
         <img id='detailImage' src={detailImageStringState}></img>
-        <button 
+        {data['processing'][detailImageIndex] === 1 && <button 
           title='open processing instructions in new tab' 
           className='material-icons detailScreenProcessingInstructions' 
           onClick={
             (e) => {e.stopPropagation();
-            window.open(returnDomain() + '/processing/' + data['catalog'][detailImageIndex] + '.pdf', '_blank');
+            window.open(returnDomain() + 'processing/' + data['catalog'][detailImageIndex] + '.pdf', '_blank');
           }}
           >
             science
-        </button>
-        <button 
+        </button>}
+        {data['backp'][detailImageIndex] !== "" && <button 
           title='open backprint in new tab' 
           className='material-icons detailScreenBackprint' 
           onClick={(e) => {
             e.stopPropagation();
-            window.open(returnDomain() + '/backprints/' + data['backp'][detailImageIndex] + '.jpg', '_blank');
+            window.open(returnDomain() + 'backprints_pattern/bp' + data['catalog'][detailImageIndex] + '.jpg', '_blank');
           }}
           >
             fingerprint
-        </button>
+        </button>}
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
         <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_before</button>
         <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_next</button>
@@ -1506,6 +1546,7 @@ export default function App() {
             <option value='dmax'>tone</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
+            <option value='auc'>fluorescence</option>
             <option value='colorGroupColl'>collection</option>
             <option value='colorGroupMan'>manufacturer</option>
             <option value='colorGroupBran'>brand</option>
@@ -1525,6 +1566,7 @@ export default function App() {
             <option value='dmax'>tone</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
+            <option value='auc'>fluorescence</option>
             <option value='colorGroupColl'>collection</option>
             <option value='colorGroupMan'>manufacturer</option>
             <option value='colorGroupBran'>brand</option>
@@ -1545,6 +1587,7 @@ export default function App() {
             <option value='dmax'>tone</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
+            <option value='auc'>fluorescence</option>
           </select>
           {zcolAsc && <button className={'material-icons'} title='sort z-axis descending' onClick={() => setZcolAsc(false)} >arrow_downward</button>}
           {!zcolAsc && <button className={'material-icons active'} title='sort z-axis ascending' onClick={() => setZcolAsc(true)} >arrow_upward</button>}
@@ -1562,6 +1605,7 @@ export default function App() {
             <option value='gloss'>gloss</option>
             <option value='roughness'>roughness</option>
             <option value='expressiveness'>expressiveness</option>
+            <option value='auc'>fluorescence</option>
             <option value='year'>year</option>
             <option value='radarColor'>radar group</option>
           </select>
@@ -1650,6 +1694,10 @@ export default function App() {
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} marks={glossSlideMarks}/></div>
           {Object.keys(glossValCounts).sort().map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredGlossFrequencies,d)} >{d}</button>)}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >FLUORESCENCE</p></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='auc' onChangeCommitted={handleSliderFilter} onChange={e => setUvSlide(e.target.value)} defaultValue={[uvMin,uvMax]} valueLabelDisplay="on" min={uvMin} max={uvMax} marks={uvSlideMarks}/></div>
         </div>
       </div>}
     </div>

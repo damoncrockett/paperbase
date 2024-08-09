@@ -31,7 +31,7 @@ const highlightColor = 0xff00ff;
 const missingColor = 0xcc4700;
 const missingColorTone = 0xffffff;
 const colorSubstrate = new Color();
-const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year'];
+const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year','auc'];
 const groupColorCols = [
     'colorGroupColl','colorGroupMan','colorGroupBran','colorGroupThickWord',
     'colorGroupGlossWord','colorGroupColorWord','colorGroupTextureWord','radarColor'
