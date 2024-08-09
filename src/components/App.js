@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane, LineBasicMaterial } from 'three';
+import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } from 'three';
 import { useSpring } from '@react-spring/three';
-import { Switch, Slider } from '@mui/material';
+import { Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, sample } from 'lodash';
 import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
+
+console.log(data);
 
 // I forget what this is about
 const missingDminHexIdxs = [];
@@ -97,16 +99,12 @@ data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
 const boxMap = makeMap(data, boxGroupArray, 'boxGroup');
 
-//const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
-//const expressivenessMap = makeMap(data, expressivenessGroupArray, 'expressivenessGroup');
+const expressivenessGroupArray = Array.from(new Set(data['expressivenessGroup']));
+const expressivenessMap = makeMap(data, expressivenessGroupArray, 'expressivenessGroup');
 
-//const isoGroupArray = Array.from(new Set(data['isoGroup']));
-//const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
-data['isoGroup'] = Array(n).fill('b');
-const isoGroupArray = ['b'];
+const isoGroupArray = Array.from(new Set(data['isoGroup']));
 const isoMap = makeMap(data, isoGroupArray, 'isoGroup');
-//const zArray = isoGroupArray.map(d => d === "" ? 0 : d.split('_')[0]==='0' ? 0.05 : d.split('_')[0]==='1' ? 0.25 : d.split('_')[0]==='2' ? 0.5 : 0.75);
-const zArray = isoGroupArray.map(d => 0.75);
+const zArray = isoGroupArray.map(d => d === "" ? 0 : d === 0 ? 0.05 : d === 1 ? 0.25 : d === 2 ? 0.5 : 0.75);
 
 const radarGroupArray = Array.from(new Set(data['radarGroup']));
 const radarMap = makeMap(data, radarGroupArray, 'radarGroup');
@@ -469,7 +467,7 @@ function Glyphs({
 
 const glyphToMap = {
   'box':boxMap,
-  //'exp':expressivenessMap,
+  'exp':expressivenessMap,
   'iso':isoMap,
   'radar':radarMap
 }
@@ -486,15 +484,13 @@ function getDetailImageString(texture,i) {
 }
 
 function getHoverInfo(clickedItem) {
-  //const radarGroup = data['radarGroup'][clickedItem];
-  const radarGroup = '';
   const thickness = data['thickness'][clickedItem];
   const color = data['dmin'][clickedItem];
   const dminHex = data['dminHex'][clickedItem];
   const gloss = data['gloss'][clickedItem];
   const roughness = data['roughness'][clickedItem];
 
-  return clickedItem + ' [' + radarGroup + ']' + '  mm:' + thickness + '  b*:' + color + '  rgb:' + dminHex + '  GU:' + gloss + '  std:' + roughness
+  return clickedItem + '  mm:' + thickness + '  b*:' + color + '  rgb:' + dminHex + '  GU:' + gloss + '  std:' + roughness
 }
 
 function PanelItem({
@@ -554,6 +550,7 @@ function PanelItem({
   An added bonus is that it will update anytime we update the display glyph!
   */
   const glyphMap = glyphToMap[glyph];
+  console.log(glyphMap);
 
   const handleRemove = e => {
 
@@ -687,7 +684,7 @@ function PanelItem({
 
 /*Box Selection-------------------------------------------------------------------*/
 
-function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, setClickedItems, invalidateSignal, setInvalidateSignal }) {
+function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, setClickedItems, invalidateSignal, setInvalidateSignal, glyph }) {
   const { camera, scene } = useThree();
 
   useEffect(() => {
@@ -789,33 +786,32 @@ function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSele
 
       const frustum = new Frustum(...planes);
 
+      const glyphMap = glyphToMap[glyph];
       const intersects = [];
 
       scene.children.forEach((child) => {
         if (child.isInstancedMesh && child.geometry) {
-
           if (!child.geometry.boundingBox) {
             child.geometry.computeBoundingBox();
           }
       
           const instanceMatrix = new Matrix4();
-          const worldPosition = new Vector3();
       
           for (let i = 0; i < child.count; i++) {
             child.getMatrixAt(i, instanceMatrix);
-            worldPosition.setFromMatrixPosition(instanceMatrix);
-      
-            // Now you can safely copy the bounding box
             const instanceBoundingBox = new Box3().copy(child.geometry.boundingBox).applyMatrix4(instanceMatrix);
       
             if (frustum.intersectsBox(instanceBoundingBox)) {
-              intersects.push({ mesh: child, instanceId: i });
+              const meshName = child.name; // Make sure 'name' is properly assigned
+              const globalIndices = glyphMap[meshName];
+              const globalIndex = globalIndices[i];
+              intersects.push({ mesh: child, instanceId: i, globalIndex: globalIndex });
             }
           }
         }
       });
-  
-      setClickedItems(clickedItems => [...clickedItems, ...intersects.map(d => d.instanceId)]);
+      
+      setClickedItems(clickedItems => [...clickedItems, ...intersects.map(d => d.globalIndex)]);
       setInvalidateSignal(!invalidateSignal);
       setIsSelecting(false);
   
@@ -846,13 +842,6 @@ export default function App() {
   const [boxSelectMode, setBoxSelectMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-  const [toggleMR, setToggleMR] = useState(true);
-  const [toggleLMN, setToggleLMN] = useState(false);
-  const [toggleAS, setToggleAS] = useState(false);
-  const [toggleHC, setToggleHC] = useState(false);
-  const [toggleLAB, setToggleLAB] = useState(true);
-  const [toggleRM, setToggleRM] = useState(false);
 
   const [model, setModel] = useState('grid');
   const [xcol, setXcol] = useState('dmin');
@@ -921,10 +910,8 @@ export default function App() {
   const CTRL_KEY = 17;
   const CMD_KEY = 91;
 
-  const exprStringToFloat = exprString => {
-    exprString = exprString.substring(1);
-    const s = Number(exprString) / 10;
-    return s
+  const exprStringToFloat = ebin => {
+    return ebin / 10
   };
 
   const orbitRef = useRef();
@@ -1455,6 +1442,7 @@ export default function App() {
               setClickedItems={setClickedItems}
               invalidateSignal={invalidateSignal}
               setInvalidateSignal={setInvalidateSignal}
+              glyph={glyph}
             />
           )}
         </Canvas>
