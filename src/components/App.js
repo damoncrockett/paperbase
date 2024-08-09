@@ -246,6 +246,8 @@ function Glyphs({
     } else if ( model === 'gep' ) {
       let gepCoords = spreadSlide === -2 ? 'gep100' : spreadSlide === -1 ? 'gep150' : spreadSlide === 0 ? 'gep200' : spreadSlide === 1 ? 'gep250' : 'gep300';
       targetCoords = cloneDeep(data[gepCoords]); 
+    } else if ( model === 'tmap' ) {
+      targetCoords = cloneDeep(data['tmap']); 
     }
 
     if ( facetcol !== 'none' ) {
@@ -1449,6 +1451,26 @@ export default function App() {
       </div>
       {detailScreen && <div id='detailScreen' >
         <img id='detailImage' src={detailImageStringState}></img>
+        <button 
+          title='open processing instructions in new tab' 
+          className='material-icons detailScreenProcessingInstructions' 
+          onClick={
+            (e) => {e.stopPropagation();
+            window.open(returnDomain() + '/processing/' + data['catalog'][detailImageIndex] + '.pdf', '_blank');
+          }}
+          >
+            science
+        </button>
+        <button 
+          title='open backprint in new tab' 
+          className='material-icons detailScreenBackprint' 
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(returnDomain() + '/backprints/' + data['backp'][detailImageIndex] + '.jpg', '_blank');
+          }}
+          >
+            fingerprint
+        </button>
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
         <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_before</button>
         <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_next</button>
@@ -1565,6 +1587,7 @@ export default function App() {
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep')} >bubble_chart</button>
+        <button title='texture map' className={model === 'tmap' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('tmap')} >map</button>
       </div>
       <div className='controls' id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}

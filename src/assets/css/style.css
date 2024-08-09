@@ -348,6 +348,28 @@ svg {
   color: var(--yalemidlightgray);
 }
 
+.detailScreenProcessingInstructions {
+  font-size: 6vh;
+  position: fixed;
+  top: 4vh;
+  left: 4vh;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
+.detailScreenBackprint {
+  font-size: 6vh;
+  position: fixed;
+  top: 12vh;
+  left: 4vh;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
 #previousPanelItem {
   font-size: 12vh;
   position: fixed;
@@ -447,7 +469,7 @@ svg {
 #plottypeControls {
   position: fixed;
   right: -1vw;
-  top: 25vh;
+  top: 20vh;
   width: 1vw;
   z-index: 1;
 }

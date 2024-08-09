@@ -16,8 +16,12 @@ fonts
 src/assets/img
 src/assets/csv
 src/assets/tifs
-notebooks
+src/assets/neuralcrops
+src/assets/neuralcropsbw
 lux
 notes.txt
-notebooks
+notebooks/.ipynb_checkpoints
+notebooks/.DS_Store
+notebooks/*.pkl
+notebooks/*.jpg
 schnitt.js
