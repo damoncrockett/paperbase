@@ -481,7 +481,7 @@ function getDetailImageString(texture,backprintImage,i) {
   catalog = catalog.includes('1860') ? '1860' : catalog;
   
   const sb = data['sb'][i];
-  const detailFolder = texture ? 'texture/' : sb ? 'samplebooks_2048/' : backprintImage ? 'backprints_detail/bp' : 'packages_2048/'; 
+  const detailFolder = texture ? 'texture/' : backprintImage ? 'backprints_detail/bp' : sb ? 'samplebooks_2048/' : 'packages_2048/'; 
   const detailImgString = returnDomain() + detailFolder + catalog + '.jpg';
 
   return detailImgString;
@@ -1049,7 +1049,7 @@ export default function App() {
       const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
       setDetailImageIndex(newDetailImageIndex);
 
-      const newDetailImageString = getDetailImageString(texture,newDetailImageIndex);
+      const newDetailImageString = getDetailImageString(texture,backprintImage,newDetailImageIndex);
       setDetailImageStringState(newDetailImageString);
     }
   }
@@ -1245,7 +1245,7 @@ export default function App() {
           const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
           setDetailImageIndex(newDetailImageIndex);
 
-          const newDetailImageString = getDetailImageString(texture,newDetailImageIndex);
+          const newDetailImageString = getDetailImageString(texture,backprintImage,newDetailImageIndex);
           setDetailImageStringState(newDetailImageString);
         }
       }
@@ -1495,8 +1495,11 @@ export default function App() {
           title='open processing instructions in new tab' 
           className='material-icons detailScreenProcessingInstructions' 
           onClick={
-            (e) => {e.stopPropagation();
-            window.open(returnDomain() + 'processing/' + data['catalog'][detailImageIndex] + '.pdf', '_blank');
+            (e) => {
+              e.stopPropagation();
+              const processingURL = returnDomain() + 'processing/' + data['catalog'][detailImageIndex] + '.pdf';
+              console.log(processingURL);
+              window.open(processingURL, '_blank');
           }}
           >
             science
@@ -1506,7 +1509,9 @@ export default function App() {
           className='material-icons detailScreenBackprint' 
           onClick={(e) => {
             e.stopPropagation();
-            window.open(returnDomain() + 'backprints_pattern/bp' + data['catalog'][detailImageIndex] + '.jpg', '_blank');
+            const backprintURL = returnDomain() + 'backprints_pattern/bp' + data['catalog'][detailImageIndex] + '.jpg';
+            console.log(backprintURL);
+            window.open(backprintURL, '_blank');
           }}
           >
             fingerprint
