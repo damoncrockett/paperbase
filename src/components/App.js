@@ -885,7 +885,6 @@ export default function App() {
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
   const [gridMode, setGridMode] = useState(false);
-  const [lightMode, setLightMode] = useState(true);
   const [briefMode, setBriefMode] = useState(false);
   const [textMode, setTextMode] = useState(true);
   const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
@@ -905,7 +904,6 @@ export default function App() {
   const [filterList, setFilterList] = useState({'sb':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
-  const [filterLightMode, setFilterLightMode] = useState(true);
   const [manExpand, setManExpand] = useState(false);
   const [branExpand, setBranExpand] = useState(false);
   const [yearSlide, setYearSlide] = useState([yearMin,yearMax]);
@@ -1286,7 +1284,7 @@ export default function App() {
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
         <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
       </div>
-      <div id='infoPanel' className={lightMode && gridMode ? 'lightMode grid' : lightMode && !gridMode ? 'lightMode list' : !lightMode && gridMode ? 'darkMode grid' : 'darkMode list'}>
+      <div id='infoPanel' className={gridMode ? 'grid' : 'list'}>
         {clickedItems.map((clickedItem,i) => <PanelItem
                                                clickedItem={clickedItem}
                                                clickedItems={clickedItems}
@@ -1651,61 +1649,61 @@ export default function App() {
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
       </div>
-      {filterModal!=='closed' && <div id='filterModal' className={filterModal==='open' && filterLightMode ? 'open lightMode' : filterModal==='open' && !filterLightMode ? 'open darkMode' : filterModal==='expanded' && filterLightMode ? 'expanded lightMode' : 'expanded darkMode'}>
+      {filterModal!=='closed' && <div id='filterModal' className={filterModal}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
         {filterModal==='expanded' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
         {filterModal==='open' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >queue</button>}
         {filterModal==='expanded' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >queue</button>}
-        {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
-        {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
+        {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={e => {e.stopPropagation; setFilterModal('expanded')}} >chevron_left</button>}
+        {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={e => {e.stopPropagation; setFilterModal('open')}} >chevron_right</button>}
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >REFERENCE COLLECTION</p></div>
           {[{t:'LML Packages',v:'0'},{t:'LML Sample Books',v:'1'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='sb' data-val={d.v} onClick={handleFilter} className={filterList['sb'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >YEAR</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='year' onChangeCommitted={handleSliderFilter} onChange={e => setYearSlide(e.target.value)} defaultValue={[yearMin,yearMax]} valueLabelDisplay="on" min={yearMin} max={yearMax} marks={yearSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
-          <div id='manHead' className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >MANUFACTURER</p></div>
+          <div id='manHead' className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >MANUFACTURER</p></div>
           {!manExpand && Object.keys(manValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
-          {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={() => setManExpand(true)} >more_horiz</button>}
+          {!manExpand && <button title='expand manufacturer options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setManExpand(true)}} >more_horiz</button>}
           {manExpand && Object.keys(manValCounts).sort().map((d,i) => <button key={i} data-cat='man' data-val={d} onClick={handleFilter} className={filterList['man'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredManFrequencies,d)} >{d}</button>)}
-          {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={() => {setManExpand(false);document.getElementById("manHead").scrollIntoView();}} >expand_less</button>}
+          {manExpand && <button title='contract manufacturer options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setManExpand(false); document.getElementById("manHead").scrollIntoView();}} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
-          <div id='branHead' className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BRAND</p></div>
+          <div id='branHead' className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >BRAND</p></div>
           {!branExpand && Object.keys(branValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
-          {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={() => setBranExpand(true)} >more_horiz</button>}
+          {!branExpand && <button title='expand brand options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setBranExpand(true)}} >more_horiz</button>}
           {branExpand && Object.keys(branValCounts).sort().map((d,i) => <button key={i} data-cat='bran' data-val={d} onClick={handleFilter} className={filterList['bran'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBranFrequencies,d)} >{d}</button>)}
-          {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={() => {setBranExpand(false);document.getElementById("branHead").scrollIntoView();}} >expand_less</button>}
+          {branExpand && <button title='contract brand options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setBranExpand(false); document.getElementById("branHead").scrollIntoView();}} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >THICKNESS</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >THICKNESS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='thickness' onChangeCommitted={handleSliderFilter} onChange={e => setThicknessSlide(e.target.value)} defaultValue={[thicknessMin,thicknessMax]} valueLabelDisplay="on" min={thicknessMin} max={thicknessMax} step={0.001} marks={thicknessSlideMarks}/></div>
           {Object.keys(thicknessValCounts).sort().map((d,i) => <button key={i} data-cat='thicknessWord' data-val={d} onClick={handleFilter} className={filterList['thicknessWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredThicknessFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >BASE COLOR</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >BASE COLOR</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmin' onChangeCommitted={handleSliderFilter} onChange={e => setColorSlide(e.target.value)} defaultValue={[colorMin,colorMax]} valueLabelDisplay="on" min={colorMin} max={colorMax} step={0.01} marks={colorSlideMarks}/></div>
           {Object.keys(colorValCounts).sort().map((d,i) => <button key={i} data-cat='colorWord' data-val={d} onClick={handleFilter} className={filterList['colorWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredColorFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TONE COLOR</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >TONE COLOR</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='dmax' onChangeCommitted={handleSliderFilter} onChange={e => setToneSlide(e.target.value)} defaultValue={[toneMin,toneMax]} valueLabelDisplay="on" min={toneMin} max={toneMax} step={0.01} marks={toneSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >TEXTURE</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >TEXTURE</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='roughness' onChangeCommitted={handleSliderFilter} onChange={e => setRoughnessSlide(e.target.value)} defaultValue={[roughnessMin,roughnessMax]} valueLabelDisplay="on" min={roughnessMin} step={0.001} max={roughnessMax} marks={roughnessSlideMarks}/></div>
           {Object.keys(textureValCounts).sort().map((d,i) => <button key={i} data-cat='textureWord' data-val={d} onClick={handleFilter} className={filterList['textureWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredTextureFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >GLOSS</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >GLOSS</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='gloss' onChangeCommitted={handleSliderFilter} onChange={e => setGlossSlide(e.target.value)} defaultValue={[glossMin,glossMax]} valueLabelDisplay="on" min={glossMin} max={glossMax} marks={glossSlideMarks}/></div>
           {Object.keys(glossValCounts).sort().map((d,i) => <button key={i} data-cat='glossWord' data-val={d} onClick={handleFilter} className={filterList['glossWord'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredGlossFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >FLUORESCENCE</p></div>
+          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >FLUORESCENCE</p></div>
           <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='auc' onChangeCommitted={handleSliderFilter} onChange={e => setUvSlide(e.target.value)} defaultValue={[uvMin,uvMax]} valueLabelDisplay="on" min={uvMin} max={uvMax} marks={uvSlideMarks}/></div>
         </div>
       </div>}

@@ -6,11 +6,6 @@
   --yalemidgray: #4a4a4a;
   --yaledarkgray: #222222;
   --yalewhite: #f9f9f9;
-  --rippling: #4b2f3b;
-  --ripplingdark: #140c10;
-  --ripplinglightgray: #c9c0c4;
-  --ripplingyellow: #f4bb46;
-  --ripplingwhite: #fefefe;
   --yalelightblue: #63aaff;
   --yaleorange: #bd5319;
   --filterHighlight: #FF5F1F;
@@ -178,16 +173,7 @@ svg {
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
   z-index: 1;
   padding: 1vw;
-  border-radius: 2vh;
-  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-}
-
-.lightMode {
   background-color: transparent;
-}
-
-.darkMode {
-  background-color: var(--yalemidgray);
 }
 
 #infoPanel::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
@@ -216,11 +202,11 @@ svg {
 }
 
 .panelItem:hover > .selectionRemove {
-  color: var(--yalemidgray);
+  color: var(--yaledark);
 }
 
 .panelItem:hover > .openDetailScreen {
-  color: var(--yalemidgray);
+  color: var(--yaledark);
 }
 
 .panelItem {
@@ -505,8 +491,7 @@ svg {
   -ms-overflow-style: none;  /* hides in Internet Explorer 10+ */
   z-index: 1;
   padding: 1vw;
-  border-radius: 2vh;
-  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  background-color: transparent;
 }
 
 #filterModal::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
@@ -555,19 +540,14 @@ svg {
   display: inline-block;
   border-radius: 1vh;
   border-width: 1px;
-  border-color: transparent;
   border-style: solid;
-  background-color: transparent;
+  background-color: var(--yalemidgray);
+  border-color: var(--yalemidlightgray);
+  padding: 1.5vh;
 }
 
 .filterCategoryHeadingContainer {
   margin: 2vh 0 3vh 0;
-}
-
-.headingMat {
-  background-color: var(--yalemidgray);
-  border-color: var(--yalemidlightgray);
-  padding: 1.5vh;
 }
 
 .filterCategoryContainer {
