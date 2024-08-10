@@ -885,7 +885,7 @@ export default function App() {
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
   const [gridMode, setGridMode] = useState(false);
-  const [lightMode, setLightMode] = useState(false);
+  const [lightMode, setLightMode] = useState(true);
   const [briefMode, setBriefMode] = useState(false);
   const [textMode, setTextMode] = useState(true);
   const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
@@ -902,10 +902,10 @@ export default function App() {
   const itemSize = 3;
 
   const [filter, setFilter] = useState(false);
-  const [filterList, setFilterList] = useState({'sb':[],'photoProcess':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});
+  const [filterList, setFilterList] = useState({'sb':[],'year':[],'man':[],'bran':[],'thickness':[],'thicknessWord':[],'dmin':[],'colorWord':[],'roughness':[],'textureWord':[],'gloss':[],'glossWord':[]});
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
-  const [filterLightMode, setFilterLightMode] = useState(false);
+  const [filterLightMode, setFilterLightMode] = useState(true);
   const [manExpand, setManExpand] = useState(false);
   const [branExpand, setBranExpand] = useState(false);
   const [yearSlide, setYearSlide] = useState([yearMin,yearMax]);
@@ -1101,6 +1101,9 @@ export default function App() {
     const alreadyInFilterList = filterList[dataCat].includes(dataVal);
     let newFilterList = {...filterList};
 
+    console.log(filterList, alreadyInFilterList, newFilterList, dataCat, dataVal);
+
+
     if ( alreadyInFilterList ) {
       newFilterList[dataCat] = newFilterList[dataCat].filter(d => d !== dataVal); // remove from filter
     } else {
@@ -1207,7 +1210,6 @@ export default function App() {
     
     setFilterList({
       'sb':[],
-      'photoProcess':[],
       'year':[],
       'man':[],
       'bran':[],
@@ -1281,8 +1283,6 @@ export default function App() {
         <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
         {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
         {!briefMode && <button title='switch to brief mode' className={'material-icons'} onClick={() => setBriefMode(true)} >short_text</button>}
-        {lightMode && <button title='switch to dark mode' className={'material-icons active'} onClick={() => setLightMode(false)} >dark_mode</button>}
-        {!lightMode && <button title='switch to light mode' className={'material-icons'} onClick={() => setLightMode(true)} >light_mode</button>}
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
         <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
       </div>
@@ -1658,13 +1658,9 @@ export default function App() {
         {filterModal==='expanded' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >queue</button>}
         {filterModal==='open' && <button title='expand filter window' className='material-icons expandButtons' style={{right:'28vw'}} onClick={() => setFilterModal('expanded')} >chevron_left</button>}
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={() => setFilterModal('open')} >chevron_right</button>}
-        {filterLightMode && filterModal==='open' && <button title='switch to dark mode' style={{right:'28vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
-        {!filterLightMode && filterModal==='open' && <button title='switch to light mode' style={{right:'28vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
-        {filterLightMode && filterModal==='expanded' && <button title='switch to dark mode' style={{right:'56vw'}} className={'material-icons active filterLightMode'} onClick={() => setFilterLightMode(false)} >dark_mode</button>}
-        {!filterLightMode && filterModal==='expanded' && <button title='switch to light mode' style={{right:'56vw'}} className={'material-icons filterLightMode'} onClick={() => setFilterLightMode(true)} >light_mode</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >REFERENCE COLLECTION</p></div>
-          {[{t:'LML Packages',v:"0"},{t:'LML Sample Books',v:"1"}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='sb' data-val={d.v} onClick={handleFilter} className={filterList['sb'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
+          {[{t:'LML Packages',v:'0'},{t:'LML Sample Books',v:'1'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='sb' data-val={d.v} onClick={handleFilter} className={filterList['sb'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className={filterLightMode ? 'filterCategoryHeading headingMat' : 'filterCategoryHeading'} >YEAR</p></div>
