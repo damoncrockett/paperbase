@@ -4,7 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Object3D, MOUSE, DoubleSide, Vector3, Matrix4, Frustum, Box3, Plane } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
-import { max, min, cloneDeep, intersection, sample } from 'lodash';
+import { max, min, cloneDeep, intersection, sample, set } from 'lodash';
 import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
 
@@ -501,6 +501,7 @@ function PanelItem({
   setDetailScreen,
   setDetailImageStringState,
   setDetailImageIndex,
+  setPackageImageIndex,
   filter,
   group,
   filterIdxList,
@@ -668,7 +669,7 @@ function PanelItem({
 
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
-      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem);}} >open_in_full</button>
+      <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); setPackageImageIndex(0)}} >open_in_full</button>
       {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
         {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{data['catalog'][clickedItem]==='_' ? '#' : '#' + data['catalog'][clickedItem]}</p>
@@ -910,6 +911,7 @@ export default function App() {
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
   const [detailImageIndex, setDetailImageIndex] = useState('');
+  const [packageImageIndex, setPackageImageIndex] = useState(0);
   const [invalidateSignal, setInvalidateSignal] = useState(false);
 
   // key code constants
@@ -1018,23 +1020,53 @@ export default function App() {
   
   const handleDetailScreenNav = e => {
 
+    console.log('handleDetailScreenNav');
+
     e.stopPropagation();
     const label = e.target.innerText;
     const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
 
     let newClickedItemsPositionIndex;
-    if ( label === 'navigate_before' ) {
+    if ( label === 'keyboard_arrow_left' ) {
       newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
-    } else if ( label === 'navigate_next' ) {
+    } else if ( label === 'keyboard_arrow_right' ) {
       newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
     }
 
     if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
       const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
       setDetailImageIndex(newDetailImageIndex);
+      setPackageImageIndex(0);
 
       const newDetailImageString = getDetailImageString(texture,backprintImage,newDetailImageIndex);
       setDetailImageStringState(newDetailImageString);
+    }
+  }
+
+  const handlePackageImages = e => {
+
+    console.log('handlePackageImages');
+
+    e.stopPropagation();
+
+    const suffs = data['suffs'][detailImageIndex];
+    const suffsArr = suffs.split('|');
+    suffsArr.unshift('');
+    const catalog = data['catalog'][detailImageIndex];
+    const packageImageArray = suffsArr.map(suff => returnDomain() + 'packages_2048/' + catalog + suff + '.jpg');
+
+    const label = e.target.innerText;
+    let newPackageImageIndex;
+
+    if ( label === 'keyboard_arrow_up' ) {
+      newPackageImageIndex = packageImageIndex - 1;
+    } else if ( label === 'keyboard_arrow_down' ) {
+      newPackageImageIndex = packageImageIndex + 1;
+    }
+
+    if ( newPackageImageIndex >= 0 && newPackageImageIndex <= packageImageArray.length - 1 ) {
+      setDetailImageStringState(packageImageArray[newPackageImageIndex]);
+      setPackageImageIndex(newPackageImageIndex);
     }
   }
 
@@ -1078,9 +1110,6 @@ export default function App() {
 
     const alreadyInFilterList = filterList[dataCat].includes(dataVal);
     let newFilterList = {...filterList};
-
-    console.log(filterList, alreadyInFilterList, newFilterList, dataCat, dataVal);
-
 
     if ( alreadyInFilterList ) {
       newFilterList[dataCat] = newFilterList[dataCat].filter(d => d !== dataVal); // remove from filter
@@ -1218,21 +1247,53 @@ export default function App() {
   useEffect(() => {
     if ( detailScreen ) {
       function advanceNav(e) {
+        e.preventDefault();
+        
         const keyCode = e.keyCode;
         const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
         let newClickedItemsPositionIndex;
-        if ( keyCode === 37 ) {
+        let newPackageImageIndex;
+        
+        if ( keyCode === 37 ) { // left arrow
           newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
-        } else if ( keyCode === 39 ) {
+          console.log('left arrow');
+        } else if ( keyCode === 39 ) { // right arrow
           newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
+          console.log('right arrow');
+        } else if ( keyCode === 38 ) { // up arrow
+          newPackageImageIndex = packageImageIndex - 1;
+          console.log('up arrow');
+          console.log(packageImageIndex, newPackageImageIndex);
+        } else if ( keyCode === 40 ) { // down arrow
+          newPackageImageIndex = packageImageIndex + 1;
+          console.log('down arrow');
+          console.log(packageImageIndex, newPackageImageIndex);
         }
 
-        if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
+        if ( newClickedItemsPositionIndex !== undefined ) {
+          console.log('new clicked items position index');
+          if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
           const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
           setDetailImageIndex(newDetailImageIndex);
+          setPackageImageIndex(0);
 
           const newDetailImageString = getDetailImageString(texture,backprintImage,newDetailImageIndex);
           setDetailImageStringState(newDetailImageString);
+        }
+      }
+
+        if ( newPackageImageIndex !== undefined ) {
+          console.log('new package image index');
+          const suffs = data['suffs'][detailImageIndex];
+          const suffsArr = suffs.split('|');
+          suffsArr.unshift('');
+          const catalog = data['catalog'][detailImageIndex];
+          const packageImageArray = suffsArr.map(suff => returnDomain() + 'packages_2048/' + catalog + suff + '.jpg');
+
+          if ( newPackageImageIndex >= 0 && newPackageImageIndex <= packageImageArray.length - 1 ) {
+            setDetailImageStringState(packageImageArray[newPackageImageIndex]);
+            setPackageImageIndex(newPackageImageIndex);
+          }
         }
       }
 
@@ -1242,7 +1303,7 @@ export default function App() {
       document.removeEventListener("keydown", advanceNav);
     };
   }
-},[detailScreen, detailImageIndex])
+},[detailScreen, detailImageIndex, packageImageIndex])
 
   return (
     <div id='app'>
@@ -1290,6 +1351,7 @@ export default function App() {
                                                detailImageStringState={detailImageStringState}
                                                setDetailImageStringState={setDetailImageStringState}
                                                setDetailImageIndex={setDetailImageIndex}
+                                               setPackageImageIndex={setPackageImageIndex}
                                                filter={filter}
                                                group={group}
                                                filterIdxList={filterIdxList}
@@ -1478,7 +1540,6 @@ export default function App() {
             (e) => {
               e.stopPropagation();
               const processingURL = returnDomain() + 'processing/' + data['catalog'][detailImageIndex] + '.pdf';
-              console.log(processingURL);
               window.open(processingURL, '_blank');
           }}
           >
@@ -1490,15 +1551,16 @@ export default function App() {
           onClick={(e) => {
             e.stopPropagation();
             const backprintURL = returnDomain() + 'backprints_pattern/bp' + data['catalog'][detailImageIndex] + '.jpg';
-            console.log(backprintURL);
             window.open(backprintURL, '_blank');
           }}
           >
             fingerprint
         </button>}
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
-        {clickedItems.length > 1 && <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_before</button>}
-        {clickedItems.length > 1 && <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>navigate_next</button>}
+        {clickedItems.length > 1 && <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>keyboard_arrow_left</button>}
+        {clickedItems.length > 1 && <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>keyboard_arrow_right</button>}
+        {packageImage && data['suffs'][detailImageIndex] !== '' && <button title='previous package image' id='previousPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_up</button>}
+        {packageImage && data['suffs'][detailImageIndex] !== '' && <button title='next package image' id='nextPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_down</button>}
         <div id='detailScreenInfoBar'><p>{'#'+data['catalog'][detailImageIndex] + " " + data['man'][detailImageIndex] + " " + data['bran'][detailImageIndex] + " " + data['year'][detailImageIndex]}</p></div>
       </div>}
       <div id='topControls'>

@@ -367,11 +367,35 @@ svg {
   color: var(--yalemidlightgray);
 }
 
+#previousPackageImage {
+  font-size: 12vh;
+  position: fixed;
+  top: 5%; 
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
 #nextPanelItem {
   font-size: 12vh;
   position: fixed;
   top: 44vh;
   right: 1vw;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+}
+
+#nextPackageImage {
+  font-size: 12vh;
+  position: fixed;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 16;
   border: none;
   background: none;
