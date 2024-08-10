@@ -219,7 +219,7 @@ let targetCoords;
 
 function Glyphs({ 
   glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
-  facetcol, facetcolAsc, group, multiClick, clickedItems, setClickedItems, z, 
+  group, multiClick, clickedItems, setClickedItems, z, 
   vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, 
   filter, filterIdxList, invalidateSignal 
 }) {
@@ -253,29 +253,11 @@ function Glyphs({
       targetCoords = cloneDeep(data['tmap']); 
     }
 
-    if ( facetcol !== 'none' ) {
-      // update z dims for 3d facet
-      const facetData = data[facetcol];
-      const facetGroups = Array.from(new Set(facetData));
-      const facetZs = {};
-
-      facetGroups.forEach((item, i) => {
-        if ( facetcolAsc ) {
-          i = Math.abs( facetGroups.length - i );
-        }
-        facetZs[item] = i
-      });
-
-      facetData.forEach((item, i) => {
-        targetCoords[i][2] = facetZs[item] * 2
-      });
-    }
-
     if ( raisedItem !== null ) {
       targetCoords[raisedItem][2] = 2
     }
 
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, spreadSlide, raisedItem])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide, raisedItem])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -291,7 +273,7 @@ function Glyphs({
       updatePositions({ globalIndicesForThisMesh, mesh: meshRef.current });
       invalidate();
     },
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, facetcol, facetcolAsc, spreadSlide, raisedItem]);
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide, raisedItem]);
 
   useLayoutEffect(() => {
 
@@ -875,8 +857,6 @@ export default function App() {
   const [xcol, setXcol] = useState('dmin');
   const [ycol, setYcol] = useState('thickness');
   const [zcol, setZcol] = useState('none');
-  const [facetcol, setFacetCol] = useState('none');
-  const [facetcolAsc, setFacetcolAsc] = useState(true);
   const [xcolAsc, setXcolAsc] = useState(true);
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
@@ -1337,8 +1317,6 @@ export default function App() {
                      ycolAsc={ycolAsc}
                      zcol={zcol}
                      zcolAsc={zcolAsc}
-                     facetcol={facetcol}
-                     facetcolAsc={facetcolAsc}
                      group={group}
                      multiClick={multiClick}
                      clickedItems={clickedItems}
@@ -1370,8 +1348,6 @@ export default function App() {
                      ycolAsc={ycolAsc}
                      zcol={zcol}
                      zcolAsc={zcolAsc}
-                     facetcol={facetcol}
-                     facetcolAsc={facetcolAsc}
                      group={group}
                      multiClick={multiClick}
                      clickedItems={clickedItems}
@@ -1403,8 +1379,6 @@ export default function App() {
                      ycolAsc={ycolAsc}
                      zcol={zcol}
                      zcolAsc={zcolAsc}
-                     facetcol={facetcol}
-                     facetcolAsc={facetcolAsc}
                      group={group}
                      multiClick={multiClick}
                      clickedItems={clickedItems}
@@ -1436,8 +1410,6 @@ export default function App() {
                      ycolAsc={ycolAsc}
                      zcol={zcol}
                      zcolAsc={zcolAsc}
-                     facetcol={facetcol}
-                     facetcolAsc={facetcolAsc}
                      group={group}
                      multiClick={multiClick}
                      clickedItems={clickedItems}
@@ -1623,20 +1595,6 @@ export default function App() {
             <option value='radarColor'>radar group</option>
           </select>
           <button title='group color shuffle' onClick={() => setGroupColors(makeColorArray())} className={'material-icons'}>shuffle</button>
-          <select value={facetcol} onChange={e => setFacetCol(e.target.value)} title='facet group'>
-            <option value='none'>no facet axis</option>
-            <option value='expressivenessGroup'>expressiveness</option>
-            <option value='isoGroup'>color and thickness</option>
-            <option value='radarGroup'>radar group</option>
-            <option value='colorGroupColl'>collection</option>
-            <option value='colorGroupMan'>manufacturer</option>
-            <option value='colorGroupTextureWord'>texture description</option>
-            <option value='colorGroupColorWord'>base color description</option>
-            <option value='colorGroupGlossWord'>gloss description</option>
-            <option value='colorGroupThickWord'>weight description</option>
-          </select>
-          {facetcolAsc && <button className={'material-icons'} title='sort facet axis descending' onClick={() => setFacetcolAsc(false)} >arrow_downward</button>}
-          {!facetcolAsc && <button className={'material-icons active'} title='sort facet axis ascending' onClick={() => setFacetcolAsc(true)} >arrow_upward</button>}
         </div>
       </div>
       <div className='controls' id='plottypeControls'>

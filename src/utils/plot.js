@@ -88,36 +88,73 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
     return scratchArray.map(d => d.pos)
 }
   
-export function makeScatter( data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide ) {
+// export function makeScatter( data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide ) {
     
-    let xArray = featureScale(data[xcol]);
-    let yArray = featureScale(data[ycol]);
-    let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
+//     let xArray = featureScale(data[xcol]);
+//     let yArray = featureScale(data[ycol]);
+//     let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
   
-    if ( xcolAsc === false ) {
-      xArray = xArray.map(d => 1 - d);
-    }
+//     if ( xcolAsc === false ) {
+//       xArray = xArray.map(d => 1 - d);
+//     }
   
-    if ( ycolAsc === false ) {
-      yArray = yArray.map(d => 1 - d);
-    }
+//     if ( ycolAsc === false ) {
+//       yArray = yArray.map(d => 1 - d);
+//     }
   
-    if ( zArray !== null && zcolAsc === false ) {
-      zArray = zArray.map(d => 1 - d);
-    }
+//     if ( zArray !== null && zcolAsc === false ) {
+//       zArray = zArray.map(d => 1 - d);
+//     }
   
-    const scatterFactorMid = 250;
-    const scatterFactorIncrement = 50;
-    const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : spreadSlide === 0 ? scatterFactorMid : spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
+//     const scatterFactorMid = 250;
+//     const scatterFactorIncrement = 50;
+//     const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : spreadSlide === 0 ? scatterFactorMid : spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
   
-    const scratchArray = [];
-    xArray.forEach((item, i) => {
-      const x = item * scatterFactor - scatterFactor / 2;
-      const y = yArray[i] * scatterFactor - scatterFactor / 2;
-      const z = zArray === null ? 0 : zArray[i] * scatterFactor - scatterFactor / 2;
-      scratchArray.push([x,y,z])
-    });
+//     const scratchArray = [];
+//     xArray.forEach((item, i) => {
+//       const x = item * scatterFactor - scatterFactor / 2;
+//       const y = yArray[i] * scatterFactor - scatterFactor / 2;
+//       const z = zArray === null ? 0 : zArray[i] * scatterFactor - scatterFactor / 2;
+//       scratchArray.push([x,y,z])
+//     });
   
-    return scratchArray
+//     return scratchArray
   
+// }
+
+export function makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide) {
+  
+  let xArray = featureScale(data[xcol]);
+  let yArray = featureScale(data[ycol]);
+  let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
+
+  if (xcolAsc === false) {
+    xArray = xArray.map(d => 1 - d);
+  }
+
+  if (ycolAsc === false) {
+    yArray = yArray.map(d => 1 - d);
+  }
+
+  if (zArray !== null && zcolAsc === false) {
+    zArray = zArray.map(d => 1 - d);
+  }
+
+  const scatterFactorMid = 250;
+  const scatterFactorIncrement = 50;
+  const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : 
+                        spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : 
+                        spreadSlide === 0 ? scatterFactorMid : 
+                        spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : 
+                        scatterFactorMid + scatterFactorIncrement * 2;
+
+  const scratchArray = [];
+  xArray.forEach((item, i) => {
+    const x = item * scatterFactor;
+    const y = yArray[i] * scatterFactor;
+    const z = zArray === null ? 0 : zArray[i] * scatterFactor;
+    scratchArray.push([x, y, z])
+  });
+
+  return scratchArray
 }
