@@ -34,7 +34,9 @@ const colorSubstrate = new Color();
 const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year','auc'];
 const groupColorCols = [
     'colorGroupColl','colorGroupMan','colorGroupBran','colorGroupThickWord',
-    'colorGroupGlossWord','colorGroupColorWord','colorGroupTextureWord','radarColor'
+    'colorGroupGlossWord','colorGroupColorWord','colorGroupTextureWord','radarColor',
+    'colorGroupProcessing','colorGroupBackp','colorGroupSurf','colorGroupResin',
+    'colorGroupToner','colorGroupPostcard','colorGroupCirca','colorGroupSbid'
 ];
 
 export {
