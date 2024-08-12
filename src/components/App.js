@@ -1412,19 +1412,27 @@ export default function App() {
   return (
     <div id='app'>
       <div className='controls' id='multiClick'>
-        {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => {setGridMode(false);smallItem && setSmallItem(false)}} >list</button>}
-        {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
-        {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
-        {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
-        <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >format_color_fill</button>
-        <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >texture</button>
-        <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >image</button>
-        <button title='add backprint image to background' className={backprintImage ? 'material-icons active' : 'material-icons'} onClick={() => {setBackprintImage(!backprintImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); packageImage && setPackageImage(false)}} >fingerprint</button>
-        <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false); backprintImage && setBackprintImage(false)}} >radar</button>
-        <button title='Change text length' className='material-icons' onClick={() => setTextLength(textLength => (textLength + 1) % 3)}>short_text</button>
-        <button title='Change font size' className='material-icons' onClick={() => setInfoPanelFontSize(infoPanelFontSize => (infoPanelFontSize % 3) + 1)}>format_size</button>
-        <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
-        <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
+        <div id="panelStructure">
+          {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => {setGridMode(false);smallItem && setSmallItem(false)}} >list</button>}
+          {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
+          {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
+          {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
+        </div>
+        <div id="panelFill">
+          <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >format_color_fill</button>
+          <button title='add paper texture to background' className={texture ? 'material-icons active' : 'material-icons'} onClick={() => {setTexture(!texture); backgroundColor && setBackgroundColor(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >texture</button>
+          <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >image</button>
+          <button title='add backprint image to background' className={backprintImage ? 'material-icons active' : 'material-icons'} onClick={() => {setBackprintImage(!backprintImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); packageImage && setPackageImage(false)}} >fingerprint</button>
+          <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false); backprintImage && setBackprintImage(false)}} >radar</button>
+        </div>
+        <div id="panelText">
+          <button title='change text length' className='material-icons' onClick={() => setTextLength(textLength => (textLength + 1) % 3)}>short_text</button>
+          <button title='change font size' className='material-icons' onClick={() => setInfoPanelFontSize(infoPanelFontSize => (infoPanelFontSize % 3) + 1)}>format_size</button>
+        </div>
+        <div id="panelSelection">
+          <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
+          <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
+        </div>
       </div>
       <div id='infoPanel' className={gridMode ? 'grid' : 'list'}>
         {clickedItems.map((clickedItem,i) => <PanelItem

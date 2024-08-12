@@ -158,7 +158,15 @@ svg {
   left: 4vw;
 }
 
-#multiClick > button {
+#multiClick > div {
+  display: inline-block;
+}
+
+#panelStructure, #panelFill, #panelText {
+  margin-right: 1vw;
+}
+
+#multiClick > div > button {
   font-size: 3vh;
   padding-top: 1.5vh;
 }
@@ -733,6 +741,35 @@ select {
 }
 
 .controls > button.active {
+  background-color: var(--yaledarkgray);
+  color: var(--yalewhite);
+}
+
+.controls > div > button {
+  background-color: transparent;
+  border-color: var(--yalemidlightgray);
+  border-radius: 1vh;
+  border-width: 1px;
+  border-style: solid;
+  outline: none;
+  color: var(--yalemidlightgray);
+  font-size: 2vh;
+  font-weight: 400;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin: 0.25vh;
+  padding: 1vh;
+}
+
+.controls > div > button:hover {
+  background-color: var(--yalewhite);
+  border-color: var(--yalewhite);
+}
+
+.controls > div > button.active {
   background-color: var(--yaledarkgray);
   color: var(--yalewhite);
 }
