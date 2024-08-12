@@ -510,8 +510,7 @@ function PanelItem({
   multiClick,
   glyph,
   groupColors,
-  briefMode,
-  textMode,
+  textLength,
   raisedItem,
   setRaisedItem,
   gridMode,
@@ -696,8 +695,8 @@ function PanelItem({
         </svg>}
       <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
       <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); setPackageImageIndex(0)}} >open_in_full</button>
-      {textMode && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
-        {!briefMode && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
+      {textLength > 0 && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
+        {textLength === 2 && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
           <p>{data['catalog'][clickedItem]==='_' ? '#' : '#' + data['catalog'][clickedItem]}</p>
         </div>}
         <div className='titleBar'>
@@ -705,7 +704,7 @@ function PanelItem({
           <p className={infoPanelFontSize===1 ? 'titleBarSmall bran' : infoPanelFontSize===2 ? 'titleBarMid bran' : 'bran'}>{data['bran'][clickedItem]==='_' ? '' : data['bran'][clickedItem]}</p>
           <p className={infoPanelFontSize===1 ? 'titleBarSmall year' : infoPanelFontSize===2 ? 'titleBarMid year' : 'year'}>{isNaN(data['year'][clickedItem]) ? '' : data['year'][clickedItem]}</p>
         </div>
-        {!briefMode && <div className='infoBar'>
+        {textLength === 2 && <div className='infoBar'>
             {writeInfoArray(clickedItem).map((d,i) => <p className={infoPanelFontSize===1 ? 'boxWordSmall' : infoPanelFontSize===2 ? 'boxWordMid' : 'boxWord'} style={blankInfo ? {color:'transparent'} : !backgroundColor && !texture ? {color:'#969696'} : {color:'var(--yalemidlightgray)'}} key={i}>{d}</p>)}
         </div>}
       </div>}
@@ -892,8 +891,7 @@ export default function App() {
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
   const [gridMode, setGridMode] = useState(false);
-  const [briefMode, setBriefMode] = useState(false);
-  const [textMode, setTextMode] = useState(true);
+  const [textLength, setTextLength] = useState(2);
   const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
   const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
@@ -1423,11 +1421,8 @@ export default function App() {
         <button title='add package image to background' className={packageImage ? 'material-icons active' : 'material-icons'} onClick={() => {setPackageImage(!packageImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >image</button>
         <button title='add backprint image to background' className={backprintImage ? 'material-icons active' : 'material-icons'} onClick={() => {setBackprintImage(!backprintImage); backgroundColor && setBackgroundColor(false); texture && setTexture(false); svgRadar && setSvgRadar(false); packageImage && setPackageImage(false)}} >fingerprint</button>
         <button title='add radar glyph to background' className={svgRadar ? 'material-icons active' : 'material-icons'} onClick={() => {setSvgRadar(!svgRadar); backgroundColor && setBackgroundColor(false); texture && setTexture(false); packageImage && setPackageImage(false); backprintImage && setBackprintImage(false)}} >radar</button>
-        <button title='overlay text' className={textMode ? 'material-icons active' : 'material-icons'} onClick={() => setTextMode(!textMode)} >title</button>
-        <button title='decrease font size' className='material-icons' onClick={() => infoPanelFontSize > 1 && setInfoPanelFontSize(infoPanelFontSize - 1)} >text_fields</button>
-        <button title='increase font size' className='material-icons' onClick={() => infoPanelFontSize < 3 && setInfoPanelFontSize(infoPanelFontSize + 1)} >format_size</button>
-        {briefMode && <button title='switch to verbose mode' className={'material-icons active'} onClick={() => setBriefMode(false)} >notes</button>}
-        {!briefMode && <button title='switch to brief mode' className={'material-icons'} onClick={() => setBriefMode(true)} >short_text</button>}
+        <button title='Change text length' className='material-icons' onClick={() => setTextLength(textLength => (textLength + 1) % 3)}>short_text</button>
+        <button title='Change font size' className='material-icons' onClick={() => setInfoPanelFontSize(infoPanelFontSize => (infoPanelFontSize % 3) + 1)}>format_size</button>
         <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
         <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
       </div>
@@ -1439,8 +1434,7 @@ export default function App() {
                                                multiClick={multiClick}
                                                glyph={glyph}
                                                groupColors={groupColors}
-                                               briefMode={briefMode}
-                                               textMode={textMode}
+                                               textLength={textLength}
                                                raisedItem={raisedItem}
                                                setRaisedItem={setRaisedItem}
                                                gridMode={gridMode}
