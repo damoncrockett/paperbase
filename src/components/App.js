@@ -109,6 +109,7 @@ const textureValCounts = valueCounts(data['textureWord']);
 const glossValCounts = valueCounts(data['glossWord']);
 const manValCounts = valueCounts(data['man']);
 const branValCounts = valueCounts(data['bran']);
+const collValCounts = valueCounts(data['sb']);
 
 const processingValCounts = valueCounts(data['processing']);
 const backpValCounts = valueCounts(data['backp']);
@@ -911,6 +912,7 @@ export default function App() {
     'year':[],
     'man':[],
     'bran':[],
+    'coll':[],
     'thickness':[],
     'thicknessWord':[],
     'dmin':[],
@@ -960,6 +962,7 @@ export default function App() {
   const [filteredGlossFrequencies, setFilteredGlossFrequencies] = useState(glossValCounts);
   const [filteredManFrequencies, setFilteredManFrequencies] = useState(manValCounts);
   const [filteredBranFrequencies, setFilteredBranFrequencies] = useState(branValCounts);
+  const [filteredCollFrequencies, setFilteredCollFrequencies] = useState(collValCounts);
   
   const [filteredProcessingFrequencies, setFilteredProcessingFrequencies] = useState(processingValCounts);
   const [filteredBackpFrequencies, setFilteredBackpFrequencies] = useState(backpValCounts);
@@ -1005,6 +1008,7 @@ export default function App() {
     const filteredGlossValCounts = valueCounts(data['glossWord'].filter((_,i) => workingIdxList.includes(i)));
     const filteredManValCounts = valueCounts(data['man'].filter((_,i) => workingIdxList.includes(i)));
     const filteredBranValCounts = valueCounts(data['bran'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredCollValCounts = valueCounts(data['sb'].filter((_,i) => workingIdxList.includes(i)));
 
     const filteredProcessingValCounts = valueCounts(data['processing'].filter((_,i) => workingIdxList.includes(i)));
     const filteredBackpValCounts = valueCounts(data['backp'].filter((_,i) => workingIdxList.includes(i)));
@@ -1021,6 +1025,7 @@ export default function App() {
     setFilteredGlossFrequencies(filteredGlossValCounts);
     setFilteredManFrequencies(filteredManValCounts);
     setFilteredBranFrequencies(filteredBranValCounts);
+    setFilteredCollFrequencies(filteredCollValCounts);
 
     setFilteredProcessingFrequencies(filteredProcessingValCounts);
     setFilteredBackpFrequencies(filteredBackpValCounts);
@@ -1293,6 +1298,10 @@ export default function App() {
     e.stopPropagation();
     const addMode = e.target.innerText;
 
+    filterIdxList.sort(function(a, b) {
+      return a - b;
+    });
+
     if ( addMode === 'queue' ) {
       setClickedItems(clickedItems => [...clickedItems,...filterIdxList]);
       setInvalidateSignal(!invalidateSignal);
@@ -1312,6 +1321,7 @@ export default function App() {
       'year':[],
       'man':[],
       'bran':[],
+      'coll':[],
       'thickness':[],
       'thicknessWord':[],
       'dmin':[],
@@ -1359,18 +1369,12 @@ export default function App() {
         
         if ( keyCode === 37 ) { // left arrow
           newClickedItemsPositionIndex = clickedItemsPositionIndex - 1;
-          console.log('left arrow');
         } else if ( keyCode === 39 ) { // right arrow
           newClickedItemsPositionIndex = clickedItemsPositionIndex + 1;
-          console.log('right arrow');
         } else if ( keyCode === 38 ) { // up arrow
           newPackageImageIndex = packageImageIndex - 1;
-          console.log('up arrow');
-          console.log(packageImageIndex, newPackageImageIndex);
         } else if ( keyCode === 40 ) { // down arrow
           newPackageImageIndex = packageImageIndex + 1;
-          console.log('down arrow');
-          console.log(packageImageIndex, newPackageImageIndex);
         }
 
         if ( newClickedItemsPositionIndex !== undefined ) {
@@ -1385,7 +1389,7 @@ export default function App() {
         }
       }
 
-        if ( newPackageImageIndex !== undefined ) {
+        if ( newPackageImageIndex !== undefined && detailImageStringState.includes('packages_') ) {
           console.log('new package image index');
           const suffs = data['suffs'][detailImageIndex];
           const suffsArr = suffs.split('|');
@@ -1662,8 +1666,8 @@ export default function App() {
         <button title='close modal' className='material-icons detailScreenRemove' onClick={(e) => {e.stopPropagation(); setDetailScreen(false)}}>cancel</button>
         {clickedItems.length > 1 && <button title='previous panel item' id='previousPanelItem' className='material-icons' onClick={handleDetailScreenNav}>keyboard_arrow_left</button>}
         {clickedItems.length > 1 && <button title='next panel item' id='nextPanelItem' className='material-icons' onClick={handleDetailScreenNav}>keyboard_arrow_right</button>}
-        {packageImage && data['suffs'][detailImageIndex] !== '' && <button title='previous package image' id='previousPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_up</button>}
-        {packageImage && data['suffs'][detailImageIndex] !== '' && <button title='next package image' id='nextPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_down</button>}
+        {detailImageStringState.includes('packages_') && data['suffs'][detailImageIndex] !== '' && <button title='previous package image' id='previousPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_up</button>}
+        {detailImageStringState.includes('packages_') && data['suffs'][detailImageIndex] !== '' && <button title='next package image' id='nextPackageImage' className='material-icons' onClick={handlePackageImages}>keyboard_arrow_down</button>}
         <div id='detailScreenInfoBar'><p>{'#'+data['catalog'][detailImageIndex] + " " + data['man'][detailImageIndex] + " " + data['bran'][detailImageIndex] + " " + data['year'][detailImageIndex]}</p></div>
       </div>}
       <div id='topControls'>
@@ -1807,7 +1811,7 @@ export default function App() {
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={e => {e.stopPropagation; setFilterModal('open')}} >chevron_right</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >REFERENCE COLLECTION</p></div>
-          {[{t:'LML Packages',v:'0'},{t:'LML Sample Books',v:'1'}].map((d,i) => <div key={i} style={{display:'block'}}><button data-cat='sb' data-val={d.v} onClick={handleFilter} className={filterList['sb'].includes(d.v) ? 'filterButtonActive' : 'filterButton'} style={{backgroundColor:'var(--yalemidlightgray)',color:'var(--yalewhite)',display:'inline-block'}} >{d.t}</button></div>)}
+          {Object.keys(collValCounts).sort().map((d,i) => <button key={i} data-cat='sb' data-val={d} onClick={handleFilter} className={filterList['sb'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredCollFrequencies,d)} >{d === '0' ? 'LML Packages' : 'LML Sample Books'}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >YEAR</p></div>
@@ -1853,7 +1857,7 @@ export default function App() {
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >EXPRESSIVENESS</p></div>
-          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='expressiveness' onChangeCommitted={handleSliderFilter} onChange={e => setExpSlide(e.target.value)} defaultValue={[expMin,expMax]} valueLabelDisplay="on" min={expMin} max={expMax} marks={expSlideMarks}/></div>
+          <div className='sliderContainer'><Slider key={sliderKey} color='primary' data-cat='expressiveness' onChangeCommitted={handleSliderFilter} onChange={e => setExpSlide(e.target.value)} defaultValue={[expMin,expMax]} valueLabelDisplay="on" min={expMin} max={expMax} step={0.01} marks={expSlideMarks}/></div>
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >FLUORESCENCE</p></div>

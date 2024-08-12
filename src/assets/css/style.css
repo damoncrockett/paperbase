@@ -705,7 +705,7 @@ select {
   outline: none;
   width: 16vw;
   background-color: transparent;
-  color: var(--yalewhite);
+  color: var(--yalemidlightgray);
 }
 
 .controls > button {
