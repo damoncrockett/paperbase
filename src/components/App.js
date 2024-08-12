@@ -7,6 +7,7 @@ import { Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, sample, set } from 'lodash';
 import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
+import Download from './Download';
 
 console.log(data);
 
@@ -912,7 +913,6 @@ export default function App() {
     'year':[],
     'man':[],
     'bran':[],
-    'coll':[],
     'thickness':[],
     'thicknessWord':[],
     'dmin':[],
@@ -1321,7 +1321,6 @@ export default function App() {
       'year':[],
       'man':[],
       'bran':[],
-      'coll':[],
       'thickness':[],
       'thicknessWord':[],
       'dmin':[],
@@ -1801,6 +1800,7 @@ export default function App() {
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
+        <Download data={data} filterIdxList={filterIdxList} />
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
