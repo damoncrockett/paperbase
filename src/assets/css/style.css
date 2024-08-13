@@ -506,6 +506,14 @@ svg {
   width: 1vw;
 }
 
+#panelCount {
+  position: fixed;
+  right: 1.25vw;
+  bottom: 4vh;
+  font-size: 2vh;
+  font-family: "Archivo";
+}
+
 #filterControls > button {
   float: right;
   font-size: 4vh;

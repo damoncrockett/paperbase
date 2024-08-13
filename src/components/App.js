@@ -1803,6 +1803,7 @@ export default function App() {
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
         <Download data={data} filterIdxList={filterIdxList} />
+        <div id="panelCount">{!filter ? data['catalog'].length : filterIdxList.length}</div>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
