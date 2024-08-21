@@ -171,6 +171,20 @@ svg {
   padding-top: 1.5vh;
 }
 
+#panelSelection {
+  position: relative;
+}
+
+#panelCount {
+  position: absolute;
+  left: 100%;
+  margin-left: 6px;
+  top: 50%;     /* Centers it vertically relative to the parent */
+  transform: translateY(-50%); /* Aligns the center of the element with the top value */
+  font-size: 2vh;
+  font-family: "Archivo";
+}
+
 #infoPanel {
   position: fixed;
   top: 8vh;
@@ -507,17 +521,11 @@ svg {
 }
 
 #filterCount {
-  position: fixed;
-  right: 1.25vw;
-  bottom: 4vh;
-  font-size: 2vh;
-  font-family: "Archivo";
-}
-
-#panelCount {
-  position: fixed;
-  right: 50.5vw;
-  top: 1vh;
+  position: absolute;
+  top: 100%;
+  right: 100%;
+  transform: translateX(-50%);    
+  margin-top: 6px;
   font-size: 2vh;
   font-family: "Archivo";
 }
