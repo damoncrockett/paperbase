@@ -1640,7 +1640,7 @@ export default function App() {
         <button title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>select_all</button>
       </div>
       {detailScreen && <div id='detailScreen' >
-        <a href={detailImageStringState} target="_blank">
+        <a href={detailImageStringState.replace("_2048","")} target="_blank">
             <img id="detailImage" src={detailImageStringState} alt="Detail Image" />
         </a>
         {data['processing'][detailImageIndex] === '1' && <button 
