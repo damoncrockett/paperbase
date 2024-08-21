@@ -714,7 +714,7 @@ function PanelItem({
 
 /*Box Selection-------------------------------------------------------------------*/
 
-function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, clickedItems, setClickedItems, setMultiClick, invalidateSignal, setInvalidateSignal, glyph }) {
+function BoxSelection({ setBoxSelectMode, isSelecting, selectionDivRef, setSelectionBox, setIsSelecting, clickedItems, setClickedItems, setMultiClick, invalidateSignal, setInvalidateSignal, glyph }) {
   const { camera, scene } = useThree();
 
   useEffect(() => {
@@ -850,6 +850,7 @@ function BoxSelection({ isSelecting, selectionDivRef, setSelectionBox, setIsSele
       setClickedItems(updatedClickedItems);
       setInvalidateSignal(!invalidateSignal);
       setIsSelecting(false);
+      setBoxSelectMode(false);
   
       if (selectionDivRef.current) {
         selectionDivRef.current.style.display = 'none';
@@ -1619,6 +1620,7 @@ export default function App() {
           />
           {boxSelectMode && (
             <BoxSelection
+              setBoxSelectMode={setBoxSelectMode}
               isSelecting={isSelecting}
               selectionBox={selectionBox}
               selectionDivRef={selectionDivRef}
