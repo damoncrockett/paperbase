@@ -6,15 +6,14 @@ const keeperKeys = [
     'expressiveness','auc','processing','backp','toner','resin','postcard'
 ]
 
-const Download = ({ data, filterIdxList, filename = 'lml.csv' }) => {
+const Download = ({ data, idxList, etitle, filename = 'lml.csv' }) => {
     const handleDownload = () => {
         // Filter headers to include only keeper keys
         const headers = Object.keys(data).filter(key => keeperKeys.includes(key));
         const csvRows = [headers.join(',')]; // First row as headers
 
-        // Determine indices to use based on filterIdxList
-        const indices = filterIdxList.length > 0 ? filterIdxList : Array.from({ length: data[headers[0]].length }, (_, i) => i);
-
+        const indices = idxList.length > 0 ? idxList : Array.from({ length: data[headers[0]].length }, (_, i) => i);
+    
         // Filter each column's data based on indices
         const filteredData = headers.map(header => (
             indices.map(index => data[header][index])
@@ -57,7 +56,7 @@ const Download = ({ data, filterIdxList, filename = 'lml.csv' }) => {
         document.body.removeChild(link);
     };
 
-    return <button title="Download filtered data as CSV" className="material-icons downloadButton" onClick={handleDownload}>file_download</button>;
+    return <button title={etitle} className="material-icons downloadButton" onClick={handleDownload}>file_download</button>;
 };
 
 export default Download;

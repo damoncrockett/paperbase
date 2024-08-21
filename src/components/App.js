@@ -1432,6 +1432,8 @@ export default function App() {
         <div id="panelSelection">
           <button title='multi-select mode' className={multiClick ? 'material-icons active' : 'material-icons'} onClick={() => setMultiClick(!multiClick)} >done_all</button>
           <button title='clear selection' className='material-icons' onClick={() => {setInvalidateSignal(!invalidateSignal); setClickedItems([]); setRaisedItem(null)}} >delete_sweep</button>
+          <Download data={data} idxList={clickedItems} etitle="download selected data as CSV" />
+          <div id="panelCount">{clickedItems.length === 0 ? data['catalog'].length : clickedItems.length}</div>
         </div>
       </div>
       <div id='infoPanel' className={gridMode ? 'grid' : 'list'}>
@@ -1802,8 +1804,8 @@ export default function App() {
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
-        <Download data={data} filterIdxList={filterIdxList} />
-        <div id="panelCount">{!filter ? data['catalog'].length : filterIdxList.length}</div>
+        <Download data={data} idxList={filterIdxList} etitle="download filtered data as CSV" />
+        <div id="filterCount">{!filter ? data['catalog'].length : filterIdxList.length}</div>
       </div>
       {filterModal!=='closed' && <div id='filterModal' className={filterModal}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}

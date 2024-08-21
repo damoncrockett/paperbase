@@ -506,10 +506,18 @@ svg {
   width: 1vw;
 }
 
-#panelCount {
+#filterCount {
   position: fixed;
   right: 1.25vw;
   bottom: 4vh;
+  font-size: 2vh;
+  font-family: "Archivo";
+}
+
+#panelCount {
+  position: fixed;
+  right: 50.5vw;
+  top: 1vh;
   font-size: 2vh;
   font-family: "Archivo";
 }
