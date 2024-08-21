@@ -8,8 +8,6 @@
   --yalewhite: #f9f9f9;
   --yalelightblue: #63aaff;
   --yaleorange: #bd5319;
-  --filterHighlight: #FF5F1F;
-  --missingColor: #cc4700;
 }
 
 #landing {
@@ -180,9 +178,7 @@ svg {
   left: 100%;
   margin-left: 6px;
   top: 50%;     /* Centers it vertically relative to the parent */
-  transform: translateY(-50%); /* Aligns the center of the element with the top value */
-  font-size: 2vh;
-  font-family: "Archivo";
+  transform: translateY(-35%); /* Aligns the center of the element with the top value */
 }
 
 #infoPanel {
@@ -524,10 +520,19 @@ svg {
   position: absolute;
   top: 100%;
   right: 100%;
-  transform: translateX(-50%);    
+  transform: translateX(-35%);    
   margin-top: 6px;
-  font-size: 2vh;
-  font-family: "Archivo";
+}
+
+.countPrint {
+  font-size: 1.5vh;
+  font-family: "JetBrains Mono";
+  font-weight: 100;
+  border: 1px solid var(--yaledarkgray);
+  color: var(--yalewhite);
+  border-radius: 0.75vh;
+  background-color: transparent;
+  padding: 0.75vh;
 }
 
 #filterControls > button {
