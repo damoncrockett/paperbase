@@ -246,7 +246,7 @@ function Glyphs({
   glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
   group, multiClick, clickedItems, setClickedItems, z, 
   vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, 
-  filter, filterIdxList, invalidateSignal 
+  filter, filterIdxList, invalidateSignal
 }) {
 
   /*
@@ -436,28 +436,28 @@ function Glyphs({
 
   if ( glyph === 'box' ) {
     return (
-      <instancedMesh ref={meshRef} args={[null, null, n]} onClick={handleClick} name={glyphGroup}>
+      <instancedMesh ref={meshRef} args={[null, null, n]} onClick={handleClick} name={glyphGroup} >
         <boxBufferGeometry args={[0.75, 0.75, 0.75]}></boxBufferGeometry>
         <meshStandardMaterial attach="material" />
       </instancedMesh>
     )
   } else if ( glyph === 'exp' ) {
     return (
-      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup}>
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup} >
         <boxBufferGeometry args={[s, s, s]}></boxBufferGeometry>
         <meshStandardMaterial attach="material"/>
       </instancedMesh>
     )
   } else if ( glyph === 'iso' ) {
     return (
-      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup}>
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup} >
         <boxBufferGeometry args={[0.75, 0.75, z]}></boxBufferGeometry>
         <meshStandardMaterial attach="material"/>
       </instancedMesh>
     )
   } else if ( glyph === 'radar' ) {
     return (
-      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup}>
+      <instancedMesh ref={meshRef} args={[null, null, glyphMap[glyphGroup].length]} onClick={handleClick} name={glyphGroup} >
         <bufferGeometry>
           <bufferAttribute
             attachObject={["attributes", "position"]}
@@ -825,6 +825,16 @@ export default function App() {
   const [detailImageIndex, setDetailImageIndex] = useState('');
   const [packageImageIndex, setPackageImageIndex] = useState(0);
   const [invalidateSignal, setInvalidateSignal] = useState(false);
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   // key code constants
   const ALT_KEY = 18;
@@ -1260,7 +1270,7 @@ export default function App() {
 
   return (
     <div id='app'>
-      <div className='controls' id='multiClick'>
+      <div className={isDragging ? 'noPointerEvents controls' : 'controls'} id='multiClick'>
         <div id="panelStructure">
           {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => {setGridMode(false);smallItem && setSmallItem(false)}} >list</button>}
           {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
@@ -1285,7 +1295,7 @@ export default function App() {
           <div title='number of selected items' className='countPrint' id="panelCount">{clickedItems.length === 0 ? data['catalog'].length : clickedItems.length}</div>
         </div>
       </div>
-      <div id='infoPanel' className={gridMode ? 'grid' : 'list'}>
+      <div id='infoPanel' className={isDragging && gridMode ? 'grid noPointerEvents' : !isDragging && gridMode ? 'grid' : isDragging ? 'list noPointerEvents' : 'list'}>
         {clickedItems.map((clickedItem,i) => <PanelItem
                                                clickedItem={clickedItem}
                                                clickedItems={clickedItems}
@@ -1319,8 +1329,12 @@ export default function App() {
                                                />
                                              )}
       </div>
-      <div id='viewpane'>
-        <Canvas dpr={[1, 2]} camera={{ position: [0,0,75], far: 4000 }} frameloop="demand">
+      <div id='viewpane' onMouseDown={handleDragStart} onMouseUp={handleDragEnd}>
+        <Canvas
+          dpr={[1, 2]} 
+          camera={{ position: [0,0,75], far: 4000 }} 
+          frameloop="demand"
+        >
           <color attach="background" args={[0x4a4a4a]} />
           <ambientLight intensity={0.5}/>
           <pointLight position={[0, 0, 135]} intensity={0.5}/>
@@ -1354,6 +1368,8 @@ export default function App() {
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
+                     handleDragStart={handleDragStart}
+                     handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
@@ -1385,6 +1401,8 @@ export default function App() {
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
+                     handleDragStart={handleDragStart}
+                     handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
@@ -1416,6 +1434,8 @@ export default function App() {
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
+                     handleDragStart={handleDragStart}
+                     handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
@@ -1447,6 +1467,8 @@ export default function App() {
                      filter={filter}
                      filterIdxList={filterIdxList}
                      invalidateSignal={invalidateSignal}
+                     handleDragStart={handleDragStart}
+                     handleDragEnd={handleDragEnd}
                      />
           })}
           <OrbitControls
@@ -1486,7 +1508,7 @@ export default function App() {
         </Canvas>
       </div>
       <div ref={selectionDivRef} style={{position: 'absolute', border: '4px dashed #F0F'}}></div>
-      <div className='controls' id='cameraReset'>
+      <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='cameraReset'>
         <button title='reset camera' className={'material-icons'} onClick={() => orbitRef.current.reset()} >flip_camera_ios</button>
         <button title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>select_all</button>
       </div>
@@ -1525,7 +1547,7 @@ export default function App() {
         <div id='detailScreenInfoBar'><p>{'#'+data['catalog'][detailImageIndex] + " " + data['man'][detailImageIndex] + " " + data['bran'][detailImageIndex] + " " + data['year'][detailImageIndex]}</p></div>
       </div>}
       <div id='topControls'>
-        <div className='controls' id='spreadControls'>
+        <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='spreadControls'>
           <Slider
             color='primary'
             onChange={e => setSpreadSlide(e.target.value)}
@@ -1537,7 +1559,7 @@ export default function App() {
             max={2}
           />
         </div>
-        <div className='controls' id='glyphControls'>
+        <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='glyphControls'>
           <button title='box glyph' onClick={() => setGlyph('box')} className={glyph === 'box' ? 'material-icons active' : 'material-icons' }>square</button>
           <button title='expressiveness glyph' onClick={() => setGlyph('exp')} className={glyph === 'exp' ? 'material-icons active' : 'material-icons' }>aspect_ratio</button>
           <button title='iso glyph' onClick={() => setGlyph('iso')} className={glyph === 'iso' ? 'material-icons active' : 'material-icons' }>line_weight</button>
@@ -1545,7 +1567,7 @@ export default function App() {
         </div>
       </div>
       <div id='bottomControls'>
-        <div className='controls' id='axisMenus'>
+        <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='axisMenus'>
           <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
             <option value='year'>year</option>
             <option value='thickness'>thickness</option>
@@ -1644,21 +1666,21 @@ export default function App() {
           <button title='group color shuffle' onClick={() => setGroupColors(makeColorArray())} className={'material-icons'}>shuffle</button>
         </div>
       </div>
-      <div className='controls' id='plottypeControls'>
+      <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='plottypeControls'>
         <button title='grid montage' className={model === 'grid' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('grid')} >apps</button>
         <button title='histogram' className={model === 'hist' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('hist')} >bar_chart</button>
         <button title='scatter plot' className={model === 'scatter' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('scatter')} >grain</button>
         <button title='cluster plot' className={model === 'gep' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('gep')} >bubble_chart</button>
         <button title='texture map' className={model === 'tmap' ? 'material-icons active' : 'material-icons'} onClick={() => setModel('tmap')} >map</button>
       </div>
-      <div className='controls' id='filterControls'>
+      <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='filterControls'>
         {filterModal!=='closed' && <button title='close filter window' className={filter ? 'material-icons active' : 'material-icons'} style={{backgroundColor: filter ? 'var(--yaledarkgray)' : 'var(--yalewhite)'}} onClick={() => {setFilterModal('closed');setManExpand(false);setBranExpand(false)}} >close</button>}
         {filterModal==='closed' && <button title='open filter window' className={filter ? 'material-icons active' : 'material-icons'} onClick={() => setFilterModal('open')} >filter_alt</button>}
         <button title='remove all filters' className='material-icons' onClick={removeAllFilters} >filter_alt_off</button>
         <Download data={data} idxList={filterIdxList} etitle="download filtered data as CSV" />
         <div title='number of filtered items' className='countPrint' id="filterCount">{!filter ? data['catalog'].length : filterIdxList.length}</div>
       </div>
-      {filterModal!=='closed' && <div id='filterModal' className={filterModal}>
+      {filterModal!=='closed' && <div id='filterModal' className={isDragging ? `noPointerEvents ${filterModal}` : filterModal}>
         {filterModal==='open' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
         {filterModal==='expanded' && <button title='replace selection with filter' className='material-icons replaceFilterWithSelection' style={{right:'56vw'}} onClick={handleFilterToSelection} >open_in_new</button>}
         {filterModal==='open' && <button title='add filter to selection' className='material-icons addFilterToSelection' style={{right:'28vw'}} onClick={handleFilterToSelection} >queue</button>}

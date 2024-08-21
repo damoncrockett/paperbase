@@ -145,6 +145,10 @@ svg {
   margin-right: 5vw;
 }
 
+.noPointerEvents {
+  pointer-events: none;
+}
+
 #viewpane {
   width: 100vw;
   height: 100vh;
