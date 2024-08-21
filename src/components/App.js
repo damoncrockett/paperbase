@@ -313,7 +313,11 @@ function Glyphs({
 
     if ( continuousColorCols.includes(group) ) {
       const baseData = data[group];
-      colorVals = valToColor(baseData);
+      if ( group === 'auc' ) {
+        colorVals = valToColor(baseData, true)
+      } else {
+        colorVals = valToColor(baseData);
+      }
     } else {
       colorVals = data[group];
       if ( group === 'dmaxHex') {

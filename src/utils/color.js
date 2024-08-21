@@ -2,6 +2,7 @@ import { Color } from 'three';
 import { rankTransform } from '../utils/stats';
 import { max, min } from 'lodash';
 import { missingDminHexIdxs } from '../components/App';
+import chroma from "chroma-js";
 
 /* 
 Colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgorical.
@@ -28,7 +29,14 @@ export function makeColorArray() {
 }
 
 const highlightColor = 0xff00ff;
-const missingColor = 0xcc4700;
+
+const missingColor = new Color();
+missingColor.set(0xbd5319);
+const missingOffsetL = -0.35;
+const missingOffsetH = 0;
+const missingOffsetS = 0;
+missingColor.offsetHSL(missingOffsetH, missingOffsetS, missingOffsetL);
+
 const missingColorTone = 0xffffff;
 const colorSubstrate = new Color();
 const continuousColorCols = ['thickness','gloss','roughness','expressiveness','year','auc'];
@@ -47,7 +55,7 @@ export {
     groupColorCols,
 };
                    
-export function valToColor(arr) {
+export function valToColor(arr, fluorescence = false) {
   
   //arr = arr.map(d => parseFloat(d)); // empty strings and underscores are converted to NaN
   arr = arr.map(d => d);
@@ -59,9 +67,19 @@ export function valToColor(arr) {
   const arrrange = arrmax - arrmin;
   
   const arrnorm = arrRanked.map(d => (d - arrmin) / arrrange);
-  const arrhsl = arrnorm.map(d => isNaN(d) ? missingColor : "hsl(0,0%," + parseInt(d*100).toString() + "%)");
 
-  return arrhsl
+  let arrcolor;
+  if ( !fluorescence ) {
+    arrcolor = arrnorm.map(d => isNaN(d) ? missingColor : chroma.scale('viridis')(d).hex());
+  } else {
+    const hue = 215;
+    const saturation = 90;
+    const maxLightness = 60;
+    arrcolor = arrnorm.map(d => isNaN(d) ? missingColor : `hsl(${hue},${saturation}%,${parseInt(d * maxLightness).toString()}%)`);  
+  }
+
+  return arrcolor
+
 }
 
 export function adjustLightness(color, targetDarkness, weight, sOffset) {
@@ -95,8 +113,6 @@ export function applyFilterColors( globalIndex, colorSubstrate, filter, group, f
           if ( missingDminHexIdxs.includes(globalIndex) ) {
             colorSubstrate.offsetHSL(0, 0, grayOffsetL); // gray
           } else {
-            //colorSubstrate.set(0x4a4a4a);
-            //colorSubstrate.offsetHSL(0, 0, grayOffsetL);
             adjustLightness(colorSubstrate, 0.05, 0.99, -0.2);
           }
         } 
@@ -115,9 +131,14 @@ export function applyFilterColors( globalIndex, colorSubstrate, filter, group, f
           colorSubstrate.offsetHSL(0, 0, grayOffsetL);
         }
       } else if ( continuousColorCols.includes(group) ) {
-        if ( filterIdxList.includes(globalIndex) ) {
-          colorSubstrate.set(0x63aaff);
-          colorSubstrate.offsetHSL(0, 0.2, -0.2);
+        if ( !filterIdxList.includes(globalIndex) ) {
+          if ( group !== 'auc' ) {
+            adjustLightness(colorSubstrate, 0.05, 0.99, -0.2);
+          } else {
+            colorSubstrate.set(0x4a4a4a);
+            colorSubstrate.offsetHSL(0, 0, grayOffsetL);
+          }
+          
         }
       } 
     } else {

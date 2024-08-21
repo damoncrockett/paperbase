@@ -1693,6 +1693,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chroma-js@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "chroma-js@npm:3.0.0"
+  checksum: 10/ea0af62fe25dc46391adc7dec0c6b4b3a728fa5eb718005cb4568eb1c6ec0b2eb157ed961e5b3675bb9be4d2e3710697c3d816cba125326f6736f16c30851786
+  languageName: node
+  linkType: hard
+
 "chrome-trace-event@npm:^1.0.2":
   version: 1.0.3
   resolution: "chrome-trace-event@npm:1.0.3"
@@ -4030,6 +4037,7 @@ __metadata:
     "@react-three/fiber": "npm:^7.0.26"
     buble: "npm:^0.20.0"
     buble-loader: "npm:^0.5.1"
+    chroma-js: "npm:^3.0.0"
     css-loader: "npm:^6.6.0"
     d3-array: "npm:^3.1.1"
     d3-selection: "npm:^3.0.0"
