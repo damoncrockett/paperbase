@@ -29,13 +29,16 @@ export function makeColorArray() {
 }
 
 const highlightColor = 0xff00ff;
-
 const missingColor = new Color();
-missingColor.set(0xbd5319);
+missingColor.set(0x4a4a4a);
+missingColor.offsetHSL(0, 0, -0.2);
+
+const missingColorFluorescence = new Color();
+missingColorFluorescence.set(0xbd5319);
 const missingOffsetL = -0.35;
 const missingOffsetH = 0;
 const missingOffsetS = 0;
-missingColor.offsetHSL(missingOffsetH, missingOffsetS, missingOffsetL);
+missingColorFluorescence.offsetHSL(missingOffsetH, missingOffsetS, missingOffsetL);
 
 const missingColorTone = 0xffffff;
 const colorSubstrate = new Color();
@@ -75,7 +78,7 @@ export function valToColor(arr, fluorescence = false) {
     const hue = 215;
     const saturation = 90;
     const maxLightness = 60;
-    arrcolor = arrnorm.map(d => isNaN(d) ? missingColor : `hsl(${hue},${saturation}%,${parseInt(d * maxLightness).toString()}%)`);  
+    arrcolor = arrnorm.map(d => isNaN(d) ? missingColorFluorescence : `hsl(${hue},${saturation}%,${parseInt(d * maxLightness).toString()}%)`);  
   }
 
   return arrcolor

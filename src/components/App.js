@@ -13,14 +13,12 @@ import BoxSelection from './BoxSelection';
 
 console.log(data);
 
-const missingDminHexIdxs = [];
+export const missingDminHexIdxs = [];
 data['dminHex'].forEach((d,i) => {
   if ( d === '' ) {
     missingDminHexIdxs.push(i);
   }
 });
-
-export { missingDminHexIdxs };
 
 import { valueCounts, rankTransform } from '../utils/stats';
 
