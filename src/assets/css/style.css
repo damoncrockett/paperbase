@@ -354,9 +354,10 @@ svg {
   border: none;
   background: none;
   color: var(--yalemidlightgray);
+  cursor: pointer;
 }
 
-.detailScreenProcessingInstructions {
+.detailScreenLUX {
   font-size: 6vh;
   position: fixed;
   top: 4vh;
@@ -365,9 +366,10 @@ svg {
   border: none;
   background: none;
   color: var(--yalemidlightgray);
+  cursor: pointer;
 }
 
-.detailScreenBackprint {
+.detailScreenProcessingInstructions {
   font-size: 6vh;
   position: fixed;
   top: 12vh;
@@ -376,6 +378,19 @@ svg {
   border: none;
   background: none;
   color: var(--yalemidlightgray);
+  cursor: pointer;
+}
+
+.detailScreenBackprint {
+  font-size: 6vh;
+  position: fixed;
+  top: 20vh;
+  left: 4vh;
+  z-index: 16;
+  border: none;
+  background: none;
+  color: var(--yalemidlightgray);
+  cursor: pointer;
 }
 
 #previousPanelItem {

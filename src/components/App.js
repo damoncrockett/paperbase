@@ -1225,6 +1225,17 @@ export default function App() {
         <a href={detailImageStringState.replace("_2048","")} target="_blank">
             <img id="detailImage" src={detailImageStringState} alt="Detail Image" />
         </a>
+        <button 
+          title='open LUX record in new tab'
+          className='material-icons detailScreenLUX'
+          onClick={(e) => {
+            e.stopPropagation();
+            const luxURL = "https://lux.collections.yale.edu/view/group/6e15bc74-fc7c-425f-9ae0-0123c1adf405";
+            window.open(luxURL, '_blank');
+          }}
+          >
+            flare
+        </button>
         {data['processing'][detailImageIndex] === '1' && <button 
           title='open processing instructions in new tab' 
           className='material-icons detailScreenProcessingInstructions' 
