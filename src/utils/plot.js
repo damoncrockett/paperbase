@@ -1,6 +1,7 @@
-import { orderBy, max } from "lodash";
+import { orderBy, min, max } from "lodash";
 import { bin } from "d3-array";
 import { featureScale, getStandardDeviation } from "./stats";
+import { scaleLinear } from "d3-scale";
 
 function gridCoords( n, ncol ) {
 
@@ -88,65 +89,95 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
     return scratchArray.map(d => d.pos)
 }
   
-// export function makeScatter( data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide ) {
-    
-//     let xArray = featureScale(data[xcol]);
-//     let yArray = featureScale(data[ycol]);
-//     let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
-  
-//     if ( xcolAsc === false ) {
-//       xArray = xArray.map(d => 1 - d);
-//     }
-  
-//     if ( ycolAsc === false ) {
-//       yArray = yArray.map(d => 1 - d);
-//     }
-  
-//     if ( zArray !== null && zcolAsc === false ) {
-//       zArray = zArray.map(d => 1 - d);
-//     }
-  
-//     const scatterFactorMid = 250;
-//     const scatterFactorIncrement = 50;
-//     const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : spreadSlide === 0 ? scatterFactorMid : spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : scatterFactorMid + scatterFactorIncrement * 2;
-  
-//     const scratchArray = [];
-//     xArray.forEach((item, i) => {
-//       const x = item * scatterFactor - scatterFactor / 2;
-//       const y = yArray[i] * scatterFactor - scatterFactor / 2;
-//       const z = zArray === null ? 0 : zArray[i] * scatterFactor - scatterFactor / 2;
-//       scratchArray.push([x,y,z])
-//     });
-  
-//     return scratchArray
-  
-// }
+export function makeScatter(
+  data, 
+  xcol, 
+  xcolAsc, 
+  ycol, 
+  ycolAsc, 
+  zcol, 
+  zcolAsc, 
+  spreadSlide,
+  scatterFactorMid,
+  scatterFactorIncrement,
+  axisTicks,
+  axisTickFontSize
+) {
 
-export function makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide) {
+  const xraw = data[xcol];
+  const yraw = data[ycol];
+  const zraw = zcol === 'none' ? null : data[zcol];
   
-  let xArray = featureScale(data[xcol]);
-  let yArray = featureScale(data[ycol]);
-  let zArray = zcol === 'none' ? null : featureScale(data[zcol]);
+  let xArray = featureScale(xraw);
+  let yArray = featureScale(yraw);
+  let zArray = zcol === 'none' ? null : featureScale(zraw);
 
-  if (xcolAsc === false) {
-    xArray = xArray.map(d => 1 - d);
+  // if (xcolAsc === false) {
+  //   xArray = xArray.map(d => 1 - d);
+  // }
+
+  // if (ycolAsc === false) {
+  //   yArray = yArray.map(d => 1 - d);
+  // }
+
+  // if (zArray !== null && zcolAsc === false) {
+  //   zArray = zArray.map(d => 1 - d);
+  // }
+
+  const scatterFactor = scatterFactorMid + scatterFactorIncrement * spreadSlide;
+  
+  const minx = min(xraw);
+  const maxx = max(xraw);
+  const rangex = maxx - minx;
+
+  const miny = min(yraw);
+  const maxy = max(yraw);
+  const rangey = maxy - miny;
+
+  const xScale = scaleLinear().domain([minx, maxx]); 
+  const xticks = xScale.ticks(axisTicks);
+
+  const xTickArray = [];
+  xticks.forEach((item, i) => {
+    xTickArray.push(
+      {
+        'pos': [(item - minx) * scatterFactor / rangex, -1 * axisTickFontSize, axisTickFontSize],
+        'label': item
+      }
+    )
+  });
+
+  const yScale = scaleLinear().domain([miny, maxy]);
+  const yticks = yScale.ticks(axisTicks);
+
+  const yTickArray = [];
+  yticks.forEach((item, i) => {
+    yTickArray.push(
+      {
+        'pos': [-1 * axisTickFontSize, (item - miny) * scatterFactor / rangey, axisTickFontSize],
+        'label': item
+      }
+    )
+  });
+
+  let zTickArray = [];
+  if (zArray !== null) {
+    const minz = min(zraw);
+    const maxz = max(zraw);
+    const rangez = maxz - minz;
+
+    const zScale = scaleLinear().domain([minz, maxz]);
+    const zticks = zScale.ticks(axisTicks);
+
+    zticks.forEach((item, i) => {
+      zTickArray.push(
+        {
+          'pos': [-1 * axisTickFontSize, -1 * axisTickFontSize, (item - minz) * scatterFactor / rangez],
+          'label': item
+        }
+      )
+    });
   }
-
-  if (ycolAsc === false) {
-    yArray = yArray.map(d => 1 - d);
-  }
-
-  if (zArray !== null && zcolAsc === false) {
-    zArray = zArray.map(d => 1 - d);
-  }
-
-  const scatterFactorMid = 250;
-  const scatterFactorIncrement = 50;
-  const scatterFactor = spreadSlide === -2 ? scatterFactorMid - scatterFactorIncrement * 2 : 
-                        spreadSlide === -1 ? scatterFactorMid - scatterFactorIncrement : 
-                        spreadSlide === 0 ? scatterFactorMid : 
-                        spreadSlide === 1 ? scatterFactorMid + scatterFactorIncrement : 
-                        scatterFactorMid + scatterFactorIncrement * 2;
 
   const scratchArray = [];
   xArray.forEach((item, i) => {
@@ -156,5 +187,6 @@ export function makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, s
     scratchArray.push([x, y, z])
   });
 
-  return scratchArray
+  return { scratchArray, xTickArray, yTickArray, zTickArray }
+
 }

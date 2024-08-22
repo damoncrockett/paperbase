@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { Object3D, MOUSE, DoubleSide } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
-import { max, min, cloneDeep, intersection } from 'lodash';
+import { max, min, cloneDeep, intersection, set } from 'lodash';
 import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
 import PanelItem from './PanelItem';
@@ -166,14 +166,20 @@ function updatePositions({ globalIndicesForThisMesh, mesh }) {
 
 /*instancedMesh---------------------------------------------------------------*/
 
+const scatterFactorMid = 250;
+const scatterFactorIncrement = 50;
+const axisTicks = 10;
+const axisTickFontSize = 3;
+
 const meshList = {};
 let targetCoords;
 
 function Glyphs({ 
   glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
   group, multiClick, clickedItems, setClickedItems, z, 
-  vertices, normals, itemSize, s, spreadSlide, groupColors, raisedItem, setRaisedItem, 
-  filter, filterIdxList, invalidateSignal
+  vertices, normals, itemSize, s, spreadSlide, scatterFactorMid, scatterFactorIncrement, 
+  axisTicks, setXTicks, setYTicks, setZTicks, axisTickFontSize,
+  groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal
 }) {
 
   /*
@@ -191,25 +197,46 @@ function Glyphs({
   const { invalidate } = useThree();
 
   useLayoutEffect(() => {
+    
     if ( model === 'grid' ) {
+
       targetCoords = makeGrid(data, n, xcol, xcolAsc, spreadSlide);
+
     } else if ( model === 'hist' ) {
+
       const columnsPerBin = xcol === 'year' ? 3 : 1;
       targetCoords = makeHist(data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, columnsPerBin);
+
     } else if ( model === 'scatter' ) {
-      targetCoords = makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide);
+      
+      const { scratchArray, xTickArray, yTickArray, zTickArray } = makeScatter(data, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide, scatterFactorMid, scatterFactorIncrement, axisTicks, axisTickFontSize);
+      
+      targetCoords = scratchArray;
+      setXTicks(xTickArray);
+      setYTicks(yTickArray);
+
+      if ( zcol !== 'none' ) {
+        setZTicks(zTickArray);
+      }
+
     } else if ( model === 'gep' ) {
+
       let gepCoords = spreadSlide === -2 ? 'gep100' : spreadSlide === -1 ? 'gep150' : spreadSlide === 0 ? 'gep200' : spreadSlide === 1 ? 'gep250' : 'gep300';
       targetCoords = cloneDeep(data[gepCoords]); 
+
     } else if ( model === 'tmap' ) {
+
       targetCoords = cloneDeep(data['tmap']); 
+
     }
 
     if ( raisedItem !== null ) {
+
       targetCoords[raisedItem][2] = 2
+
     }
 
-  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide, raisedItem])
+  }, [model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, spreadSlide, raisedItem, axisTicks])
 
   useSpring({
     to: { animationProgress: 1 },
@@ -442,6 +469,9 @@ export default function App() {
   const [ycolAsc, setYcolAsc] = useState(true);
   const [zcolAsc, setZcolAsc] = useState(true);
   const [group, setGroup] = useState('dminHex');
+  const [xTicks, setXTicks] = useState(null);
+  const [yTicks, setYTicks] = useState(null);
+  const [zTicks, setZTicks] = useState(null);
   
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
@@ -974,6 +1004,12 @@ export default function App() {
   }
 },[detailScreen, detailImageIndex, packageImageIndex])
 
+useEffect(() => {
+  if ( zcol === 'none' ) {
+    setZTicks(null);
+  }
+} ,[zcol]);
+
   return (
     <div id='app'>
       <div className={isDragging ? 'noPointerEvents controls' : 'controls'} id='multiClick'>
@@ -1050,135 +1086,200 @@ export default function App() {
           {model === 'scatter' && <axesHelper args={[1000]} />}
           {glyph==='box' && boxGroupArray.map((d,i) => {
             return <Glyphs
-                     key={i}
-                     glyphMap={boxMap}
-                     glyphGroup={d}
-                     glyph={glyph}
-                     model={model}
-                     xcol={xcol}
-                     xcolAsc={xcolAsc}
-                     ycol={ycol}
-                     ycolAsc={ycolAsc}
-                     zcol={zcol}
-                     zcolAsc={zcolAsc}
-                     group={group}
-                     multiClick={multiClick}
-                     clickedItems={clickedItems}
-                     setClickedItems={setClickedItems}
-                     z={null}
-                     vertices={null}
-                     normals={null}
-                     itemSize={null}
-                     s={null}
-                     spreadSlide={spreadSlide}
-                     groupColors={groupColors}
-                     raisedItem={raisedItem}
-                     setRaisedItem={setRaisedItem}
-                     filter={filter}
-                     filterIdxList={filterIdxList}
-                     invalidateSignal={invalidateSignal}
-                     handleDragStart={handleDragStart}
-                     handleDragEnd={handleDragEnd}
+                      key={i}
+                      glyphMap={boxMap}
+                      glyphGroup={d}
+                      glyph={glyph}
+                      model={model}
+                      xcol={xcol}
+                      xcolAsc={xcolAsc}
+                      ycol={ycol}
+                      ycolAsc={ycolAsc}
+                      zcol={zcol}
+                      zcolAsc={zcolAsc}
+                      group={group}
+                      multiClick={multiClick}
+                      clickedItems={clickedItems}
+                      setClickedItems={setClickedItems}
+                      z={null}
+                      vertices={null}
+                      normals={null}
+                      itemSize={null}
+                      s={null}
+                      spreadSlide={spreadSlide}
+                      scatterFactorMid={scatterFactorMid}
+                      scatterFactorIncrement={scatterFactorIncrement}
+                      axisTicks={axisTicks}
+                      setXTicks={setXTicks}
+                      setYTicks={setYTicks}
+                      setZTicks={setZTicks}
+                      axisTickFontSize={axisTickFontSize}
+                      groupColors={groupColors}
+                      raisedItem={raisedItem}
+                      setRaisedItem={setRaisedItem}
+                      filter={filter}
+                      filterIdxList={filterIdxList}
+                      invalidateSignal={invalidateSignal}
+                      handleDragStart={handleDragStart}
+                      handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='exp' && expressivenessGroupArray.map((d,i) => {
             return <Glyphs
-                     key={i}
-                     glyphMap={expressivenessMap}
-                     glyphGroup={d}
-                     glyph={glyph}
-                     model={model}
-                     xcol={xcol}
-                     xcolAsc={xcolAsc}
-                     ycol={ycol}
-                     ycolAsc={ycolAsc}
-                     zcol={zcol}
-                     zcolAsc={zcolAsc}
-                     group={group}
-                     multiClick={multiClick}
-                     clickedItems={clickedItems}
-                     setClickedItems={setClickedItems}
-                     z={null}
-                     vertices={null}
-                     normals={null}
-                     itemSize={null}
-                     s={exprStringToFloat(d)}
-                     spreadSlide={spreadSlide}
-                     groupColors={groupColors}
-                     raisedItem={raisedItem}
-                     setRaisedItem={setRaisedItem}
-                     filter={filter}
-                     filterIdxList={filterIdxList}
-                     invalidateSignal={invalidateSignal}
-                     handleDragStart={handleDragStart}
-                     handleDragEnd={handleDragEnd}
+                      key={i}
+                      glyphMap={expressivenessMap}
+                      glyphGroup={d}
+                      glyph={glyph}
+                      model={model}
+                      xcol={xcol}
+                      xcolAsc={xcolAsc}
+                      ycol={ycol}
+                      ycolAsc={ycolAsc}
+                      zcol={zcol}
+                      zcolAsc={zcolAsc}
+                      group={group}
+                      multiClick={multiClick}
+                      clickedItems={clickedItems}
+                      setClickedItems={setClickedItems}
+                      z={null}
+                      vertices={null}
+                      normals={null}
+                      itemSize={null}
+                      s={exprStringToFloat(d)}
+                      spreadSlide={spreadSlide}
+                      scatterFactorMid={scatterFactorMid}
+                      scatterFactorIncrement={scatterFactorIncrement}
+                      axisTicks={axisTicks}
+                      setXTicks={setXTicks}
+                      setYTicks={setYTicks}
+                      setZTicks={setZTicks}
+                      axisTickFontSize={axisTickFontSize}
+                      groupColors={groupColors}
+                      raisedItem={raisedItem}
+                      setRaisedItem={setRaisedItem}
+                      filter={filter}
+                      filterIdxList={filterIdxList}
+                      invalidateSignal={invalidateSignal}
+                      handleDragStart={handleDragStart}
+                      handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='iso' && isoGroupArray.map((d,i) => {
             return <Glyphs
-                     key={i}
-                     glyphMap={isoMap}
-                     glyphGroup={d}
-                     glyph={glyph}
-                     model={model}
-                     xcol={xcol}
-                     xcolAsc={xcolAsc}
-                     ycol={ycol}
-                     ycolAsc={ycolAsc}
-                     zcol={zcol}
-                     zcolAsc={zcolAsc}
-                     group={group}
-                     multiClick={multiClick}
-                     clickedItems={clickedItems}
-                     setClickedItems={setClickedItems}
-                     z={zArray[i]}
-                     vertices={null}
-                     normals={null}
-                     itemSize={null}
-                     s={null}
-                     spreadSlide={spreadSlide}
-                     groupColors={groupColors}
-                     raisedItem={raisedItem}
-                     setRaisedItem={setRaisedItem}
-                     filter={filter}
-                     filterIdxList={filterIdxList}
-                     invalidateSignal={invalidateSignal}
-                     handleDragStart={handleDragStart}
-                     handleDragEnd={handleDragEnd}
+                      key={i}
+                      glyphMap={isoMap}
+                      glyphGroup={d}
+                      glyph={glyph}
+                      model={model}
+                      xcol={xcol}
+                      xcolAsc={xcolAsc}
+                      ycol={ycol}
+                      ycolAsc={ycolAsc}
+                      zcol={zcol}
+                      zcolAsc={zcolAsc}
+                      group={group}
+                      multiClick={multiClick}
+                      clickedItems={clickedItems}
+                      setClickedItems={setClickedItems}
+                      z={zArray[i]}
+                      vertices={null}
+                      normals={null}
+                      itemSize={null}
+                      s={null}
+                      spreadSlide={spreadSlide}
+                      scatterFactorMid={scatterFactorMid}
+                      scatterFactorIncrement={scatterFactorIncrement}
+                      axisTicks={axisTicks}
+                      setXTicks={setXTicks}
+                      setYTicks={setYTicks}
+                      setZTicks={setZTicks}
+                      axisTickFontSize={axisTickFontSize}
+                      groupColors={groupColors}
+                      raisedItem={raisedItem}
+                      setRaisedItem={setRaisedItem}
+                      filter={filter}
+                      filterIdxList={filterIdxList}
+                      invalidateSignal={invalidateSignal}
+                      handleDragStart={handleDragStart}
+                      handleDragEnd={handleDragEnd}
                      />
           })}
           {glyph==='radar' && radarGroupArray.map((d,i) => {
             return <Glyphs
-                     key={i}
-                     glyphMap={radarMap}
-                     glyphGroup={d}
-                     glyph={glyph}
-                     model={model}
-                     xcol={xcol}
-                     xcolAsc={xcolAsc}
-                     ycol={ycol}
-                     ycolAsc={ycolAsc}
-                     zcol={zcol}
-                     zcolAsc={zcolAsc}
-                     group={group}
-                     multiClick={multiClick}
-                     clickedItems={clickedItems}
-                     setClickedItems={setClickedItems}
-                     z={null}
-                     vertices={radarVertices(d)}
-                     normals={radarNormals(d)}
-                     itemSize={itemSize}
-                     s={null}
-                     spreadSlide={spreadSlide}
-                     groupColors={groupColors}
-                     raisedItem={raisedItem}
-                     setRaisedItem={setRaisedItem}
-                     filter={filter}
-                     filterIdxList={filterIdxList}
-                     invalidateSignal={invalidateSignal}
-                     handleDragStart={handleDragStart}
-                     handleDragEnd={handleDragEnd}
+                      key={i}
+                      glyphMap={radarMap}
+                      glyphGroup={d}
+                      glyph={glyph}
+                      model={model}
+                      xcol={xcol}
+                      xcolAsc={xcolAsc}
+                      ycol={ycol}
+                      ycolAsc={ycolAsc}
+                      zcol={zcol}
+                      zcolAsc={zcolAsc}
+                      group={group}
+                      multiClick={multiClick}
+                      clickedItems={clickedItems}
+                      setClickedItems={setClickedItems}
+                      z={null}
+                      vertices={radarVertices(d)}
+                      normals={radarNormals(d)}
+                      itemSize={itemSize}
+                      s={null}
+                      spreadSlide={spreadSlide}
+                      scatterFactorMid={scatterFactorMid}
+                      scatterFactorIncrement={scatterFactorIncrement}
+                      axisTicks={axisTicks}
+                      setXTicks={setXTicks}
+                      setYTicks={setYTicks}
+                      setZTicks={setZTicks}
+                      axisTickFontSize={axisTickFontSize}
+                      groupColors={groupColors}
+                      raisedItem={raisedItem}
+                      setRaisedItem={setRaisedItem}
+                      filter={filter}
+                      filterIdxList={filterIdxList}
+                      invalidateSignal={invalidateSignal}
+                      handleDragStart={handleDragStart}
+                      handleDragEnd={handleDragEnd}
                      />
+          })}
+          {model === 'scatter' && xTicks && xTicks.map((d,i) => {
+            return  <Text
+                      key={i}
+                      position={d.pos}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      > 
+                      {d.label}
+                    </Text>
+          })}
+          {model === 'scatter' && yTicks && yTicks.map((d,i) => {
+            return  <Text
+                      key={i}
+                      position={d.pos}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      > 
+                      {d.label}
+                    </Text>
+          })}
+          {model === 'scatter' && zTicks && zTicks.map((d,i) => {
+            return  <Text
+                      key={i}
+                      position={d.pos}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      rotation={[0,Math.PI / 2,0]}
+                      > 
+                      {d.label}
+                    </Text>
           })}
           <OrbitControls
             ref={orbitRef}
