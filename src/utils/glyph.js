@@ -1,5 +1,76 @@
-import { valueCounts } from "./stats";
+import { valueCounts, uScale } from "./stats";
 import { orderBy } from "lodash";
+import { max, min } from 'lodash';
+
+// Radar used in InfoPanel, drawn by d3 instead of webGL
+
+function getUniverse( dataU ) {
+  return [
+      min(dataU['dmin']),
+      max(dataU['dmin']),
+      min(dataU['thickness']),
+      max(dataU['thickness']),
+      min(dataU['roughness']),
+      max(dataU['roughness']),
+      min(dataU['gloss']),
+      max(dataU['gloss'])
+    ]
+}
+
+const checkNaN = d => !isNaN(d);
+
+export function polygonPoints( dataU, clickedItem, svgSide ) {
+
+  let p1,p2,p3,p4;
+
+  p1 = dataU['dmin'][clickedItem];
+  p2 = dataU['thickness'][clickedItem];
+  p3 = dataU['roughness'][clickedItem];
+  p4 = dataU['gloss'][clickedItem];
+
+  const universe = getUniverse( dataU );
+
+  p1 = uScale(universe[0],universe[1],p1);
+  p2 = uScale(universe[2],universe[3],p2);
+  p3 = uScale(universe[4],universe[5],p3);
+  p4 = 1 - uScale(universe[6],universe[7],p4);
+
+  const zeroPoint = svgSide / 2;
+
+  // top (color)
+  const p1x = zeroPoint;
+  const p1y = zeroPoint - zeroPoint * p1;
+  // left (thickness)
+  const p2x = zeroPoint - zeroPoint * p2 ;
+  const p2y = zeroPoint;
+  // bottom (roughness)
+  const p3x = zeroPoint;
+  const p3y = zeroPoint + zeroPoint * p3;
+  // right (matte-ness)
+  const p4x = zeroPoint + zeroPoint * p4;
+  const p4y = zeroPoint;
+
+  const polygonPointList = [];
+  if ( [p1x,p1y].every(checkNaN) ) {
+    polygonPointList.push(p1x.toString()+','+p1y.toString());
+  }
+
+  if ( [p2x,p2y].every(checkNaN) ) {
+    polygonPointList.push(p2x.toString()+','+p2y.toString());
+  }
+
+  if ( [p3x,p3y].every(checkNaN) ) {
+    polygonPointList.push(p3x.toString()+','+p3y.toString());
+  }
+
+  if ( [p4x,p4y].every(checkNaN) ) {
+    polygonPointList.push(p4x.toString()+','+p4y.toString());
+  }
+
+  const s = polygonPointList.join(' ');
+
+  return s
+}
 
 // for making integer labels for character-variable groups, used in glyph group colors
 export function makeGroupLabels( groupCol ) {
