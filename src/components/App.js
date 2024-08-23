@@ -168,7 +168,7 @@ function updatePositions({ globalIndicesForThisMesh, mesh }) {
 
 const scatterFactorMid = 250;
 const scatterFactorIncrement = 50;
-const axisTicks = 10;
+const axisTicks = 11;
 const axisTickFontSize = 3;
 
 const meshList = {};
@@ -1256,6 +1256,20 @@ useEffect(() => {
                       {d.label}
                     </Text>
           })}
+          {model === 'scatter' && xTicks && <Text
+                      position={[
+                          xTicks[Math.floor(xTicks.length/2)].pos[0],
+                          xTicks[Math.floor(xTicks.length/2)].pos[1] - axisTickFontSize * 2,
+                          xTicks[Math.floor(xTicks.length/2)].pos[2]
+                        ]}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      > 
+                      {xcol}
+                    </Text>
+          }
           {model === 'scatter' && yTicks && yTicks.map((d,i) => {
             return  <Text
                       key={i}
@@ -1268,6 +1282,21 @@ useEffect(() => {
                       {d.label}
                     </Text>
           })}
+          {model === 'scatter' && yTicks && <Text
+                      position={[
+                          yTicks[Math.floor(yTicks.length/2)].pos[0] - axisTickFontSize * 2,
+                          yTicks[Math.floor(yTicks.length/2)].pos[1],
+                          yTicks[Math.floor(yTicks.length/2)].pos[2]
+                      ]}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      rotation={[0,0,Math.PI/2]}
+                      > 
+                      {ycol}
+                    </Text>
+          }
           {model === 'scatter' && zTicks && zTicks.map((d,i) => {
             return  <Text
                       key={i}
@@ -1281,6 +1310,21 @@ useEffect(() => {
                       {d.label}
                     </Text>
           })}
+          {model === 'scatter' && zTicks && <Text
+                      position={[
+                          zTicks[Math.floor(zTicks.length/2)].pos[0],
+                          zTicks[Math.floor(zTicks.length/2)].pos[1] - axisTickFontSize * 2,
+                          zTicks[Math.floor(zTicks.length/2)].pos[2]
+                      ]}
+                      fontSize={axisTickFontSize}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'middle'}
+                      rotation={[0,Math.PI / 2,0]}
+                      > 
+                      {zcol}
+                    </Text>
+          }
           <OrbitControls
             ref={orbitRef}
             maxDistance={4000}
