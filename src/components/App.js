@@ -170,6 +170,7 @@ const scatterFactorMid = 250;
 const scatterFactorIncrement = 50;
 const axisTicks = 11;
 const axisTickFontSize = 3;
+const fontPath = returnDomain() + 'fonts/JetBrainsMono-Thin.ttf';
 
 const meshList = {};
 let targetCoords;
@@ -178,7 +179,7 @@ function Glyphs({
   glyphMap, glyphGroup, glyph, model, xcol, xcolAsc, ycol, ycolAsc, zcol, zcolAsc, 
   group, multiClick, clickedItems, setClickedItems, z, 
   vertices, normals, itemSize, s, spreadSlide, scatterFactorMid, scatterFactorIncrement, 
-  axisTicks, setXTicks, setYTicks, setZTicks, axisTickFontSize,
+  axisTicks, setXTicks, setYTicks, setZTicks, axisTickFontSize, setHistBinTicks,
   groupColors, raisedItem, setRaisedItem, filter, filterIdxList, invalidateSignal
 }) {
 
@@ -205,7 +206,9 @@ function Glyphs({
     } else if ( model === 'hist' ) {
 
       const columnsPerBin = xcol === 'year' ? 3 : 1;
-      targetCoords = makeHist(data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, columnsPerBin);
+      const { scratchArray, binTicks } = makeHist(data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, columnsPerBin);
+      targetCoords = scratchArray;
+      setHistBinTicks(binTicks);
 
     } else if ( model === 'scatter' ) {
       
@@ -472,6 +475,7 @@ export default function App() {
   const [xTicks, setXTicks] = useState(null);
   const [yTicks, setYTicks] = useState(null);
   const [zTicks, setZTicks] = useState(null);
+  const [histBinTicks, setHistBinTicks] = useState(null);
   
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
@@ -1114,6 +1118,7 @@ useEffect(() => {
                       setYTicks={setYTicks}
                       setZTicks={setZTicks}
                       axisTickFontSize={axisTickFontSize}
+                      setHistBinTicks={setHistBinTicks}
                       groupColors={groupColors}
                       raisedItem={raisedItem}
                       setRaisedItem={setRaisedItem}
@@ -1154,6 +1159,7 @@ useEffect(() => {
                       setYTicks={setYTicks}
                       setZTicks={setZTicks}
                       axisTickFontSize={axisTickFontSize}
+                      setHistBinTicks={setHistBinTicks}
                       groupColors={groupColors}
                       raisedItem={raisedItem}
                       setRaisedItem={setRaisedItem}
@@ -1194,6 +1200,7 @@ useEffect(() => {
                       setYTicks={setYTicks}
                       setZTicks={setZTicks}
                       axisTickFontSize={axisTickFontSize}
+                      setHistBinTicks={setHistBinTicks}
                       groupColors={groupColors}
                       raisedItem={raisedItem}
                       setRaisedItem={setRaisedItem}
@@ -1234,6 +1241,7 @@ useEffect(() => {
                       setYTicks={setYTicks}
                       setZTicks={setZTicks}
                       axisTickFontSize={axisTickFontSize}
+                      setHistBinTicks={setHistBinTicks}
                       groupColors={groupColors}
                       raisedItem={raisedItem}
                       setRaisedItem={setRaisedItem}
@@ -1244,11 +1252,24 @@ useEffect(() => {
                       handleDragEnd={handleDragEnd}
                      />
           })}
+          {model === 'hist' && histBinTicks && histBinTicks.map((d,i) => {
+            return <Text
+                      key={i}
+                      position={[d.pos[0], d.pos[1] + 0.15, d.pos[2]]}
+                      font={fontPath}
+                      fontSize={1}
+                      color={'#fff'}
+                      anchorX={'center'}
+                      anchorY={'top'}
+                      > 
+                      {d.label}
+                    </Text>
+          })}
           {model === 'scatter' && xTicks && xTicks.map((d,i) => {
             return  <Text
                       key={i}
                       position={d.pos}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1263,7 +1284,7 @@ useEffect(() => {
                           xTicks[Math.floor(xTicks.length/2)].pos[1] - axisTickFontSize * 2,
                           xTicks[Math.floor(xTicks.length/2)].pos[2]
                         ]}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1276,7 +1297,7 @@ useEffect(() => {
             return  <Text
                       key={i}
                       position={d.pos}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1291,7 +1312,7 @@ useEffect(() => {
                           yTicks[Math.floor(yTicks.length/2)].pos[1],
                           yTicks[Math.floor(yTicks.length/2)].pos[2]
                       ]}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1305,7 +1326,7 @@ useEffect(() => {
             return  <Text
                       key={i}
                       position={d.pos}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1321,7 +1342,7 @@ useEffect(() => {
                           zTicks[Math.floor(zTicks.length/2)].pos[1] - axisTickFontSize * 2,
                           zTicks[Math.floor(zTicks.length/2)].pos[2]
                       ]}
-                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
+                      font={fontPath}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}

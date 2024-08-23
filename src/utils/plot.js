@@ -49,7 +49,7 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
   
     const histBinsMid = 400;
     const histBinsIncrement = 100;
-    const histBins = spreadSlide === -2 ? histBinsMid - histBinsIncrement * 2 : spreadSlide === -1 ? histBinsMid - histBinsIncrement : spreadSlide === 0 ? histBinsMid : spreadSlide === 1 ? histBinsMid + histBinsIncrement : histBinsMid + histBinsIncrement * 2;
+    const histBins = histBinsMid + histBinsIncrement * spreadSlide;
   
     const std = getStandardDeviation(scratchArray.map(d => d.val));
     const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null/NaN values
@@ -70,6 +70,11 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
             x = binidx;
             x = x - (binnedData.length - 1) / 2; // x adjustment because we center the histogram at (0,0)
             y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2); // we plot both above and below the x axis, so we alternate between positive and negative values
+            if ( y >= 0 ) {
+              y = y + 1; // we want the first positive value to be 1, not 0
+            } else {
+              y = y - 1; // we want the first negative value to be -1, not 0
+            }
           } else { // all other cases require a space between bins
             const zeroPoint = binidx * ( columnsPerBin + 1 );
             const col = itemidx % columnsPerBin; // simple alternation between 0 and 1
@@ -77,6 +82,11 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
             y = itemidx < 2 ? 0 : Math.round(itemidx / (columnsPerBin * 2)); // produces 0,0,1,1,1,1,2,2,2,2,... when columnsPerBin = 2
             const ySign = Math.floor(itemidx / (columnsPerBin * 2)) === y ? 1 : -1; // the smaller two (out of 4) end up y-1 after flooring, the larger ones y
             y = ySign * y;
+            if ( y >= 0 ) {
+              y = y + 1; // we want the first positive value to be 1, not 0
+            } else {
+              y = y - 1; // we want the first negative value to be -1, not 0
+            }
             
             x = zeroPoint + col;
             x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
@@ -85,8 +95,27 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
         });
       }
     });
+
+    let binTicks = [];
+    binnedData.forEach((bin, binidx) => {
+      let x;
+      if ( columnsPerBin === 1 ) {
+        x = binidx;
+        x = x - (binnedData.length - 1) / 2;
+      } else {
+        x = binidx * ( columnsPerBin + 1 );
+        x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2;
+      }
+      binTicks.push({'pos':[x, 0, 0],'label':bin.x0});
+    });
+
+    const skipSize = 10;
+    binTicks = binTicks.filter((item, i) => i % skipSize === 0);
+
     scratchArray = orderBy(scratchArray,['idx'],['asc']);
-    return scratchArray.map(d => d.pos)
+    scratchArray = scratchArray.map(d => d.pos);
+
+    return { scratchArray, binTicks }
 }
   
 export function makeScatter(
