@@ -1248,6 +1248,7 @@ useEffect(() => {
             return  <Text
                       key={i}
                       position={d.pos}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1262,6 +1263,7 @@ useEffect(() => {
                           xTicks[Math.floor(xTicks.length/2)].pos[1] - axisTickFontSize * 2,
                           xTicks[Math.floor(xTicks.length/2)].pos[2]
                         ]}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1274,6 +1276,7 @@ useEffect(() => {
             return  <Text
                       key={i}
                       position={d.pos}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1284,10 +1287,11 @@ useEffect(() => {
           })}
           {model === 'scatter' && yTicks && <Text
                       position={[
-                          yTicks[Math.floor(yTicks.length/2)].pos[0] - axisTickFontSize * 2,
+                          yTicks[Math.floor(yTicks.length/2)].pos[0] - axisTickFontSize * 4,
                           yTicks[Math.floor(yTicks.length/2)].pos[1],
                           yTicks[Math.floor(yTicks.length/2)].pos[2]
                       ]}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1301,6 +1305,7 @@ useEffect(() => {
             return  <Text
                       key={i}
                       position={d.pos}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
@@ -1316,6 +1321,7 @@ useEffect(() => {
                           zTicks[Math.floor(zTicks.length/2)].pos[1] - axisTickFontSize * 2,
                           zTicks[Math.floor(zTicks.length/2)].pos[2]
                       ]}
+                      font={returnDomain() + 'fonts/JetBrainsMono-Thin.ttf'}
                       fontSize={axisTickFontSize}
                       color={'#fff'}
                       anchorX={'center'}
