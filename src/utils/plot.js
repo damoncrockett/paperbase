@@ -224,12 +224,55 @@ export function makeScatter(
     });
   }
 
-  const scratchArray = [];
-  xArray.forEach((item, i) => {
-    const x = item * scatterFactor;
-    const y = yArray[i] * scatterFactor;
-    const z = zArray === null ? 0 : zArray[i] * scatterFactor;
-    scratchArray.push([x, y, z])
+  // const scratchArray = [];
+  // xArray.forEach((item, i) => {
+  //   const x = item * scatterFactor;
+  //   const y = yArray[i] * scatterFactor;
+  //   const z = zArray === null ? 0 : zArray[i] * scatterFactor;
+  //   scratchArray.push([x, y, z])
+  // });
+
+  // let binCounts = {};
+  // const scratchArray = xArray.map((x, i) => {
+  //   const y = yArray[i];
+  //   const xyTuple = `${x.toFixed(2)},${y.toFixed(2)}`; // Create a bin key by rounding to ensure grouping
+
+  //   if (zArray === null) {
+  //     if (!binCounts[xyTuple]) {
+  //       binCounts[xyTuple] = 0;
+  //     }
+  //     const zStacked = binCounts[xyTuple]
+  //     binCounts[xyTuple] += 1; // Increment bin count
+  //     return [x * scatterFactor, y * scatterFactor, zStacked];
+  //   } else {
+  //     const z = zArray[i];
+  //     return [x * scatterFactor, y * scatterFactor, z * scatterFactor];
+  //   }
+  // });
+
+  let binCounts = {};
+  const scratchArray = xArray.map((x, i) => {
+    const y = yArray[i];
+    const z = zArray === null ? 0 : zArray[i];
+
+    // Create bin keys with raw values
+    const xyTuple = `${x.toFixed(2)},${y.toFixed(2)}`;
+
+    if (zArray === null) {
+      if (!binCounts[xyTuple]) {
+        binCounts[xyTuple] = 0;
+      }
+      const zStacked = binCounts[xyTuple]
+      binCounts[xyTuple] += 1;
+
+      return [
+        Math.round(x * scatterFactor * 100) / 100,
+        Math.round(y * scatterFactor * 100) / 100,
+        zStacked
+      ];
+    } else {
+      return [x * scatterFactor, y * scatterFactor, z * scatterFactor];
+    }
   });
 
   return { scratchArray, xTickArray, yTickArray, zTickArray }
