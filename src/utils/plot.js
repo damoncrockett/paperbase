@@ -11,7 +11,8 @@ function gridCoords( n, ncol ) {
   
     const coords = [];
     xgrid.forEach((item, i) => {
-      coords[i] = [item - ncol / 2, -ygrid[i] + nrow / 2, 0]
+      //coords[i] = [item - ncol / 2, -ygrid[i] + nrow / 2, 0]
+      coords[i] = [item, ygrid[i], 0]
     });
   
     return coords;
@@ -20,9 +21,9 @@ function gridCoords( n, ncol ) {
 export function makeGrid( data, n, xcol, xcolAsc, spreadSlide ) {
     
     let sortingArray = [];
-    const ncolsSquare = Math.ceil(Math.sqrt(n));
-    const ncolsIncrement = Math.ceil(ncolsSquare / 5);
-    const ncols = spreadSlide === -2 ? ncolsSquare - ncolsIncrement * 2 : spreadSlide === -1 ? ncolsSquare - ncolsIncrement : spreadSlide === 0 ? ncolsSquare : spreadSlide === 1 ? ncolsSquare + ncolsIncrement : ncolsSquare + ncolsIncrement * 2;
+    const ncolsDefault = Math.ceil(Math.sqrt(n / 0.5625))
+    const ncolsIncrement = Math.ceil(ncolsDefault / 5);
+    const ncols = ncolsDefault + ncolsIncrement * spreadSlide;
     const gridArray = gridCoords(n,ncols);
   
     data[xcol].forEach((item, i) => {
@@ -47,10 +48,17 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
       scratchArray[i] = { 'idx': i, 'val': item, 'ycol': data[ycol][i] }
     });
   
-    const histBinsMid = 400;
-    const histBinsIncrement = 100;
-    const histBins = histBinsMid + histBinsIncrement * spreadSlide;
-  
+    const histBinsMid = 175;
+    const histBinsIncrement = 50;
+
+    let histBins;
+    if ( xcol !== 'year' ) {
+      histBins = histBinsMid + histBinsIncrement * spreadSlide;
+    } else {
+      const uniqueYears = Array.from(new Set(data[xcol]));
+      histBins = uniqueYears.length;
+    }
+    
     const std = getStandardDeviation(scratchArray.map(d => d.val));
     const arrmax = max(scratchArray.map(d => d.val)); // lodash max ignores null/NaN values
     const binner = bin().thresholds(histBins).value(d => isNaN(d.val) ? arrmax + std : d.val); // if val is null, put it one standard deviation above the max
@@ -60,6 +68,7 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
       binnedData.reverse();
     }
   
+    const yAdjust = 25;
     scratchArray = [];
     binnedData.forEach((bin, binidx) => {
       if (bin.length > 0) { // ignores x0 and x1, the bin edges (which are included for every bin)
@@ -68,7 +77,7 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
           let x, y;
           if ( columnsPerBin === 1 ) { // 1 is a special case because there is no empty space between bins
             x = binidx;
-            x = x - (binnedData.length - 1) / 2; // x adjustment because we center the histogram at (0,0)
+            //x = x - (binnedData.length - 1) / 2; // x adjustment because we center the histogram at (0,0)
             y = itemidx === 0 ? 0 : itemidx % 2 === 0 ? -1 * itemidx/2 : Math.ceil(itemidx/2); // we plot both above and below the x axis, so we alternate between positive and negative values
             if ( y >= 0 ) {
               y = y + 1; // we want the first positive value to be 1, not 0
@@ -89,9 +98,10 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
             }
             
             x = zeroPoint + col;
-            x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
+            //x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2; // x adjustment because we center the histogram at (0,0)
           }
-          scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
+          // scratchArray.push({'pos':[x, y, 0],'idx':item.idx});
+          scratchArray.push({'pos':[x, y + yAdjust, 0],'idx':item.idx});
         });
       }
     });
@@ -101,16 +111,22 @@ export function makeHist( data, xcol, xcolAsc, ycol, ycolAsc, spreadSlide, colum
       let x;
       if ( columnsPerBin === 1 ) {
         x = binidx;
-        x = x - (binnedData.length - 1) / 2;
+        //x = x - (binnedData.length - 1) / 2;
       } else {
-        x = binidx * ( columnsPerBin + 1 );
-        x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2;
+        x = binidx * ( columnsPerBin + 1 ) + Math.floor(columnsPerBin / 2);
+        //x = x - (binnedData.length - 1) * ( columnsPerBin + 1 ) / 2;
       }
-      binTicks.push({'pos':[x, 0, 0],'label':bin.x0});
+      // binTicks.push({'pos':[x, 0, 0],'label':bin.x0});
+      binTicks.push({'pos':[x, yAdjust, 0],'label':bin.x0});
     });
 
-    const skipSize = 10;
-    binTicks = binTicks.filter((item, i) => i % skipSize === 0);
+    if ( xcol !== 'year' ) {
+
+      const skipSize = 10;
+      binTicks = binTicks.filter((item, i) => i % skipSize === 0);
+
+    }
+    
 
     scratchArray = orderBy(scratchArray,['idx'],['asc']);
     scratchArray = scratchArray.map(d => d.pos);

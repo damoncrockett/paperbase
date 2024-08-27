@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
-import { Object3D, MOUSE, DoubleSide } from 'three';
+import { PerspectiveCamera, OrbitControls, Text } from '@react-three/drei';
+import { Object3D, MOUSE, DoubleSide, Vector3 } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, set } from 'lodash';
@@ -86,6 +86,7 @@ data['colorGroupGlossWord'] = makeGroupLabels(data['glossWord']);
 data['colorGroupMan'] = makeGroupLabels(data['man']);
 data['colorGroupBran'] = makeGroupLabels(data['bran']);
 data['colorGroupColl'] = makeGroupLabels(data['sb']);
+data['colorGroupDims'] = makeGroupLabels(data['dims']);
 
 // new filters for processing, backp, surf, resin, toner, postcard, circa, sbid
 data['colorGroupProcessing'] = makeGroupLabels(data['processing']);
@@ -115,6 +116,7 @@ const tonerValCounts = valueCounts(data['toner']);
 const postcardValCounts = valueCounts(data['postcard']);
 const circaValCounts = valueCounts(data['circa']);
 const sbidValCounts = valueCounts(data['sbid']);
+const dimsValCounts = valueCounts(data['dims']);
 
 data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
@@ -137,8 +139,6 @@ export const dataU = {
   roughness: rankTransform(data['roughness']),
   gloss: rankTransform(data['gloss'])
 };
-
-console.log('dataU',dataU);
 
 /*Models----------------------------------------------------------------------*/
 
@@ -166,7 +166,7 @@ function updatePositions({ globalIndicesForThisMesh, mesh }) {
 
 /*instancedMesh---------------------------------------------------------------*/
 
-const scatterFactorMid = 250;
+const scatterFactorMid = 150;
 const scatterFactorIncrement = 50;
 const axisTicks = 11;
 const axisTickFontSize = 3;
@@ -517,7 +517,8 @@ export default function App() {
     'toner':[],
     'postcard':[],
     'circa':[],
-    'sbid':[]
+    'sbid':[],
+    'dims': []
   });
   const [filterIdxList, setFilterIdxList] = useState([]);
   const [filterModal, setFilterModal] = useState('closed');
@@ -525,6 +526,7 @@ export default function App() {
   const [branExpand, setBranExpand] = useState(false);
   const [surfExpand, setSurfExpand] = useState(false);
   const [sbidExpand, setSbidExpand] = useState(false);
+  const [dimsExpand, setDimsExpand] = useState(false);
   const [yearSlide, setYearSlide] = useState([yearMin,yearMax]);
   const [thicknessSlide, setThicknessSlide] = useState([thicknessMin,thicknessMax]);
   const [colorSlide, setColorSlide] = useState([colorMin,colorMax]);
@@ -559,6 +561,7 @@ export default function App() {
   const [filteredPostcardFrequencies, setFilteredPostcardFrequencies] = useState(postcardValCounts);
   const [filteredCircaFrequencies, setFilteredCircaFrequencies] = useState(circaValCounts);
   const [filteredSbidFrequencies, setFilteredSbidFrequencies] = useState(sbidValCounts);
+  const [filteredDimsFrequencies, setFilteredDimsFrequencies] = useState(dimsValCounts);
 
   const [detailScreen,setDetailScreen] = useState(false);
   const [detailImageStringState,setDetailImageStringState] = useState('');
@@ -615,6 +618,7 @@ export default function App() {
     const filteredPostcardValCounts = valueCounts(data['postcard'].filter((_,i) => workingIdxList.includes(i)));
     const filteredCircaValCounts = valueCounts(data['circa'].filter((_,i) => workingIdxList.includes(i)));
     const filteredSbidValCounts = valueCounts(data['sbid'].filter((_,i) => workingIdxList.includes(i)));
+    const filteredDimsValCounts = valueCounts(data['dims'].filter((_,i) => workingIdxList.includes(i)));
 
     setFilteredThicknessFrequencies(filteredThicknessValCounts);
     setFilteredColorFrequencies(filteredColorValCounts);    
@@ -632,6 +636,7 @@ export default function App() {
     setFilteredPostcardFrequencies(filteredPostcardValCounts);
     setFilteredCircaFrequencies(filteredCircaValCounts);
     setFilteredSbidFrequencies(filteredSbidValCounts);
+    setFilteredDimsFrequencies(filteredDimsValCounts);
 
     const filteredYears = data['year'].filter((_,i) => workingIdxList.includes(i));
     const filteredThicknesses = data['thickness'].filter((_,i) => workingIdxList.includes(i));
@@ -711,8 +716,6 @@ export default function App() {
   
   const handleDetailScreenNav = e => {
 
-    console.log('handleDetailScreenNav');
-
     e.stopPropagation();
     const label = e.target.innerText;
     const clickedItemsPositionIndex = clickedItems.findIndex(d => d === detailImageIndex);
@@ -735,8 +738,6 @@ export default function App() {
   }
 
   const handlePackageImages = e => {
-
-    console.log('handlePackageImages');
 
     e.stopPropagation();
 
@@ -936,7 +937,8 @@ export default function App() {
       'toner':[],
       'postcard':[],
       'circa':[],
-      'sbid':[]
+      'sbid':[],
+      'dims': []
     });
     
     setFilter(false);
@@ -974,7 +976,6 @@ export default function App() {
         }
 
         if ( newClickedItemsPositionIndex !== undefined ) {
-          console.log('new clicked items position index');
           if ( newClickedItemsPositionIndex >= 0 && newClickedItemsPositionIndex <= clickedItems.length - 1 ) {
           const newDetailImageIndex = clickedItems[newClickedItemsPositionIndex];
           setDetailImageIndex(newDetailImageIndex);
@@ -986,7 +987,6 @@ export default function App() {
       }
 
         if ( newPackageImageIndex !== undefined && detailImageStringState.includes('packages_') ) {
-          console.log('new package image index');
           const suffs = data['suffs'][detailImageIndex];
           const suffsArr = suffs.split('|');
           suffsArr.unshift('');
@@ -1013,6 +1013,16 @@ useEffect(() => {
     setZTicks(null);
   }
 } ,[zcol]);
+
+const lookAtX = 75;
+const lookAtY = 35;
+
+const handleResetCamera = () => {
+  
+  orbitRef.current.reset(); 
+  orbitRef.current.target.set(lookAtX,lookAtY,0);
+
+}
 
   return (
     <div id='app'>
@@ -1081,8 +1091,8 @@ useEffect(() => {
       <div id='viewpane' onMouseDown={handleDragStart} onMouseUp={handleDragEnd}>
         <Canvas
           dpr={[1, 2]} 
-          camera={{ position: [0,0,75], far: 4000 }} 
           frameloop="demand"
+          camera={{position: [lookAtX, lookAtY, 75], far: 4000}}
         >
           <color attach="background" args={[0x4a4a4a]} />
           <ambientLight intensity={0.5}/>
@@ -1354,6 +1364,7 @@ useEffect(() => {
           }
           <OrbitControls
             ref={orbitRef}
+            target={[lookAtX, lookAtY, 0]}
             maxDistance={4000}
             enablePan={!boxSelectMode}
             enableZoom={true}
@@ -1390,7 +1401,7 @@ useEffect(() => {
       </div>
       <div ref={selectionDivRef} style={{position: 'absolute', border: '4px dashed #F0F'}}></div>
       <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='cameraReset'>
-        <button title='reset camera' className={'material-icons'} onClick={() => orbitRef.current.reset()} >flip_camera_ios</button>
+        <button title='reset camera' className={'material-icons'} onClick={handleResetCamera} >flip_camera_ios</button>
         <button title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>select_all</button>
       </div>
       {detailScreen && <div id='detailScreen' >
@@ -1485,6 +1496,7 @@ useEffect(() => {
             <option value='colorGroupPostcard'>is postcard</option>
             <option value='colorGroupCirca'>date is approximate</option>
             <option value='colorGroupSbid'>sample book</option>
+            <option value='colorGroupDims'>dimensions</option>
           </select>
           {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} >arrow_downward</button>}
           {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} >arrow_upward</button>}
@@ -1513,6 +1525,7 @@ useEffect(() => {
             <option value='colorGroupPostcard'>is postcard</option>
             <option value='colorGroupCirca'>date is approximate</option>
             <option value='colorGroupSbid'>sample book</option>
+            <option value='colorGroupDims'>dimensions</option>
           </select>
           {ycolAsc && <button className={'material-icons'} title='sort y-axis descending' onClick={() => setYcolAsc(false)} >arrow_downward</button>}
           {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} >arrow_upward</button>}
@@ -1554,6 +1567,7 @@ useEffect(() => {
             <option value='colorGroupPostcard'>is postcard</option>
             <option value='colorGroupCirca'>date is approximate</option>
             <option value='colorGroupSbid'>sample book</option>
+            <option value='colorGroupDims'>dimensions</option>
           </select>
           <button title='group color shuffle' onClick={() => setGroupColors(makeColorArray())} className={'material-icons'}>shuffle</button>
         </div>
@@ -1642,11 +1656,18 @@ useEffect(() => {
           {Object.keys(backpValCounts).sort().map((d,i) => <button key={i} data-cat='backp' data-val={d} onClick={handleFilter} className={filterList['backp'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredBackpFrequencies,d)} >{d}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >SURFACE</p></div>
+          <div id='surfHead' className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >SURFACE</p></div>
           {!surfExpand && Object.keys(surfValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='surf' data-val={d} onClick={handleFilter} className={filterList['surf'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredSurfFrequencies,d)} >{d}</button>)}
           {!surfExpand && <button title='expand surface options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSurfExpand(true)}} >more_horiz</button>}
           {surfExpand && Object.keys(surfValCounts).sort().map((d,i) => <button key={i} data-cat='surf' data-val={d} onClick={handleFilter} className={filterList['surf'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredSurfFrequencies,d)} >{d}</button>)}
           {surfExpand && <button title='contract surface options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSurfExpand(false); document.getElementById("surfHead").scrollIntoView();}} >expand_less</button>}
+        </div>
+        <div className='filterCategoryContainer'>
+          <div id='dimsHead' className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >DIMENSIONS</p></div>
+          {!dimsExpand && Object.keys(dimsValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='dims' data-val={d} onClick={handleFilter} className={filterList['dims'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredDimsFrequencies,d)} >{d}</button>)}
+          {!dimsExpand && <button title='expand dimensions options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setDimsExpand(true)}} >more_horiz</button>}
+          {dimsExpand && Object.keys(dimsValCounts).sort().map((d,i) => <button key={i} data-cat='dims' data-val={d} onClick={handleFilter} className={filterList['dims'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredDimsFrequencies,d)} >{d}</button>)}
+          {dimsExpand && <button title='contract dimensions options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setDimsExpand(false); document.getElementById("dimsHead").scrollIntoView();}} >expand_less</button>}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >RESIN-COATED</p></div>
@@ -1665,7 +1686,7 @@ useEffect(() => {
           {Object.keys(circaValCounts).sort().map((d,i) => <button key={i} data-cat='circa' data-val={d} onClick={handleFilter} className={filterList['circa'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredCircaFrequencies,d)} >{d === '1' ? 'True' : 'False'}</button>)}
         </div>
         <div className='filterCategoryContainer'>
-          <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >SAMPLE BOOK</p></div>
+          <div id='sbidHead' className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >SAMPLE BOOK</p></div>
           {!sbidExpand && Object.keys(sbidValCounts).sort().slice(0,20).map((d,i) => <button key={i} data-cat='sbid' data-val={d} onClick={handleFilter} className={filterList['sbid'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredSbidFrequencies,d)} >{d}</button>)}
           {!sbidExpand && <button title='expand sample book options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSbidExpand(true)}} >more_horiz</button>}
           {sbidExpand && Object.keys(sbidValCounts).sort().map((d,i) => <button key={i} data-cat='sbid' data-val={d} onClick={handleFilter} className={filterList['sbid'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredSbidFrequencies,d)} >{d}</button>)}
