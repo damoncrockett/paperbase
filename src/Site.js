@@ -9,7 +9,7 @@ export default function Site() {
   return (
     <div>
       {page === 'landing' && <Landing setPage={setPage}/>}
-      {page === 'app' && <App />}
+      {page === 'app' && <App setPage={setPage}/>}
     </div>
   )
 }

@@ -459,7 +459,7 @@ export function getDetailImageString(texture,backprintImage,i) {
 
 let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 
-export default function App() {
+export default function App({ setPage }) {
   const [boxSelectMode, setBoxSelectMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -1693,6 +1693,7 @@ const handleResetCamera = () => {
           {sbidExpand && <button title='contract sample book options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSbidExpand(false); document.getElementById("sbidHead").scrollIntoView();}} >expand_less</button>}
         </div>
       </div>}
+      <div id='backtoLanding' onClick={() => setPage('landing')}>P</div>
     </div>
   )
 }

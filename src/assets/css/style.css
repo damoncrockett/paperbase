@@ -16,6 +16,18 @@
   height: 100vh;
 }
 
+#backtoLanding {
+  font-family: quiverleaf-cf;
+  font-size: 3.5vh;
+  position: fixed;
+  top: 0;
+  left: 2.75vh;
+  color: var(--yalemidlightgray);
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
 #hamburgerButton {
   position: fixed;
   top: 4vh;
