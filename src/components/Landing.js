@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import SpinBox from './SpinBox';
 import { returnDomain } from '../utils/img';
@@ -12,7 +12,7 @@ export default function Landing({ setPage }) {
 
   return (
     <div id='landing'>
-    <button id='navmenu' className='material-icons menubutton'>menu</button>
+      <HamburgerButton />
       <div id='landingContent'>
         <p id='landingTitle'>Paperbase.</p>
         <p id='landingText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the Lens Media Lab at Yale University.</p>
@@ -38,5 +38,30 @@ export default function Landing({ setPage }) {
         <img id='jpffLogo' src={returnDomain() + 'jpff_white.png'} onError={(e) => e.target.style.display = 'none'} />
       </div>
     </div>
+  )
+}
+
+function HamburgerButton() {
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <>
+    <div id='clickoutField' 
+      style={{display: menuOpen ? 'block' : 'none', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 11}} 
+      onClick={e => {e.stopPropagation(); setMenuOpen(false)}}>
+    </div>
+    <div id='hamburgerButton' onClick={e => {e.stopPropagation(); setMenuOpen(true)}}>
+      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
+        Methods
+      </div>
+      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
+        Credits
+      </div>
+      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
+        Contact
+      </div>
+    </div>
+    </>
   )
 }

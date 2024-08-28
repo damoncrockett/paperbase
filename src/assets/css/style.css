@@ -16,24 +16,46 @@
   height: 100vh;
 }
 
-#navmenu {
+#hamburgerButton {
   position: fixed;
   top: 4vh;
   right: 4vh;
+  cursor: pointer;
+  z-index: 11;
 }
 
-.menubutton {
-  background-color: transparent;
+.hamburgerLine {
+  background-color: var(--yalemidgray);
   color: var(--yalemidgray);
   border-radius: 1vh;
-  border-width: 3px;
+  border-width: 1px;
   border-style: solid;
-  border-color: transparent;
-  font-size: 7vh;
+  border-color: var(--yalemidgray);
+  width: 4vh;
+  height: 0.5vh;
+  transition-property: width, height, background-color, border-radius, border-width, font-size;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+  margin-bottom: 1vh;
+  font-size: 1px;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
 }
 
-.menubutton:hover {
-  border-color: var(--yalemidgray);
+.hamOpen {
+  width: 12vh;
+  height: 4vh;
+  background-color: transparent;
+  border-radius: 4vh;
+  border-width: 2px;
+  padding: 0.25vh;
+  font-weight: 700;
+  font-size: 1.5vh;
+}
+
+.hamOpen:hover {
+  border-color: var(--yalewhite);
 }
 
 #landingFooter {
