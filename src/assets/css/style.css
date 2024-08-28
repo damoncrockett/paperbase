@@ -54,10 +54,6 @@
   font-size: 1.5vh;
 }
 
-.hamOpen:hover {
-  border-color: var(--yalewhite);
-}
-
 #landingFooter {
   position: fixed;
   bottom: 3vh;
@@ -115,6 +111,17 @@
   border-color: var(--yalelightgray);
 }
 
+#github-icon {
+  position: fixed;
+  bottom: 4vh;
+  right: 4vh;
+  fill: var(--yalewhite);
+  width: 4vh;
+  height: 4vh;
+  transition: fill 0.3s;
+  margin: 0;
+}
+
 #canvasContainer {
   position: fixed;
   left: 0;
@@ -157,6 +164,14 @@ body {
 
 p {
   margin: 0vh;
+}
+
+p > a {
+  text-decoration: none;
+}
+
+p > a:visited {
+  color: var(--yalemidgray);
 }
 
 button {
