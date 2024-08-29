@@ -9,7 +9,7 @@ const keeperKeys = [
 // Define a mapping from the original key to the new header name
 const headerNames = {
     'sb': 'IsSampleBook',
-    'catalog': 'Catalog Number',
+    'catalog': 'CatalogNumber',
     'man': 'Manufacturer',
     'bran': 'Brand',
     'year': 'Year',

@@ -1693,7 +1693,7 @@ const handleResetCamera = () => {
           {sbidExpand && <button title='contract sample book options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSbidExpand(false); document.getElementById("sbidHead").scrollIntoView();}} >expand_less</button>}
         </div>
       </div>}
-      <div id='backtoLanding' onClick={() => setPage('landing')}>P</div>
+      <div title='return to landing page' id='backtoLanding' onClick={() => setPage('landing')}>P</div>
     </div>
   )
 }
