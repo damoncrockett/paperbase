@@ -22,7 +22,7 @@
   position: fixed;
   top: 0;
   left: 2.75vh;
-  color: var(--yalemidlightgray);
+  color: var(--yalewhite);
   cursor: pointer;
   margin: 0;
   padding: 0;
@@ -804,23 +804,23 @@ select {
   font-family: 'Archivo';
   font-size: 2vh;
   border-radius: 1vh;
-  border-color: var(--yalemidlightgray);
+  border-color: var(--yaledarkgray);
   padding: 1vh;
   margin: 0.25vh;
   outline: none;
   width: 16vw;
   background-color: transparent;
-  color: var(--yalemidlightgray);
+  color: var(--yaledarkgray);
 }
 
 .controls > button {
   background-color: transparent;
-  border-color: var(--yalemidlightgray);
+  border-color: var(--yaledarkgray);
   border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
   outline: none;
-  color: var(--yalemidlightgray);
+  color: var(--yaledarkgray);
   font-size: 2vh;
   font-weight: 400;
   text-align: center;
@@ -844,12 +844,12 @@ select {
 
 .controls > div > button {
   background-color: transparent;
-  border-color: var(--yalemidlightgray);
+  border-color: var(--yaledarkgray);
   border-radius: 1vh;
   border-width: 1px;
   border-style: solid;
   outline: none;
-  color: var(--yalemidlightgray);
+  color: var(--yaledarkgray);
   font-size: 2vh;
   font-weight: 400;
   text-align: center;
