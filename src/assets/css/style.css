@@ -85,6 +85,24 @@
   transform: translateX(-50%);
 }
 
+#terms-of-use {
+  position: fixed;
+  bottom: 4vh;
+  left: 4vh;
+  font-size: 2vh;
+  font-family: 'Arial';
+  cursor: pointer;
+}
+
+#terms-of-use > a {
+  text-decoration: none;
+  color: var(--yalemidlightgray);
+}
+
+#terms-of-use > a:hover {
+  color: var(--yalewhite);
+}
+
 #landingText {
   color: var(--yalemidgray);
   font-size: 3vh;

@@ -20,6 +20,7 @@ export default function Landing({ setPage }) {
         <p id='landingText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the <a href='https://lml.yale.edu/' target='_blank'>Lens Media Lab</a> at Yale University.</p>
         <button onClick={() => setPage('app')}>Explore the collection</button>
       </div>
+      <div id='terms-of-use'><a href={returnDomain() + 'terms.html'} target='_blank'>Terms of Use</a></div>
       <div id='canvasContainer'>
         <Canvas camera={{ fov: 90, position: [0, 0, 10] }}>
           <ambientLight intensity={0.5} />
