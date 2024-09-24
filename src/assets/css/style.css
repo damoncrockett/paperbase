@@ -10,6 +10,60 @@
   --yaleorange: #bd5319;
 }
 
+#downloadTermsModal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 17;
+}
+
+#downloadTermsModalContent {
+  background: var(--yalewhite);
+  padding: 1vw;
+  border-radius: 2vh;
+  width: 30vw;
+  text-align: center;
+  color: var(--yalemidgray);
+}
+
+#downloadTermsModalContent > h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+#downloadTermsModalContent > p {
+  font-size: 1em;
+  margin-bottom: 20px;
+}
+
+#downloadTermsModalContent > p > a {
+  color: var(--yalelightblue);
+}
+
+#downloadTermsModalContent > button {
+  color: var(--yalewhite);
+  border: 2px solid var(--yaledarkgray);
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 20px;
+  font-weight: 700;
+}
+
+#yesreadterms {
+  background-color: var(--yalelightblue);
+}
+
+#noreadterms {
+  background-color: var(--yaleorange);
+}
+
 #landing {
   background-color: var(--yalelightgray);
   width: 100vw;

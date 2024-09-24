@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { returnDomain } from '../utils/img';
 
 const keeperKeys = [
     'sb','catalog','man','bran','year','circa','surf',
@@ -34,7 +35,11 @@ const headerNames = {
 };
 
 const Download = ({ data, idxList, etitle, filename = 'lml.csv' }) => {
+    const [showModal, setShowModal] = useState(false);
+
     const handleDownload = () => {
+        setShowModal(false); // Close the modal once the download is initiated
+
         // Filter headers to include only keeper keys
         const headers = Object.keys(data).filter(key => keeperKeys.includes(key));
         
@@ -51,43 +56,51 @@ const Download = ({ data, idxList, etitle, filename = 'lml.csv' }) => {
         ));
 
         // Determine the number of rows in the filtered data
-        const numRows = filteredData[0].length; // Using the first column to determine row count
+        const numRows = filteredData[0].length;
 
         // Construct each row by iterating over the number of filtered rows
         for (let i = 0; i < numRows; i++) {
             const values = headers.map((header, headerIndex) => {
-                const value = filteredData[headerIndex][i]; // Access the i-th element of each filtered column array
-                const escaped = ('' + value).replace(/"/g, '\\"'); // Escape double quotes
-                return `"${escaped}"`; // Ensure each value is enclosed in quotes
+                const value = filteredData[headerIndex][i];
+                const escaped = ('' + value).replace(/"/g, '\\"');
+                return `"${escaped}"`;
             });
             csvRows.push(values.join(','));
         }
 
         const csvString = csvRows.join('\n');
-        
-        // Create a Blob from the CSV string
         const blob = new Blob([csvString], { type: 'text/csv' });
-
-        // Create a link element
         const link = document.createElement('a');
-        
-        // Set the download attribute with a filename
         link.download = filename;
-        
-        // Create a URL for the blob and set it as href
         link.href = window.URL.createObjectURL(blob);
-        
-        // Append the link to the body
         document.body.appendChild(link);
-        
-        // Trigger the download by simulating a click
         link.click();
-        
-        // Remove the link after download
         document.body.removeChild(link);
     };
 
-    return <button title={etitle} className="material-icons downloadButton" onClick={handleDownload}>file_download</button>;
+    const handleModalOpen = () => {
+        setShowModal(true);
+    };
+
+    const handleModalClose = () => {
+        setShowModal(false);
+    };
+
+    return (
+        <>
+            <button title={etitle} className="material-icons downloadButton" onClick={handleModalOpen}>file_download</button>
+            {showModal && (
+                <div id='downloadTermsModal'>
+                    <div id='downloadTermsModalContent'>
+                        <h2>Paperbase Terms of Use</h2>
+                        <p>Please read the <a href={returnDomain() + "terms.html"} target="_blank">Terms of Use</a> before downloading.</p>
+                        <button id='yesreadterms' onClick={handleDownload}>Yes, I have read the terms</button>
+                        <button id='noreadterms' onClick={handleModalClose}>No, cancel download</button>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 };
 
 export default Download;
