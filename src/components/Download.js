@@ -92,10 +92,9 @@ const Download = ({ data, idxList, etitle, filename = 'lml.csv' }) => {
             {showModal && (
                 <div id='downloadTermsModal'>
                     <div id='downloadTermsModalContent'>
-                        <h2>Paperbase Terms of Use</h2>
                         <p>Please read the <a href={returnDomain() + "terms.html"} target="_blank">Terms of Use</a> before downloading.</p>
-                        <button id='yesreadterms' onClick={handleDownload}>Yes, I have read the terms</button>
-                        <button id='noreadterms' onClick={handleModalClose}>No, cancel download</button>
+                        <button id='yesreadterms' onClick={handleDownload}>Yes, I have read the terms.</button>
+                        <button id='noreadterms' onClick={handleModalClose}>No, cancel download.</button>
                     </div>
                 </div>
             )}

@@ -24,26 +24,27 @@
 }
 
 #downloadTermsModalContent {
-  background: var(--yalewhite);
+  background: var(--yalelightgray);
   padding: 1vw;
   border-radius: 2vh;
+  border: 2px solid var(--yaledarkgray);
   width: 30vw;
   text-align: center;
-  color: var(--yalemidgray);
-}
-
-#downloadTermsModalContent > h2 {
-  font-size: 2em;
-  margin-bottom: 20px;
+  color: var(--yaledarkgray);
 }
 
 #downloadTermsModalContent > p {
   font-size: 1em;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  padding: 1vw;
 }
 
 #downloadTermsModalContent > p > a {
   color: var(--yalelightblue);
+}
+
+#downloadTermsModalContent > p > a:hover {
+  color: var(--yaleblue);
 }
 
 #downloadTermsModalContent > button {
@@ -52,7 +53,7 @@
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-  margin: 20px;
+  margin: 10px 20px;
   font-weight: 700;
 }
 
@@ -128,8 +129,8 @@
 }
 
 #jpffLogo {
-  width: 25vw;
-  height: auto;
+  width: auto;
+  height: 5vh;
 }
 
 #landingContent {
@@ -150,11 +151,11 @@
 
 #terms-of-use > a {
   text-decoration: none;
-  color: var(--yalemidlightgray);
+  color: var(--yalewhite);
 }
 
 #terms-of-use > a:hover {
-  color: var(--yalewhite);
+  color: var(--yaledarkgray);
 }
 
 #landingText {
