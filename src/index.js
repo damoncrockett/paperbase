@@ -7,10 +7,10 @@ import { createTheme, ThemeProvider } from '@mui/material';
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#f9f9f9",
+      main: "#222222",
     },
     text: {
-      primary: '#f9f9f9'    
+      primary: '#222222'    
     },
   }
 });

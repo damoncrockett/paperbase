@@ -14,7 +14,6 @@ export default function Landing({ setPage }) {
 
   return (
     <div id='landing'>
-      <HamburgerButton />
       <div id='landingContent'>
         <p id='landingTitle'>Paperbase.</p>
         <p id='landingText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the <a href='https://lml.yale.edu/' target='_blank'>Lens Media Lab</a> at Yale University.</p>
@@ -50,31 +49,6 @@ export default function Landing({ setPage }) {
         </a>
       </div>
     </div>
-  )
-}
-
-function HamburgerButton() {
-
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <>
-    <div id='clickoutField' 
-      style={{display: menuOpen ? 'block' : 'none', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 11}} 
-      onClick={e => {e.stopPropagation(); setMenuOpen(false)}}>
-    </div>
-    <div id='hamburgerButton' onClick={e => {e.stopPropagation(); setMenuOpen(true)}}>
-      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
-        Methods
-      </div>
-      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
-        Research
-      </div>
-      <div className={menuOpen ? 'hamburgerLine hamOpen' : 'hamburgerLine'}>
-        Credits
-      </div>
-    </div>
-    </>
   )
 }
 

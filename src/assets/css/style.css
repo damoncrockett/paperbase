@@ -16,11 +16,11 @@
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.75);
+  background-color: rgba(34,34,34,0.75);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 17;
+  z-index: 6;
 }
 
 #downloadTermsModalContent {
@@ -71,54 +71,25 @@
   height: 100vh;
 }
 
-#backtoLanding {
-  font-family: quiverleaf-cf;
-  font-size: 3.5vh;
+.external-nav {
   position: fixed;
-  top: 0;
-  left: 2.75vh;
-  color: var(--yalewhite);
+  left: 1vh;
+  background-color: transparent;
+  color: var(--yalelightgray);
   cursor: pointer;
-  margin: 0;
+  font-size: 3.5vh;
+  border: none;
+  z-index: 1;
   padding: 0;
 }
 
-#hamburgerButton {
-  position: fixed;
-  top: 4vh;
-  right: 4vh;
-  cursor: pointer;
-  z-index: 11;
+#backtoLanding {
+  transition: scale 0.25s ease;
+  top: 40vh;
 }
 
-.hamburgerLine {
-  background-color: var(--yalemidgray);
-  color: var(--yalemidgray);
-  border-radius: 1vh;
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--yalemidgray);
-  width: 4vh;
-  height: 0.5vh;
-  transition-property: width, height, background-color, border-radius, border-width, font-size;
-  transition-duration: 0.3s;
-  transition-timing-function: ease;
-  margin-bottom: 1vh;
-  font-size: 1px;
-  display: flex;
-  align-items: center; 
-  justify-content: center;
-}
-
-.hamOpen {
-  width: 12vh;
-  height: 4vh;
-  background-color: transparent;
-  border-radius: 4vh;
-  border-width: 2px;
-  padding: 0.25vh;
-  font-weight: 700;
-  font-size: 1.5vh;
+#backtoLanding:hover {
+  scale: 1.25;
 }
 
 #landingFooter {
@@ -265,6 +236,107 @@ button {
 
 svg {
   margin-right: 5vw;
+}
+
+#infomodal {
+  position: fixed;
+  backdrop-filter: blur(10px); 
+  background-color: rgba(34,34,34,0.75);
+  z-index: 4;
+  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.3);
+  max-width: 25%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.infomodal-content {
+  font-size: 1.67vh;
+  color: var(--yalewhite);
+  padding: 0 3vh 3vh 3vh;
+  font-family: 'DM Sans';
+  font-weight: 200; 
+}
+
+.infomodal-content-mi {
+  font-size: 1.67vh;
+}
+
+.infomodal-content::-webkit-scrollbar {
+  display: none;
+}
+
+#infomodal-close {
+  background-color: transparent;
+  color: var(--yalewhite);
+  cursor: pointer;
+  border: none;
+  padding: none;
+  z-index: 5;
+  transition: scale 0.25s ease;
+}
+
+#infomodal-close:hover {
+  scale: 1.5;
+}
+
+.infomodal-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.75vh;
+  color: var(--yalewhite);
+
+}
+
+.infomodal-nav > button {
+  background-color: transparent;
+  outline: none;
+  border: none;
+  color: var(--yalewhite);
+  font-size: 4vh;
+  font-weight: 400;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.infomodal-nav > button:hover {
+  color: var(--yalelightblue);
+}
+
+.infomodal-nav > button:disabled {
+  color: var(--yalemidlightgray);
+}
+
+#infomodal-button {
+  top: 45vh;
+  transition: scale 0.25s ease;
+  border-radius: 50%;
+}
+
+#infomodal-button:hover {
+  scale: 1.25;
+}
+
+#infomodal-button:focus {
+  border: none;
+  outline: none;
+}
+
+@keyframes pulse-and-glow {
+  0%, 100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.25;
+  }
+}
+
+.pulse-and-glow-animation {
+  animation: pulse-and-glow 1.5s ease-in-out 2;
+  animation-delay: 1s; 
 }
 
 .noPointerEvents {
@@ -456,7 +528,7 @@ svg {
   width: 100vw;
   height: 100vh;
   background-color: rgba(34,34,34,0.75);
-  z-index: 15;
+  z-index: 2;
 }
 
 #detailImage {
@@ -464,7 +536,7 @@ svg {
   height: 100%;
   width: auto;
   display: block;
-  z-index: 16;
+  z-index: 3;
 }
 
 .detailScreenRemove {
@@ -472,7 +544,7 @@ svg {
   position: fixed;
   top: 4vh;
   right: 4vh;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -484,7 +556,7 @@ svg {
   position: fixed;
   top: 4vh;
   left: 4vh;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -496,7 +568,7 @@ svg {
   position: fixed;
   top: 12vh;
   left: 4vh;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -508,7 +580,7 @@ svg {
   position: fixed;
   top: 20vh;
   left: 4vh;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -520,7 +592,7 @@ svg {
   position: fixed;
   top: 44vh;
   left: 1vw;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -532,7 +604,7 @@ svg {
   top: 5%; 
   left: 50%;
   transform: translateX(-50%);
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -543,7 +615,7 @@ svg {
   position: fixed;
   top: 44vh;
   right: 1vw;
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);
@@ -555,7 +627,7 @@ svg {
   bottom: 5%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 16;
+  z-index: 3;
   border: none;
   background: none;
   color: var(--yalemidlightgray);

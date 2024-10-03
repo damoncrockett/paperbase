@@ -10,6 +10,8 @@ import { returnDomain } from '../utils/img';
 import PanelItem from './PanelItem';
 import Download from './Download';
 import BoxSelection from './BoxSelection';
+import InfoModal from './InfoModal';
+import { modalSequence } from '../utils/infomodal';
 
 console.log(data);
 
@@ -460,6 +462,10 @@ export function getDetailImageString(texture,backprintImage,i) {
 let sliderKey = 0; // a hack to reset all sliders with `removeAllFilters`
 
 export default function App({ setPage }) {
+
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [currentInfoModalStep, setCurrentInfoModalStep] = useState(0);
+
   const [boxSelectMode, setBoxSelectMode] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -479,10 +485,9 @@ export default function App({ setPage }) {
   
   const [clickedItems, setClickedItems] = useState([]);
   const [multiClick, setMultiClick] = useState(false);
-  const [gridMode, setGridMode] = useState(false);
+  const [panelLayout, setPanelLayout] = useState(1);
   const [textLength, setTextLength] = useState(2);
   const [infoPanelFontSize, setInfoPanelFontSize] = useState(3);
-  const [smallItem, setSmallItem] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(false);
   const [texture, setTexture] = useState(false);
   const [svgRadar, setSvgRadar] = useState(false);
@@ -957,7 +962,7 @@ export default function App({ setPage }) {
 
   useEffect(() => {
     if ( detailScreen ) {
-      function advanceNav(e) {
+      function detailNav(e) {
         e.preventDefault();
         
         const keyCode = e.keyCode;
@@ -1000,10 +1005,10 @@ export default function App({ setPage }) {
         }
       }
 
-      document.addEventListener("keydown", advanceNav);
+      document.addEventListener("keydown", detailNav);
 
       return function cleanup() {
-      document.removeEventListener("keydown", advanceNav);
+      document.removeEventListener("keydown", detailNav);
     };
   }
 },[detailScreen, detailImageIndex, packageImageIndex])
@@ -1016,6 +1021,7 @@ useEffect(() => {
 
 const lookAtX = 75;
 const lookAtY = 35;
+const tickColor = '#f9f9f9';
 
 const handleResetCamera = () => {
   
@@ -1024,14 +1030,95 @@ const handleResetCamera = () => {
 
 }
 
+// useEffect(() => {
+//   const infoButton = document.getElementById('infomodal-button');
+//   if (infoButton) {
+
+//     const animationTimeout = setTimeout(() => {
+//       infoButton.classList.add('pulse-and-glow-animation');
+//     }, 1000); 
+
+//     const animationEndHandler = () => {
+//       infoButton.classList.remove('pulse-and-glow-animation');
+//       infoButton.removeEventListener('animationend', animationEndHandler);
+//     };
+
+//     infoButton.addEventListener('animationend', animationEndHandler);
+
+//     return () => {
+//       clearTimeout(animationTimeout);
+//       infoButton.removeEventListener('animationend', animationEndHandler);
+//     };
+//   }
+// }, []);
+
+const handleInfoClick = () => {
+  setCurrentInfoModalStep(0);  
+  setShowInfoModal(true);
+};
+
+const handleNextStep = () => {
+  if (currentInfoModalStep < modalSequence.length - 1) {
+    setCurrentInfoModalStep(currentInfoModalStep + 1);
+  }
+};
+
+const handlePrevStep = () => {
+  if (currentInfoModalStep > 0) {
+    setCurrentInfoModalStep(currentInfoModalStep - 1);
+  }
+};
+
+const handleCloseModal = () => {
+  setShowInfoModal(false);
+  setCurrentInfoModalStep(0);  
+};
+
+useEffect(() => {
+  if ( showInfoModal ) {
+    function infoModalNav(e) {
+      e.preventDefault();
+      
+      const keyCode = e.keyCode;
+      if ( keyCode === 37 ) { // left arrow
+        handlePrevStep();
+      } else if ( keyCode === 39 ) { // right arrow
+        handleNextStep();
+      } else if ( keyCode === 27 ) { // escape
+        handleCloseModal();
+      }
+    }
+
+    document.addEventListener("keydown", infoModalNav);
+
+    return function cleanup() {
+    document.removeEventListener("keydown", infoModalNav);
+  };
+}
+},[showInfoModal, currentInfoModalStep])
+
   return (
     <div id='app'>
+      <button 
+        id='infomodal-button' 
+        title='open information panel' 
+        className='material-icons external-nav' 
+        onClick={handleInfoClick}
+      >
+        info
+      </button>
+      <InfoModal 
+        show={showInfoModal} 
+        onClose={handleCloseModal}
+        modalSequence={modalSequence}
+        currentStep={currentInfoModalStep}
+        onNextStep={handleNextStep}
+        onPrevStep={handlePrevStep}
+        isDragging={isDragging}
+      />
       <div className={isDragging ? 'noPointerEvents controls' : 'controls'} id='multiClick'>
         <div id="panelStructure">
-          {gridMode && <button title='switch to list mode' className={'material-icons active'} onClick={() => {setGridMode(false);smallItem && setSmallItem(false)}} >list</button>}
-          {!gridMode && <button title='switch to grid mode' className={'material-icons'} onClick={() => setGridMode(true)} >grid_view</button>}
-          {smallItem && <button title='switch to normal item size' className={'material-icons active'} onClick={() => setSmallItem(false)} >photo_size_select_actual</button>}
-          {!smallItem && <button title='switch to small item size' className={'material-icons'} onClick={() => gridMode && setSmallItem(true)} >photo_size_select_large</button>}
+          <button title='change panel layout' className='material-icons' onClick={() => setPanelLayout(panelLayout => panelLayout % 3 + 1)}>grid_view</button>
         </div>
         <div id="panelFill">
           <button title='add paper color to background' className={backgroundColor ? 'material-icons active' : 'material-icons'} onClick={() => {setBackgroundColor(!backgroundColor); texture && setTexture(false); packageImage && setPackageImage(false); svgRadar && setSvgRadar(false); backprintImage && setBackprintImage(false)}} >format_color_fill</button>
@@ -1051,7 +1138,7 @@ const handleResetCamera = () => {
           <div title='number of selected items' className='countPrint' id="panelCount">{clickedItems.length === 0 ? data['catalog'].length : clickedItems.length}</div>
         </div>
       </div>
-      <div id='infoPanel' className={isDragging && gridMode ? 'grid noPointerEvents' : !isDragging && gridMode ? 'grid' : isDragging ? 'list noPointerEvents' : 'list'}>
+      <div id='infoPanel' className={isDragging && panelLayout > 1 ? 'grid noPointerEvents' : !isDragging && panelLayout > 1 ? 'grid' : isDragging ? 'list noPointerEvents' : 'list'}>
         {clickedItems.map((clickedItem,i) => <PanelItem
                                                 data={data}
                                                 meshList={meshList}
@@ -1065,14 +1152,13 @@ const handleResetCamera = () => {
                                                 textLength={textLength}
                                                 raisedItem={raisedItem}
                                                 setRaisedItem={setRaisedItem}
-                                                gridMode={gridMode}
+                                                panelLayout={panelLayout}
                                                 infoPanelFontSize={infoPanelFontSize}
                                                 backgroundColor={backgroundColor}
                                                 texture={texture}
                                                 packageImage={packageImage}
                                                 backprintImage={backprintImage}
                                                 svgRadar={svgRadar}
-                                                smallItem={smallItem}
                                                 key={i}
                                                 detailScreen={detailScreen}
                                                 setDetailScreen={setDetailScreen}
@@ -1268,7 +1354,7 @@ const handleResetCamera = () => {
                       position={[d.pos[0], d.pos[1] + 0.15, d.pos[2]]}
                       font={fontPath}
                       fontSize={1}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'top'}
                       > 
@@ -1281,7 +1367,7 @@ const handleResetCamera = () => {
                       position={d.pos}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       > 
@@ -1296,7 +1382,7 @@ const handleResetCamera = () => {
                         ]}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       > 
@@ -1309,7 +1395,7 @@ const handleResetCamera = () => {
                       position={d.pos}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       > 
@@ -1324,7 +1410,7 @@ const handleResetCamera = () => {
                       ]}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       rotation={[0,0,Math.PI/2]}
@@ -1338,7 +1424,7 @@ const handleResetCamera = () => {
                       position={d.pos}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       rotation={[0,Math.PI / 2,0]}
@@ -1354,7 +1440,7 @@ const handleResetCamera = () => {
                       ]}
                       font={fontPath}
                       fontSize={axisTickFontSize}
-                      color={'#fff'}
+                      color={tickColor}
                       anchorX={'center'}
                       anchorY={'middle'}
                       rotation={[0,Math.PI / 2,0]}
@@ -1401,8 +1487,8 @@ const handleResetCamera = () => {
       </div>
       <div ref={selectionDivRef} style={{position: 'absolute', border: '4px dashed #F0F'}}></div>
       <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='cameraReset'>
-        <button title='reset camera' className={'material-icons'} onClick={handleResetCamera} >flip_camera_ios</button>
-        <button title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>select_all</button>
+        <button id='reset-camera' title='reset camera' className={'material-icons'} onClick={handleResetCamera} >flip_camera_ios</button>
+        <button id='box-select' title='box select mode' className={boxSelectMode ? 'material-icons active' : 'material-icons' } onClick={() => setBoxSelectMode(!boxSelectMode)}>highlight_alt</button>
       </div>
       {detailScreen && <div id='detailScreen' >
         <a href={detailImageStringState.replace("_2048","")} target="_blank">
@@ -1450,7 +1536,7 @@ const handleResetCamera = () => {
         <div id='detailScreenInfoBar'><p>{'#'+data['catalog'][detailImageIndex] + " " + data['man'][detailImageIndex] + " " + data['bran'][detailImageIndex] + " " + data['year'][detailImageIndex]}</p></div>
       </div>}
       <div id='topControls'>
-        <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='spreadControls'>
+        <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='spreadControls' title='adjust plot width'>
           <Slider
             color='primary'
             onChange={e => setSpreadSlide(e.target.value)}
@@ -1693,7 +1779,7 @@ const handleResetCamera = () => {
           {sbidExpand && <button title='contract sample book options' className='material-icons active filterButton' onClick={e => {e.stopPropagation; setSbidExpand(false); document.getElementById("sbidHead").scrollIntoView();}} >expand_less</button>}
         </div>
       </div>}
-      <div title='return to landing page' id='backtoLanding' onClick={() => setPage('landing')}>P</div>
+      <div title='return to landing page' className='material-icons external-nav' id='backtoLanding' onClick={() => setPage('landing')}>flight_land</div>
     </div>
   )
 }

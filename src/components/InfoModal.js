@@ -1,216 +1,81 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-export default function InfoModal({ 
-    show, 
-    onClose,
-    setActiveSection
-}) {
-  if (!show) {
-    return null;
-  }
-
-  const scrollRef = useRef(null);
+export default function InfoModal({ show, onClose, modalSequence, currentStep, onNextStep, onPrevStep, isDragging }) {
+  
+  const modalRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-        const { top: containerTop, height: containerHeight } = scrollRef.current.getBoundingClientRect();
-        const threshold = containerTop + containerHeight * 0.20;
-        const children = scrollRef.current.firstChild.children;
-      
-        for (let i = 0; i < children.length; i++) {
-          const { top: childTop } = children[i].getBoundingClientRect();
-      
-          if (childTop <= threshold && childTop >= containerTop) {
-            setActiveSection(children[i].id);
-            break;
+    if (show && modalSequence[currentStep] && modalRef.current) {
+      const positionModal = () => {
+        const targetElement = document.getElementById(modalSequence[currentStep].targetId);
+        if (targetElement) {
+          const targetRect = targetElement.getBoundingClientRect();
+          const modalRect = modalRef.current.getBoundingClientRect();
+          
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+
+          // Calculate available space in each direction
+          const spaceAbove = targetRect.top;
+          const spaceBelow = viewportHeight - targetRect.bottom;
+          const spaceLeft = targetRect.left;
+          const spaceRight = viewportWidth - targetRect.right;
+
+          let top, left;
+
+          // Determine vertical position
+          if (spaceBelow >= modalRect.height + 10) {
+            top = targetRect.bottom + 10;
+          } else if (spaceAbove >= modalRect.height + 10) {
+            top = targetRect.top - modalRect.height - 10;
+          } else {
+            top = Math.max(10, (viewportHeight - modalRect.height) / 2);
           }
+
+          // Determine horizontal position
+          if (spaceRight >= modalRect.width + 10) {
+            left = targetRect.right + 10;
+          } else if (spaceLeft >= modalRect.width + 10) {
+            left = targetRect.left - modalRect.width - 10;
+          } else {
+            left = Math.max(10, (viewportWidth - modalRect.width) / 2);
+          }
+
+          // Directly set the position
+          modalRef.current.style.top = `${top}px`;
+          modalRef.current.style.left = `${left}px`;
         }
       };
-      
-    const scrollableDiv = scrollRef.current;
-    scrollableDiv.addEventListener('scroll', handleScroll);
 
-    // Clean up the event listener
-    return () => {
-      scrollableDiv.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+      // Position immediately and after a short delay to account for any layout shifts
+      positionModal();
+      setTimeout(positionModal, 0);
+    }
+  }, [show, currentStep, modalSequence]);
+
+  const currentModal = modalSequence[currentStep];
 
   return (
-    <>
-    <button id="infomodal-close" onClick={onClose}>&times;</button>
-    <div ref={scrollRef} id="infomodal-background">
-        <Info />
-    </div>
-    </>
-  );
-}
-
-function Info() {
-  return (
-    <div id='infomodal-content'>
-        <div className='infosection' id='info-intro'>
-            <h1 id='title'>Paperbase</h1>
-            <p>Paperbase is a tool designed and built by the 
-                <a target='_blank' href='https://lml.yale.edu/'>Lens Media Lab</a> that enables 
-                users to explore the lab's reference collection of historic photographic papers. The 
-                lab has measured each of these papers along the physical dimensions of color, texture, 
-                gloss, and thickness and has catalogued the manufacturer, brand, and year of production for 
-                each sample, as well as a great deal of additional historical information. Users can sort, filter, 
-                select, and rearrange visual representations of these paper samples in order to find patterns 
-                across the whole collection and thus, across the universe of photographic papers.
-            </p> 
-            <p>  
-              What follows 
-              is a user guide to the application. As each section scrolls into view, the controls described 
-              in that section will appear on the screen in their native locations. These are live, working 
-              controls that can be clicked, and changes will be reflected in the display underneath, although 
-              if the user guide is open (as it is now), their view will be obscured. 
-              <span style={{color: "goldenrod", fontWeight: "700"}}>Every button in the application 
-              has a tooltip description that appears when the mouse hovers over it</span>, and the user can 
-              always return to this guide by clicking the <span className='material-icons'>info</span> button 
-              in the lower left-hand corner of the screen.
-            </p>
-        </div>
-        <div className='infosection' id='info-panel-buttons'>
-            <h1>The Panel</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Panel Structure</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Panel Fill</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Panel Text</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Selection</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-camera'>
-            <h1>Projection Controls</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Camera Reset</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Box Selection</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-top'>
-            <h1>Top Controls</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Plot Width</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-            <h2>Glyph Controls</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-bottom'>
-            <h1>Axis Menus</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-plottype'>
-            <h1>Plot Types</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-filter'>
-            <h1>Filter Controls</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        {/* <div className='infosection' id='info-filter-modal'>
-            <h2>Filters</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div> */}
-        <div className='infosection' id='info-filter-count'>
-            <h2>Filter Counter</h2>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-landing'>
-            <h1>Getting Back to the Landing Page</h1>
-            <p>
-            Lorem ipsum odor amet, consectetuer adipiscing elit. Torquent sodales purus mi condimentum 
-            vivamus rhoncus facilisi. Viverra montes ac molestie inceptos aliquet. Class eleifend mollis 
-            rutrum amet adipiscing eu molestie. Nascetur augue aenean nisi etiam diam erat justo vehicula 
-            cubilia. Nec ipsum efficitur platea fames sed ultricies.
-            </p>
-        </div>
-        <div className='infosection' id='info-blank' style={{height: "512px"}}>
-        </div>
+    <div 
+      id='infomodal'
+      className={isDragging ? 'noPointerEvents' : ''}
+      ref={modalRef} 
+      style={{
+        visibility: show ? 'visible' : 'hidden',
+        borderRadius: currentModal.borderRadius,
+      }}
+    >
+      <div className='infomodal-nav'>
+        <h3>{currentModal.headline}</h3>
+        <h3 style={{fontWeight: '400'}}>{currentStep + 1} / {modalSequence.length}</h3>
+        <button onClick={onPrevStep} className='material-icons' disabled={currentStep === 0}>navigate_before</button>
+        <button onClick={onNextStep} className='material-icons' disabled={currentStep === modalSequence.length - 1}>navigate_next</button>
+        <button id='infomodal-close' onClick={onClose}>&times;</button>
+      </div>
+      <div 
+        className='infomodal-content'
+        dangerouslySetInnerHTML={{ __html: currentModal.content }}
+      />
     </div>
   );
 }

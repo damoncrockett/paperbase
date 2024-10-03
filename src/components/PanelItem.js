@@ -30,7 +30,7 @@ export default function PanelItem({
     textLength,
     raisedItem,
     setRaisedItem,
-    gridMode,
+    panelLayout,
     infoPanelFontSize,
     backgroundColor,
     texture,
@@ -180,7 +180,7 @@ export default function PanelItem({
   
     return (
       <div 
-        className={gridMode && smallItem ? 'panelItem gridModeSmall' : gridMode && !smallItem ? 'panelItem gridMode' : 'panelItem listMode'} 
+        className={panelLayout==3 ? 'panelItem gridModeSmall' : panelLayout==2 ? 'panelItem gridMode' : 'panelItem listMode'} 
         title={getHoverInfo(clickedItem)} 
         onClick={handlePanelItemClick} 
         style={
