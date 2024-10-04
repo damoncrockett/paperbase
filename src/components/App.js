@@ -5,24 +5,14 @@ import { Object3D, MOUSE, DoubleSide, Vector3 } from 'three';
 import { useSpring } from '@react-spring/three';
 import { Slider } from '@mui/material';
 import { max, min, cloneDeep, intersection, set } from 'lodash';
-import data from '../assets/data/data.json';
 import { returnDomain } from '../utils/img';
 import PanelItem from './PanelItem';
 import Download from './Download';
 import BoxSelection from './BoxSelection';
 import InfoModal from './InfoModal';
 import { modalSequence } from '../utils/infomodal';
-
-console.log(data);
-
-export const missingDminHexIdxs = [];
-data['dminHex'].forEach((d,i) => {
-  if ( d === '' ) {
-    missingDminHexIdxs.push(i);
-  }
-});
-
 import { valueCounts, rankTransform } from '../utils/stats';
+import data from '../utils/data';
 
 import { 
   makeColorArray, 
@@ -36,7 +26,6 @@ import {
 } from '../utils/color';
 
 import { 
-  makeGroupLabels,
   makeMap,
   radarVertices,
   radarNormals
@@ -51,17 +40,7 @@ import {
 const initialGroupColors = makeColorArray();
 let colorVals; //this gets used in many places
 
-const n = data['catalog'].length; // nrows in data; 'catalog' could be any column
-
-//parse and round measurement values in `data`
-data['year'] = data['year'].map(d => parseInt(d));
-data['thickness'] = data['thickness'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['gloss'] = data['gloss'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['roughness'] = data['roughness'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['dmin'] = data['dmin'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['dmax'] = data['dmax'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['auc'] = data['auc'].map(d => parseFloat(parseFloat(d).toFixed(3)));
-data['expressiveness'] = data['expressiveness'].map(d => parseFloat(parseFloat(d).toFixed(3)));
+const n = data['catalog'].length;
 
 const yearMin = min(data['year']);
 const yearMax = max(data['year']);
@@ -79,26 +58,6 @@ const uvMin = min(data['auc']);
 const uvMax = max(data['auc']);
 const expMin = min(data['expressiveness']);
 const expMax = max(data['expressiveness']);
-
-data['radarColor'] = makeGroupLabels(data['radarGroup']);
-data['colorGroupColorWord'] = makeGroupLabels(data['colorWord']);
-data['colorGroupThickWord'] = makeGroupLabels(data['thicknessWord']);
-data['colorGroupTextureWord'] = makeGroupLabels(data['textureWord']);
-data['colorGroupGlossWord'] = makeGroupLabels(data['glossWord']);
-data['colorGroupMan'] = makeGroupLabels(data['man']);
-data['colorGroupBran'] = makeGroupLabels(data['bran']);
-data['colorGroupColl'] = makeGroupLabels(data['sb']);
-data['colorGroupDims'] = makeGroupLabels(data['dims']);
-
-// new filters for processing, backp, surf, resin, toner, postcard, circa, sbid
-data['colorGroupProcessing'] = makeGroupLabels(data['processing']);
-data['colorGroupBackp'] = makeGroupLabels(data['backp']);
-data['colorGroupSurf'] = makeGroupLabels(data['surf']);
-data['colorGroupResin'] = makeGroupLabels(data['resin']);
-data['colorGroupToner'] = makeGroupLabels(data['toner']);
-data['colorGroupPostcard'] = makeGroupLabels(data['postcard']);
-data['colorGroupCirca'] = makeGroupLabels(data['circa']);
-data['colorGroupSbid'] = makeGroupLabels(data['sbid']);
 
 /*Metadata value counts-------------------------------------------------------*/
 
@@ -120,7 +79,6 @@ const circaValCounts = valueCounts(data['circa']);
 const sbidValCounts = valueCounts(data['sbid']);
 const dimsValCounts = valueCounts(data['dims']);
 
-data['boxGroup'] = Array(n).fill('b');
 const boxGroupArray = ['b'];
 const boxMap = makeMap(data, boxGroupArray, 'boxGroup');
 

@@ -1,7 +1,7 @@
 import { Color } from 'three';
 import { rankTransform } from '../utils/stats';
 import { max, min } from 'lodash';
-import { missingDminHexIdxs } from '../components/App';
+import { missingDminHexIdxs } from './data';
 import chroma from "chroma-js";
 
 /* 

@@ -65,11 +65,11 @@
   background-color: var(--yaleorange);
 }
 
-#landing {
+/* #landing {
   background-color: var(--yalelightgray);
   width: 100vw;
   height: 100vh;
-}
+} */
 
 .external-nav {
   position: fixed;
@@ -104,12 +104,12 @@
   height: 5vh;
 }
 
-#landingContent {
+/* #landingContent {
   position: fixed;
   top: 8vh;
   left: 50%;
   transform: translateX(-50%);
-}
+} */
 
 #terms-of-use {
   position: fixed;
@@ -129,23 +129,19 @@
   color: var(--yaledarkgray);
 }
 
-#landingText {
-  color: var(--yalemidgray);
-  font-size: 3vh;
+#landingBlurb {
+  background-color: transparent;
+  position: absolute;
+  top: 10vh;
+  left: 0;
+  right: 0;
   text-align: center;
-  margin-top: 4vh;
-  font-weight: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#landingTitle {
-  color: var(--yalemidgray);
-  font-size: 12vh;
-  text-align: center;
-  font-family: quiverleaf-cf;
-  font-weight: 700;
-}
-
-#landingContent > button {
+#landingBlurb > button {
   border-radius: 5vh;
   border-width: 3px;
   border-style: solid;
@@ -157,14 +153,79 @@
   padding-bottom: 3vh;
   padding-left: 7vh;
   padding-right: 7vh;
-  margin: 0 auto;
   margin-top: 8vh;
   font-weight: 700;
-  font-size: 2vh;
+  font-size: 1.25rem;
 }
 
-#landingContent > button:hover {
+#landingBlurb > button:hover {
   border-color: var(--yalelightgray);
+}
+
+#blurbText {
+  color: var(--yalemidgray);
+  font-size: 2rem;
+  margin-top: 4vh;
+  font-weight: 100;
+  max-width: 60vw;
+}
+
+#blurbTitle {
+  color: var(--yalemidgray);
+  font-size: 8rem;
+  font-family: quiverleaf-cf;
+}
+
+@media screen and (max-width: 500px) {
+  
+  #blurbTitle {
+    font-size: 20rem;
+  }
+
+  #blurbText {
+    font-size: 10rem;
+  }
+
+}
+
+.landingContent {
+  position: relative; 
+  top: 100vh; 
+  background-color: var(--yaledarkgray);
+  color: var(--yalelightgray); 
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-size: 1.5em;
+  font-family: 'DM Sans';
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20vh;
+}
+
+.landingContentSectionTitle {
+  font-size: 2em;
+  font-weight: 700;
+  margin-top: 10vh;
+  font-family: 'Archivo';
+  width: 100%;
+  max-width: 60vw;
+}
+
+.landingContentSectionTitle p {
+  text-align: left;
+  margin: 0;
+}
+
+.landingContentItem {
+  max-width: 60vw;
+  margin-top: 4vh;
+}
+
+.landingContentItem p {
+  text-align: left; 
+  margin: 0 auto;
 }
 
 #github-icon {
