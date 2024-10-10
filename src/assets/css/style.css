@@ -169,6 +169,33 @@
   font-family: quiverleaf-cf;
 }
 
+.scroll-indicator {
+  position: absolute;
+  bottom: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--yaledarkgray);
+  cursor: pointer;
+  animation: bounce 2s infinite;
+}
+
+.scroll-indicator .material-icons {
+  font-size: 6rem; 
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  40% {
+    transform: translateY(-30px) translateX(-50%);
+  }
+  60% {
+    transform: translateY(-15px) translateX(-50%);
+  }
+}
+
+
 .landingContent {
   position: relative;
   top: 100vh;
