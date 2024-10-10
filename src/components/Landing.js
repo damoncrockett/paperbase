@@ -83,32 +83,93 @@ export default function Landing({ setPage }) {
             ))}
           </div>
         </div>
-        <div className='landingContentSection dataVizSection'>
-          <div className='landingContentSectionTitle'>
+        <div className='landingContentSection dataInsightsSection'>
+          <div id='insights' className='landingContentSectionTitle'>
             <h2>DATA INSIGHTS</h2>
-            <p className='subtitle'>Visual representations of our collection's key characteristics.</p>
           </div>
           <div className='landingContentItems'>
-            <div className='dataVizUnit'>
+            <div className='dataInsightUnit'>
               <h3>Distribution of Paper Types</h3>
+              <p>This visualization shows the distribution of different paper types in our collection. Matte papers make up the largest portion, followed by glossy and semi-glossy papers.</p>
               <div className='svgContainer'>
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                  {/* This is a placeholder SVG. Replace with your actual data visualization */}
-                  <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="4" fill="blue" />
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Bar Chart */}
+                  <rect x="10" y="10" width="15" height="40" fill="var(--yalelightgray)" />
+                  <rect x="30" y="20" width="15" height="30" fill="var(--yalelightgray)" />
+                  <rect x="50" y="5" width="15" height="45" fill="var(--yalelightgray)" />
+                  <rect x="70" y="25" width="15" height="25" fill="var(--yalelightgray)" />
                 </svg>
               </div>
-              <p>This visualization shows the distribution of different paper types in our collection. Matte papers make up the largest portion, followed by glossy and semi-glossy papers. This distribution reflects the changing preferences in photographic printing over the past century.</p>
             </div>
-            <div className='dataVizUnit'>
+            <div className='dataInsightUnit'>
               <h3>Temporal Trends in Paper Production</h3>
+              <p>This timeline illustrates the evolution of paper production techniques from the late 19th century to the present day.</p>
               <div className='svgContainer'>
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                  {/* This is a placeholder SVG. Replace with your actual data visualization */}
-                  <rect x="10" y="10" width="80" height="80" stroke="white" strokeWidth="4" fill="green" />
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Line Graph */}
+                  <polyline
+                    points="10,50 30,30 50,40 70,20 90,10"
+                    fill="none"
+                    stroke="var(--yalelightgray)"
+                    strokeWidth="2"
+                  />
                 </svg>
               </div>
-              <p>This timeline illustrates the evolution of paper production techniques from the late 19th century to the present day. Notable shifts include the transition from albumen to gelatin silver papers in the early 20th century, and the rise of RC (resin-coated) papers in the 1960s.</p>
-            </div>      
+            </div>
+            <div className='dataInsightUnit'>
+              <h3>Gloss Levels Over Time</h3>
+              <p>This chart shows how the average gloss levels of photographic papers have changed over the decades.</p>
+              <div className='svgContainer'>
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Scatter Plot */}
+                  <circle cx="20" cy="30" r="2" fill="var(--yalelightgray)" />
+                  <circle cx="35" cy="40" r="2" fill="var(--yalelightgray)" />
+                  <circle cx="50" cy="20" r="2" fill="var(--yalelightgray)" />
+                  <circle cx="65" cy="35" r="2" fill="var(--yalelightgray)" />
+                  <circle cx="80" cy="25" r="2" fill="var(--yalelightgray)" />
+                </svg>
+              </div>
+            </div>
+            <div className='dataInsightUnit'>
+              <h3>Brand Market Share</h3>
+              <p>A breakdown of the market share of different photographic paper brands represented in our collection.</p>
+              <div className='svgContainer'>
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Pie Chart */}
+                  <path d="M50,30 L50,5 A25,25 0 0,1 70,40 Z" fill="var(--yalelightgray)" />
+                  <path d="M50,30 L70,40 A25,25 0 0,1 30,40 Z" fill="var(--yalelightgray)" opacity="0.7" />
+                  <path d="M50,30 L30,40 A25,25 0 0,1 50,5 Z" fill="var(--yalelightgray)" opacity="0.4" />
+                </svg>
+              </div>
+            </div>
+            <div className='dataInsightUnit'>
+              <h3>Paper Thickness Variations</h3>
+              <p>This visualization demonstrates the range and distribution of paper thicknesses in our collection.</p>
+              <div className='svgContainer'>
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Histogram */}
+                  <rect x="10" y="40" width="10" height="10" fill="var(--yalelightgray)" />
+                  <rect x="25" y="30" width="10" height="20" fill="var(--yalelightgray)" />
+                  <rect x="40" y="20" width="10" height="30" fill="var(--yalelightgray)" />
+                  <rect x="55" y="10" width="10" height="40" fill="var(--yalelightgray)" />
+                  <rect x="70" y="25" width="10" height="25" fill="var(--yalelightgray)" />
+                  <rect x="85" y="35" width="10" height="15" fill="var(--yalelightgray)" />
+                </svg>
+              </div>
+            </div>
+            <div className='dataInsightUnit'>
+              <h3>Geographical Origins</h3>
+              <p>A map showing the geographical origins of the photographic papers in our collection.</p>
+              <div className='svgContainer'>
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  {/* Simple Map */}
+                  <path d="M10,40 Q30,20 50,40 T90,40" fill="none" stroke="var(--yalelightgray)" strokeWidth="2" />
+                  <circle cx="30" cy="30" r="3" fill="var(--yalelightgray)" />
+                  <circle cx="60" cy="35" r="3" fill="var(--yalelightgray)" />
+                  <circle cx="80" cy="25" r="3" fill="var(--yalelightgray)" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
         <div className='landingContentSection appTutorialsSection'>
@@ -385,7 +446,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'crockett2.jpg'} alt="Damon Crockett" />
               </div>
-              <div className='member-name'>Damon Crockett</div>
+              <div className='member-name'>DAMON CROCKETT</div>
               <div className='project-role'>data science, site design and development</div>
               <div className='job-title'>AI Engineer, Lens Media Lab, Yale University</div>
             </div>
@@ -393,7 +454,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'messier.jpg'} alt="Paul Messier" />
               </div>
-              <div className='member-name'>Paul Messier</div>
+              <div className='member-name'>PAUL MESSIER</div>
               <div className='project-role'>collection, concept, data model</div>
               <div className='job-title'>Director, Lens Media Lab, Yale University</div>
             </div>
@@ -401,7 +462,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'mintie.jpg'} alt="Katherine Mintie" />
               </div>
-              <div className='member-name'>Katherine Mintie</div>
+              <div className='member-name'>KATHERINE MINTIE</div>
               <div className='project-role'>measurement, writing, user research</div>
               <div className='job-title'>Head of Collections, Center for Creative Photography, University of Arizona</div>
             </div>
@@ -409,7 +470,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'disciacca2.jpg'} alt="Jack DiSciacca" />
               </div>
-              <div className='member-name'>Jack DiSciacca</div>
+              <div className='member-name'>JACK DISCIACCA</div>
               <div className='project-role'>measurement, signal processing</div>
               <div className='job-title'>Scientist, Coherent</div>
             </div>
@@ -417,7 +478,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'nikolaus.jpg'} alt="Sydney Nikolaus" />
               </div>
-              <div className='member-name'>Sydney Nikolaus</div>
+              <div className='member-name'>SYDNEY NIKOLAUS</div>
               <div className='project-role'>photography, measurement, cataloging</div>
               <div className='job-title'>Research Associate, Lens Media Lab, Yale University</div>
             </div>
@@ -425,7 +486,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'yue.jpg'} alt="Cynthia Yue" />
               </div>
-              <div className='member-name'>Cynthia Yue</div>
+              <div className='member-name'>CYNTHIA YUE</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Data Analyst, Lens Media Lab, Yale University</div>
             </div>
@@ -433,7 +494,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'alam.jpg'} alt="Joitree Alam" />
               </div>
-              <div className='member-name'>Joitree Alam</div>
+              <div className='member-name'>JOITREE ALAM</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Ph.D. Student, Art History, Northwestern University</div>
             </div>
@@ -441,7 +502,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'hark.jpg'} alt="Memory Hark" />
               </div>
-              <div className='member-name'>Memory Hark</div>
+              <div className='member-name'>MEMORY HARK</div>
               <div className='project-role'>photography, cataloging</div>
               <div className='job-title'>Former Research Associate, Lens Media Lab, Yale University</div>
             </div>
@@ -449,7 +510,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'canales.jpg'} alt="Austin Canales" />
               </div>
-              <div className='member-name'>Austin Canales</div>
+              <div className='member-name'>AUSTIN CANALES</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Special Education Teacher, NYC Department of Education</div>
             </div>
@@ -457,7 +518,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'lackey.jpg'} alt="Leah Lackey" />
               </div>
-              <div className='member-name'>Leah Lackey</div>
+              <div className='member-name'>LEAH LACKEY</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Ph.D. Student, Robotics, Cornell University</div>
             </div>
@@ -465,7 +526,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'evans.jpg'} alt="Khari Evans" />
               </div>
-              <div className='member-name'>Khari Evans</div>
+              <div className='member-name'>KHARI EVANS</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Former Research Associate, Lens Media Lab, Yale University</div>
             </div>
@@ -473,7 +534,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'evansm.jpg'} alt="Madison Evans" />
               </div>
-              <div className='member-name'>Madison Evans</div>
+              <div className='member-name'>MADISON EVANS</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Library Associate, Solano County Library</div>
             </div>
@@ -481,7 +542,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'antoine.jpg'} alt="Genevieve Antoine" />
               </div>
-              <div className='member-name'>Genevieve Antoine</div>
+              <div className='member-name'>GENEVIEVE ANTOINE</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Data and Program Coordinator, The Alliance of HBCU Museums and Galleries</div>
             </div>
@@ -489,7 +550,7 @@ export default function Landing({ setPage }) {
               <div className='headshot-container'>
                 <img src={returnDomain() + 'schlick.jpg'} alt="Sarah Schlick" />
               </div>
-              <div className='member-name'>Sarah Schlick</div>
+              <div className='member-name'>SARAH SCHLICK</div>
               <div className='project-role'>cataloging</div>
               <div className='job-title'>Assistant Editor, Gallery Books, Simon & Schuster</div>
             </div>

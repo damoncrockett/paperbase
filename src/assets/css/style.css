@@ -247,37 +247,86 @@
   color: var(--yaledarkgray);
 }
 
-.dataVizSection .landingContentItems {
+.landingContentSection.dataInsightsSection {
+  padding: 10vh 0; /* Remove horizontal padding */
   display: flex;
   flex-direction: column;
-  gap: 4rem;
+  align-items: center;
 }
 
-.dataVizUnit {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.dataInsightsSection .landingContentSectionTitle,
+.dataInsightsSection .landingContentItems {
+  width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
-.dataVizUnit h3 {
-  font-size: 1.8rem;
+.dataInsightsSection .landingContentSectionTitle {
+  padding: 0 2rem 2rem;
+  margin: 0;
+  text-align: left;
+  position: relative;
+  top: auto;
+}
+
+.dataInsightsSection .landingContentItems {
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4rem 2rem;
+}
+
+.dataInsightsSection .landingContentSectionTitle h2,
+.dataInsightsSection .landingContentSectionTitle .subtitle {
+  margin: 0;
+  padding: 0;
+}
+
+.dataInsightsSection .landingContentSectionTitle h2 {
+  margin-bottom: 1rem; 
+}
+
+.dataInsightUnit {
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light separator line */
+}
+
+.dataInsightUnit h3 {
+  font-size: 1.5rem;
   margin-bottom: 1rem;
-  font-family: var(--alttitle);
+  font-family: 'DM Sans';
+  font-weight: 500;
+  color: var(--yalelightgray);
 }
 
-.dataVizUnit .svgContainer {
+#insights h2 {
+  text-align: left;
+}
+
+#insights p {
+  text-align: left;
+}
+
+.dataInsightUnit .svgContainer {
   width: 100%;
   margin-bottom: 1rem;
+  aspect-ratio: 16 / 9; /* Maintain consistent aspect ratio for visualizations */
+  background-color: var(--yaledarkgray); /* Dark background to contrast with light gray SVGs */
+  border-radius: 8px; /* Rounded corners for consistency */
+  padding: 1rem; /* Add some padding around the SVG */
 }
 
-.dataVizUnit .svgContainer svg {
-  max-width: 100%;
-  height: auto;
+.dataInsightUnit .svgContainer svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensure the entire SVG is visible */
 }
 
-.dataVizUnit p {
-  font-size: 1.25rem;
-  line-height: 1.5;
+.dataInsightUnit p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--yalelightgray); /* Consistent text color */
 }
 
 .appTutorialsSection .landingContentItems {
@@ -446,6 +495,11 @@
   font-family: var(--alttitle);
 }
 
+.pressExcerpt {
+  font-size: 1rem;
+  color: var(--yalemidgray);
+}
+
 .companionAppsSection .landingContentItems {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -517,8 +571,8 @@
   margin-top: 20px;
   font-size: 1.25rem;
   color: var(--yaledarkgray);
-  font-family: var(--alttitle);
-  font-weight: 600;
+  font-weight: 500;
+  font-family: var(--sectiontitle);
 }
 
 .project-role {
@@ -533,6 +587,7 @@
   font-size: 1rem;
   color: var(--yaledarkgray);
   font-weight: 300;
+  font-family: var(--alttitle);
 }
 
 .footerSection.landingContentSection {
