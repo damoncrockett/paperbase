@@ -1,6 +1,6 @@
 export const landingText = {
     s1: {
-        title: 'The Collection',
+        title: 'THE COLLECTION',
         subtitle: 'Our reference collection of gelatin silver photographic papers.',
         text: [
             `Throughout the twentieth century, photography was fundamentally a paper-based medium, and photographic papers have played a crucial role in shaping the medium's history and practice. However, little research has been done on how the material, technical, and visual properties of these papers impacted the work of photographers. This lack of scholarly attention stems partly from the difficulty of accessing and analyzing the physical characteristics of historical photographic papers.`,
@@ -10,7 +10,7 @@ export const landingText = {
         ] 
     },
     s2: {
-        title: 'Methods',
+        title: 'METHODS',
         subtitle: 'How we built the collection and the dataset.',
         text: [
             `For loose prints, thickness is measured with a calipers-style micrometer; ours is a Mitutoyo ABSOLUTE Digimatic. For mounted prints, we use a Mitutoyo ABSOLUTE Digimatic depth gauge. Thickness is measured in millimeters (mm), and photographic papers typically fall somewhere between 0.05 and 0.5 mm. We take 3 thickness measurements per print and generally take the median (rather than the mean) as the representative measurement, to mitigate the impact of extreme outliers and anomalies.`,

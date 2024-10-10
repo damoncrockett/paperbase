@@ -8,6 +8,8 @@
   --yalewhite: #f9f9f9;
   --yalelightblue: #63aaff;
   --yaleorange: #bd5319;
+  --sectiontitle: "DM Mono";
+  --alttitle: "Aleo";
 }
 
 #downloadTermsModal {
@@ -66,9 +68,7 @@
 }
 
 /* #landing {
-  background-color: var(--yalelightgray);
-  width: 100vw;
-  height: 100vh;
+  overflow-x: hidden;
 } */
 
 .external-nav {
@@ -206,21 +206,25 @@
   text-align: right;
   margin: 0;
   font-size: 2.5rem;
-  font-weight: 700;
-  font-family: 'Archivo';
+  font-weight: 500;
+  font-family: var(--sectiontitle);
 }
 
 .landingContentSectionTitle .subtitle {
   text-align: right;
   margin-top: 1rem;
   font-size: 1.2rem;
-  font-style: italic;
   font-weight: 300;
   color: var(--yalemidlightgray);
+  font-family: "Archivo";
 }
 
 .landingContentItems {
   width: 50%;
+}
+
+.landingContentItems > a {
+  text-decoration: none;
 }
 
 .landingContentItem {
@@ -258,7 +262,7 @@
 .dataVizUnit h3 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
-  font-weight: 600;
+  font-family: var(--alttitle);
 }
 
 .dataVizUnit .svgContainer {
@@ -272,8 +276,8 @@
 }
 
 .dataVizUnit p {
-  font-size: 1.5rem;
-  line-height: 1.6;
+  font-size: 1.25rem;
+  line-height: 1.5;
 }
 
 .appTutorialsSection .landingContentItems {
@@ -293,6 +297,8 @@
   width: 100%;
   padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   height: 0;
+  border-radius: 10px;
+  border: 1px solid var(--yaledarkgray);
   overflow: hidden;
 }
 
@@ -302,6 +308,7 @@
   left: 0;
   width: 100%;
   height: 100%;
+  border-radius: 8px;
 }
 
 .tutorialDescription {
@@ -325,21 +332,30 @@
 .researchPaperUnit h3 {
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--yalemidgray);
+  color: var(--yalemidlightgray);
+  font-family: var(--alttitle);
 }
 
 .researchPaperUnit .author {
   font-size: 1.2rem;
   margin-bottom: 1rem;
   font-style: italic;
-  color: #b0b0b0;
+  color: var(--yalemidlightgray);
+}
+
+.researchPaperUnit .journal {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--yaleorange);
+  font-family: var(--alttitle);
+  font-weight: 400;
 }
 
 .researchPaperUnit .abstract {
   font-size: 1.1rem;
   line-height: 1.6;
   margin-bottom: 1rem;
+  color: var(--yalemidlightgray)
 }
 
 .researchPaperUnit .readLink {
@@ -379,6 +395,8 @@
   font-size: 2rem;
   margin-bottom: 2rem;
   color: var(--yaledarkgray);
+  font-family: var(--sectiontitle);
+  font-weight: 500;
 }
 
 /* Presentations styles */
@@ -416,7 +434,7 @@
 
 .pressSource {
   font-size: 0.9rem;
-  color: var(--yalemidlightgray);
+  color: var(--yalemidgray);
   margin-bottom: 0.5rem;
 }
 
@@ -424,6 +442,45 @@
   font-size: 1.2rem;
   color: var(--yaledarkgray);
   margin-bottom: 0.5rem;
+  font-weight: 400;
+  font-family: var(--alttitle);
+}
+
+.companionAppsSection .landingContentItems {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem;
+}
+
+.appUnit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.appImage {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--yalewhite);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appTitle {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--yalewhite);
+  font-family: var(--alttitle);
+  font-weight: 500;
+}
+
+.appBlurb {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--yalelightgray);
 }
 
 .teamSection .landingContentItems {
@@ -433,7 +490,7 @@
 }
 
 .teamMember {
-  width: calc(33.333% - 1.333rem); /* For 3 members per row, accounting for gap */
+  width: calc(25% - 1.5rem);
   margin-bottom: 2rem;
 }
 
@@ -443,7 +500,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  border: 1px solid var(--yalelightgray);
+  border: 1px solid var(--yaledarkgray);
 }
 
 .headshot-container > img {
@@ -458,23 +515,24 @@
 
 .member-name {
   margin-top: 20px;
-  font-weight: 200;
   font-size: 1.25rem;
-  color: var(--yalewhite);
+  color: var(--yaledarkgray);
+  font-family: var(--alttitle);
+  font-weight: 600;
 }
 
 .project-role {
   margin-top: 5px;
   font-size: 1rem;
-  color: var(--yalemidlightgray);
+  color: var(--yalemidgray);
   font-style: italic;
 }
 
 .job-title {
   margin-top: 20px;
   font-size: 1rem;
-  color: var(--yalewhite);
-  font-weight: 200;
+  color: var(--yaledarkgray);
+  font-weight: 300;
 }
 
 .footerSection.landingContentSection {
@@ -497,7 +555,9 @@
 .footerSubsection h3 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
+  margin-top: 0;
   color: inherit; /* Use the color from landingContentSection */
+  font-family: var(--alttitle);
 }
 
 .footerSubsection p {
@@ -510,27 +570,80 @@
 }
 
 .socialIcons {
-  display: flex;
-  gap: 1rem;
+  display: inline-flex;
+  gap: 1rem; 
 }
 
 .socialIcons a {
-  color: inherit; /* Use the color from landingContentSection */
-  font-size: 1.5rem;
-  text-decoration: none;
+  color: var(--yalewhite); 
+  transition: color 0.3s ease;
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+}
+
+.socialIcons a:hover {
+  color: var(--yalelightblue);
+}
+
+.socialIcons svg {
+  width: 24px;
+  height: 24px;
+  margin-right: 0;
 }
 
 .supportLogos {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: left;
   gap: 1rem;
-  align-items: center;
 }
 
-.supportLogos img {
-  max-width: 100px;
-  max-height: 50px;
+.logoContainer {
+  display: flex;
+  align-items: left;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 224px;
+  gap: 1rem;
+}
+
+.logoContainer img {
+  width: 100%;
+  height: auto;
   object-fit: contain;
+}
+
+.logoContainer svg {
+  width: 45px;
+  height: 30px;
+  margin-right: 0;
+  fill: currentColor; 
+  color: var(--yalewhite); 
+}
+
+#jp {
+  margin-top: 0.3rem;
+}
+
+#ami {
+  text-decoration: none;
+}
+
+.logoText {
+  font-size: 0.75rem;
+  color: var(--yalewhite);
+  margin-left: 0.5rem;
+}
+
+.yaleLogoText {
+  font-size: 1.5rem;
+  color: var(--yalewhite);
+  text-decoration: none;
+}
+
+#yale {
+  text-decoration: none;
 }
 
 .footerBottom {
@@ -550,6 +663,11 @@
 .footerBottom a {
   color: inherit;
   text-decoration: none;
+}
+
+#termslink {
+  color: var(--yalelightblue);
+  font-weight: 400;
 }
 
 .footerBottom a:hover {
