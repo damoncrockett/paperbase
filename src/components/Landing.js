@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { returnDomain } from '../utils/img';
-import { landingText } from '../utils/landing';
 
 const landingStyle = {
   minHeight: '100vh',
@@ -61,31 +60,45 @@ export default function Landing({ setPage }) {
       </div>
       <div className='landingContent'>
         <div id='s1' className='landingContentSection'>
-          <div className='landingContentSectionTitle'>
-            <h2>{landingText.s1.title}</h2>
-            <p className='subtitle'>{landingText.s1.subtitle}</p>
-          </div>
-          <div className='landingContentItems'>
-            {landingText.s1.text.map((text, i) => (
-              <div className='landingContentItem' key={i}>
-                <p>{text}</p>
+            <div className='landingContentSectionTitle'>
+              <h2>THE COLLECTION</h2>
+              <p className='subtitle'>Our reference collection of gelatin silver photographic papers.</p>
+            </div>
+            <div className='landingContentItems'>
+              <div className='landingContentItem'>
+                <p>Throughout the twentieth century, photography was fundamentally a paper-based medium, and photographic papers have played a crucial role in shaping the medium's history and practice. However, little research has been done on how the material, technical, and visual properties of these papers impacted the work of photographers. This lack of scholarly attention stems partly from the difficulty of accessing and analyzing the physical characteristics of historical photographic papers.</p>
               </div>
-            ))}
-          </div>
-        </div>
-        <div id='s2' className='landingContentSection'>
-          <div className='landingContentSectionTitle'>
-            <h2>{landingText.s2.title}</h2>
-            <p className='subtitle'>{landingText.s2.subtitle}</p>
-          </div>
-          <div className='landingContentItems'>
-            {landingText.s2.text.map((text, i) => (
-              <div className='landingContentItem' key={i}>
-                <p>{text}</p>
+              <div className='landingContentItem'>
+                <p>To address this gap, the Lens Media Lab at Yale University's Institute for the Preservation of Cultural Heritage has undertaken an extensive project to document and characterize its collection of over 7,500 dated and identified gelatin silver papers manufactured between 1890 and 2010. This is believed to be the largest collection of photographic paper samples in the world. Roughly one-third of the samples in the collection come from packages of photographic paper; the remaining two-thirds come from sample books published by manufacturers, and most of the samples in these books are printed photographs. From this collection, the lab has constructed a rich and comprehensive dataset that combines traditional catalog information with extensive material analyses.</p>
               </div>
-            ))}
+              <div className='landingContentItem'>
+                <p>The dataset includes, for each paper sample, detailed measurements of surface texture, gloss, base color, image color, thickness, and fluorescence to delineate the wide material variety of papers used by both professional and amateur photographers during the twentieth century. Also recorded for each paper sample are the manufacturer, brand, surface code, spatial dimensions, and year of manufacture (sometimes estimated or inferred); any resin coatings, toning agents, backprints, and processing instructions; and any language used by the manufacturer to describe the material properties that we measure: texture terms like "smooth", "rough", and "pebbled"; color terms like "white", "cream", and "ivory"; reflectance terms like "glossy", "matte", and "luster"; and designations of paper thickness, usually "single weight" or "double weight". The lab has done extensive imaging of the collection as well, including microscopic images of the paper surfaces; high-resolution digital images of any paper packages, sample book photographs, and backprints; and scans of any processing instructions. This rich trove of data is now made publicly accessible through Paperbase, a new web-based research platform developed by the Lens Media Lab.</p>
+              </div>
+              <div className='landingContentItem'>
+                <p>By providing access to this unique dataset through Pape  rbase, the Lens Media Lab seeks to catalyze new approaches to characterizing the material practices of twentieth-century photographers. Moreover, Paperbase will enable researchers to chart the evolution of paper-based photographic technologies, such as the introduction of optical brightening agents and resin coatings, and to better understand how the language used to describe photographic papers, including widespread terms like "white" and "glossy," changed over time.</p>
+              </div>
+            </div>
           </div>
-        </div>
+          <div id='s2' className='landingContentSection'>
+            <div className='landingContentSectionTitle'>
+              <h2>METHODS</h2>
+              <p className='subtitle'>How we built the collection and the dataset.</p>
+            </div>
+            <div className='landingContentItems'>
+              <div className='landingContentItem'>
+                <p>For loose prints, thickness is measured with a calipers-style micrometer; ours is a Mitutoyo ABSOLUTE Digimatic. For mounted prints, we use a Mitutoyo ABSOLUTE Digimatic depth gauge. Thickness is measured in millimeters (mm), and photographic papers typically fall somewhere between 0.05 and 0.5 mm. We take 3 thickness measurements per print and generally take the median (rather than the mean) as the representative measurement, to mitigate the impact of extreme outliers and anomalies.</p>
+              </div>
+              <div className='landingContentItem'>
+                <p>Gloss is measured using a glossmeter and in gloss units (GU), an industry standard. Our glossmeter is a BYK-Gardner micro-TRI-gloss, which measures specular reflection at 20°, 60°, and 85° angles. We generally consider only the 60° angle, as most photographic papers fall within a range of gloss values well-suited to this angle—values generally between 1-100 GU. As with thickness, we take 3 gloss measurements for every print and use the median.</p>
+              </div>
+              <div className='landingContentItem'>
+                <p>We measure the color of both the paper base and the silver image material using a spectrophotometer. In this study, the prints were measured with X-Rite spectrophotometers, which use the 2° observer and the d65 illuminant. A separate ultraviolet (UV) illuminant can also be used.</p>
+              </div>
+              <div className='landingContentItem'>
+                <p>For the purposes of our expressiveness model, we focus on paper roughness, a property well-defined in the surface metrology literature and measurable directly using an optical profilometer. Roughness is, approximately, the standard deviation of heights of the paper surface. The greater the variation in surface heights, the rougher the surface.</p>
+              </div>
+            </div>
+          </div>
         <div className='landingContentSection dataInsightsSection'>
           <div id='insights' className='landingContentSectionTitle'>
             <h2>DATA INSIGHTS</h2>
@@ -178,77 +191,82 @@ export default function Landing({ setPage }) {
         <div className='landingContentSection appTutorialsSection'>
           <div className='landingContentSectionTitle'>
             <h2>VIDEO TUTORIALS</h2>
-            <p className='subtitle'>Learn how to use our platform with these helpful video guides.</p>
+            <p className='subtitle'>Video walkthroughs of advanced use cases and feature combinations.</p>
           </div>
           <div className='landingContentItems'>
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
-                  title="Tutorial 1" 
+                  title="The Texture Map" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
               <div class='tutorialBlurb'>
-                <h3>Getting Started with Paperbase</h3>
-                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+                <h3>The Texture Map</h3>
+                <p class='tutorialDescription'>The texture map arranges collection items into a 3D landscape where nearby items have similar surface textures. In this tutorial, we show you how to use the texture map to better understand manufacturer texture descriptions.</p>
+                <p class='tutorialAdditional'><b>+</b> categorical color mapping, box selection, surface micrographs, filtering using both texture descriptors and the roughness slider, 3D plot rotation, panel text settings</p>
               </div>
             </div>
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
-                  title="Tutorial 1" 
+                  title="Historical Research" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
               <div class='tutorialBlurb'>
-                <h3>Getting Started with Paperbase</h3>
-                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+                <h3>Historical Research</h3>
+                <p class='tutorialDescription'>Paperbase hosts a variety of high-resolution image assets which can be used for deep historical research on photographic papers. In this tutorial, we show you how to use the detail screen to simulate direct contact with our collection materials.</p>
+                <p class='tutorialAdditional'><b>+</b> data download, links to LUX records, backprints, removing panel items</p>
               </div>
             </div>
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
-                  title="Tutorial 1" 
+                  title="Visualizing Continuous Variables" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
               <div class='tutorialBlurb'>
-                <h3>Getting Started with Paperbase</h3>
-                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+                <h3>Visualizing Continuous Variables</h3>
+                <p class='tutorialDescription'>Paperbase offers a number of ways to visualize continuous variables like thickness, gloss, warmth, and roughness. In this tutorial, we show you how to map these variables to layouts and colors, and we discuss the relative merits of each mapping.</p>
+                <p class='tutorialAdditional'><b>+</b> vertical sorting in histograms, representations of missing data, animated layout transitions, 3D plot rotation</p>
               </div>
             </div>
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
-                  title="Tutorial 1" 
+                  title="Filter Panel as Data Visualization" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
               <div class='tutorialBlurb'>
-                <h3>Getting Started with Paperbase</h3>
-                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+                <h3>Filter Panel as Data Visualization</h3>
+                <p class='tutorialDescription'>Paperbase’s filter panel is both a set of controls for the 3D visualization canvas and a data visualization in its own right, because its buttons and sliders carry information about the relative frequencies of variable values in the filtered data. In this tutorial, we demonstrate the considerable power of the filter panel and how it can be used for research.</p>
+                <p class='tutorialAdditional'><b>+</b> spread slider, filter group expand button, filter counter, year histogram, viewing base colors in the selection panel, surface codes, surface micrographs, sample book browsing</p>
               </div>
             </div>
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
-                  title="Tutorial 1" 
+                  title="The Cluster Plot" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
               <div class='tutorialBlurb'>
-                <h3>Getting Started with Paperbase</h3>
-                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+                <h3>The Cluster Plot</h3>
+                <p class='tutorialDescription'>The cluster plot is a hybrid of discrete and continuous representations of our collection’s material properties—i.e., thickness, gloss, warmth, and roughness. Collection items are grouped by material similarity, and these groups are then plotted together on a continuous plane, again by material similarity. The cluster plot is an alternative to viewing the collection in a 3D Cartesian space, which may make certain relationships easier to see. In this tutorial, we discuss the cluster plot in depth and compare it with the 3D scatterplot.</p>
+                <p class='tutorialAdditional'><b>+</b> radar charts, radar groups, group color shuffle, spread slider, alternative 3D glyphs, selection highlight tracking</p>
               </div>
             </div>
           </div>

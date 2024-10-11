@@ -381,6 +381,10 @@
   text-align: left;
 }
 
+.appTutorialsSection .subtitle {
+  color: var(--yalemidgray);
+}
+
 .appTutorialsSection .landingContentItems {
   width: 100%;
   max-width: 1200px;
@@ -409,7 +413,6 @@
   border-radius: 10px;
 }
 
-/* Step 6: Style the blurb */
 .tutorialBlurb {
   flex: 1; /* Take up remaining space */
   display: flex;
@@ -427,7 +430,15 @@
 .tutorialDescription {
   font-size: 1rem;
   line-height: 1.4;
-  color: var(--yalemidgray);
+  color: var(--yaledarkgray);
+}
+
+.tutorialAdditional {
+  font-size: 0.85rem;
+  color: var(--yaledarkgray);
+  margin-top: 1rem;
+  font-weight: 400;
+  font-family: 'DM Mono';
 }
 
 .researchSection .landingContentItems {
