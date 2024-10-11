@@ -246,6 +246,10 @@
   font-family: "Archivo";
 }
 
+#s2 .subtitle {
+  color: var(--yalemidgray);
+}
+
 .landingContentItems {
   width: 50%;
 }
@@ -624,6 +628,10 @@
 
 .teamSection .landingContentSectionTitle .subtitle {
   text-align: left;
+}
+
+.teamSection .subtitle {
+  color: var(--yalemidgray);
 }
 
 .teamSection .landingContentItems {

@@ -4,7 +4,7 @@ import { returnDomain } from '../utils/img';
 const landingStyle = {
   minHeight: '100vh',
   width: '100vw',
-  backgroundImage: `url(${returnDomain()}hero2.jpg)`,
+  backgroundImage: `url(${returnDomain()}hero.jpg)`,
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center',
   backgroundSize: 'cover',
@@ -212,7 +212,7 @@ export default function Landing({ setPage }) {
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
-                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  src="https://www.youtube.com/embed/ycz1nlf1Mks?si=sjkJ6eOLHxxQ_I1p" 
                   title="Historical Research" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
@@ -227,7 +227,7 @@ export default function Landing({ setPage }) {
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
-                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  src="https://www.youtube.com/embed/cd0YKz3Xbmw?si=MFIp4ytnLPsxoECg" 
                   title="Visualizing Continuous Variables" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
@@ -242,7 +242,7 @@ export default function Landing({ setPage }) {
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
-                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  src="https://www.youtube.com/embed/6epRM60L-Cc?si=orIDf_mh6BcCUxNm" 
                   title="Filter Panel as Data Visualization" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
@@ -257,7 +257,7 @@ export default function Landing({ setPage }) {
             <div class='tutorialItem'>
               <div class='videoContainer'>
                 <iframe 
-                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  src="https://www.youtube.com/embed/HTXScEOwze8?si=IJ6cTGYquT_DzuhC" 
                   title="The Cluster Plot" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
@@ -378,42 +378,34 @@ export default function Landing({ setPage }) {
               <div className='pressItem'>
                 <div className='pressSource'>Yale News</div>
                 <div className='pressTitle'>Analyzing the photographic process from darkroom to data</div>
-                <p className='pressExcerpt'>"At a recent symposium, Yale’s Lens Media Lab unveiled a visual platform for studying its unrivaled collection of photographic papers."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>The Classic Magazine</div>
                 <div className='pressTitle'>Paperbase: A New Lens on Photographic History</div>
-                <p className='pressExcerpt'>"This groundbreaking project is changing how we understand the material history of photography."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>Scientific American</div>
                 <div className='pressTitle'>The Science Behind Paperbase</div>
-                <p className='pressExcerpt'>"By combining cutting-edge technology with meticulous historical research, Paperbase is uncovering new facets of photographic history."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>Art in America</div>
                 <div className='pressTitle'>Paperbase: A New Lens on Photographic History</div>
-                <p className='pressExcerpt'>"This groundbreaking project is changing how we understand the material history of photography."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>The New York Times</div>
                 <div className='pressTitle'>The Impresario of Photo Paper</div>
-                <p className='pressExcerpt'>"Paul Messier, director of the Lens Media Lab, is leading the charge to digitize and analyze the world's largest collection of photographic paper."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>Wired</div>
                 <div className='pressTitle'>Paperbase: A New Frontier in Photographic Research</div>
-                <p className='pressExcerpt'>"This innovative platform is revolutionizing the way we study the history of photography."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>The Atlantic</div>
                 <div className='pressTitle'>The Hidden Stories of Photographic Paper</div>
-                <p className='pressExcerpt'>"Paperbase is uncovering the secrets of photographic paper, revealing new insights into the history of photography."</p>
               </div>
               <div className='pressItem'>
                 <div className='pressSource'>Gigaom</div>
                 <div className='pressTitle'>The Mad Scientists Revolutionizing Photographic Research</div>
-                <p className='pressExcerpt'>"The team at the Lens Media Lab is pushing the boundaries of what's possible in the field of photographic history."</p>
               </div>
             </div>
           </div>
