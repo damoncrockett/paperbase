@@ -177,74 +177,79 @@ export default function Landing({ setPage }) {
         </div>
         <div className='landingContentSection appTutorialsSection'>
           <div className='landingContentSectionTitle'>
-            <h2>APP TUTORIALS</h2>
+            <h2>VIDEO TUTORIALS</h2>
             <p className='subtitle'>Learn how to use our platform with these helpful video guides.</p>
           </div>
           <div className='landingContentItems'>
-            <div className='tutorialItem'>
-              <div className='videoContainer'>
+            <div class='tutorialItem'>
+              <div class='videoContainer'>
                 <iframe 
-                  width="560" 
-                  height="315" 
-                  src="https://www.youtube.com/embed/VIDEO_ID_1" 
+                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
                   title="Tutorial 1" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
-              <p className='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              <div class='tutorialBlurb'>
+                <h3>Getting Started with Paperbase</h3>
+                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              </div>
             </div>
-            <div className='tutorialItem'>
-              <div className='videoContainer'>
+            <div class='tutorialItem'>
+              <div class='videoContainer'>
                 <iframe 
-                  width="560" 
-                  height="315" 
-                  src="https://www.youtube.com/embed/VIDEO_ID_2" 
-                  title="Tutorial 2" 
+                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  title="Tutorial 1" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
-              <p className='tutorialDescription'>Discover advanced search techniques to find specific items in our collection.</p>
+              <div class='tutorialBlurb'>
+                <h3>Getting Started with Paperbase</h3>
+                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              </div>
             </div>
-            <div className='tutorialItem'>
-              <div className='videoContainer'>
+            <div class='tutorialItem'>
+              <div class='videoContainer'>
                 <iframe 
-                  width="560" 
-                  height="315" 
-                  src="https://www.youtube.com/embed/VIDEO_ID_2" 
-                  title="Tutorial 2" 
+                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  title="Tutorial 1" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
-              <p className='tutorialDescription'>Discover advanced search techniques to find specific items in our collection.</p>
+              <div class='tutorialBlurb'>
+                <h3>Getting Started with Paperbase</h3>
+                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              </div>
             </div>
-            <div className='tutorialItem'>
-              <div className='videoContainer'>
+            <div class='tutorialItem'>
+              <div class='videoContainer'>
                 <iframe 
-                  width="560" 
-                  height="315" 
-                  src="https://www.youtube.com/embed/VIDEO_ID_2" 
-                  title="Tutorial 2" 
+                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  title="Tutorial 1" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
-              <p className='tutorialDescription'>Discover advanced search techniques to find specific items in our collection.</p>
+              <div class='tutorialBlurb'>
+                <h3>Getting Started with Paperbase</h3>
+                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              </div>
             </div>
-            <div className='tutorialItem'>
-              <div className='videoContainer'>
+            <div class='tutorialItem'>
+              <div class='videoContainer'>
                 <iframe 
-                  width="560" 
-                  height="315" 
-                  src="https://www.youtube.com/embed/VIDEO_ID_2" 
-                  title="Tutorial 2" 
+                  src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
+                  title="Tutorial 1" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen>
                 </iframe>
               </div>
-              <p className='tutorialDescription'>Discover advanced search techniques to find specific items in our collection.</p>
+              <div class='tutorialBlurb'>
+                <h3>Getting Started with Paperbase</h3>
+                <p class='tutorialDescription'>Learn the basics of navigating our platform and accessing key features.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -308,12 +313,10 @@ export default function Landing({ setPage }) {
         <div className='landingContentSection presentationsAndPressSection'>
           <div className='presentationsAndPressContent'>
             <div className='presentationsColumn'>
-              <h2 className='sectionTitle'>PRESENTATIONS</h2>
+              <h2 className='sectionTitle'>PUBLIC TALKS</h2>
               <div className='presentationItem'>
                 <div className='videoContainer'>
                   <iframe 
-                    width="560" 
-                    height="315" 
                     src="https://www.youtube.com/embed/iK6FkDVBT4g?si=86hUYBoxbMAP0Z3u" 
                     title="Lens Media Lab Background, Collection, Research" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -324,8 +327,6 @@ export default function Landing({ setPage }) {
               <div className='presentationItem'>
                 <div className='videoContainer'>
                   <iframe 
-                    width="560" 
-                    height="315" 
                     src="https://www.youtube.com/embed/IjW6EIEzW-k?si=bJvxfZ3TJdzZGJ9i" 
                     title="Exploring the Material History of Black and White Paper with Paperbase" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -336,8 +337,6 @@ export default function Landing({ setPage }) {
               <div className='presentationItem'>
                 <div className='videoContainer'>
                   <iframe 
-                    width="560" 
-                    height="315" 
                     src="https://www.youtube.com/embed/ionDa9Tna8E?si=2jQHfwIgbTGFAZtY" 
                     title="Paperbase as a Tool for Photo Historical Research" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -348,8 +347,6 @@ export default function Landing({ setPage }) {
               <div className='presentationItem'>
                 <div className='videoContainer'>
                   <iframe 
-                    width="560" 
-                    height="315" 
                     src="https://www.youtube.com/embed/CDKS7Qvr1sM?si=ECmx1BdLHrODi--0" 
                     title="The LML Method" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -450,7 +447,7 @@ export default function Landing({ setPage }) {
                 <img src={returnDomain() + 'crockett2.jpg'} alt="Damon Crockett" />
               </div>
               <div className='member-name'>DAMON CROCKETT</div>
-              <div className='project-role'>data science, site design and development</div>
+              <div className='project-role'>data science, app and site design, measurement</div>
               <div className='job-title'>AI Engineer, Lens Media Lab, Yale University</div>
             </div>
             <div className='teamMember'>
@@ -466,7 +463,7 @@ export default function Landing({ setPage }) {
                 <img src={returnDomain() + 'mintie.jpg'} alt="Katherine Mintie" />
               </div>
               <div className='member-name'>KATHERINE MINTIE</div>
-              <div className='project-role'>measurement, writing, user research</div>
+              <div className='project-role'>measurement, writing, testing</div>
               <div className='job-title'>Head of Collections, Center for Creative Photography, University of Arizona</div>
             </div>
             <div className='teamMember'>
@@ -483,7 +480,15 @@ export default function Landing({ setPage }) {
               </div>
               <div className='member-name'>SYDNEY NIKOLAUS</div>
               <div className='project-role'>photography, measurement, cataloging</div>
-              <div className='job-title'>Research Associate, Lens Media Lab, Yale University</div>
+              <div className='job-title'>Research Associate, Lens Media Lab, Yale University; Paintings Conservator in Private Practice</div>
+            </div>
+            <div className='teamMember'>
+              <div className='headshot-container'>
+                <img src={returnDomain() + 'alam.jpg'} alt="Joitree Alam" />
+              </div>
+              <div className='member-name'>JOITREE ALAM</div>
+              <div className='project-role'>dating, measurement</div>
+              <div className='job-title'>Ph.D. Student, Art History, Northwestern University</div>
             </div>
             <div className='teamMember'>
               <div className='headshot-container'>
@@ -492,14 +497,6 @@ export default function Landing({ setPage }) {
               <div className='member-name'>CYNTHIA YUE</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Data Analyst, Lens Media Lab, Yale University</div>
-            </div>
-            <div className='teamMember'>
-              <div className='headshot-container'>
-                <img src={returnDomain() + 'alam.jpg'} alt="Joitree Alam" />
-              </div>
-              <div className='member-name'>JOITREE ALAM</div>
-              <div className='project-role'>measurement</div>
-              <div className='job-title'>Ph.D. Student, Art History, Northwestern University</div>
             </div>
             <div className='teamMember'>
               <div className='headshot-container'>
