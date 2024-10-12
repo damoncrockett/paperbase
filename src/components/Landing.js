@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { returnDomain } from '../utils/img';
 
 const landingStyle = {
@@ -44,9 +44,17 @@ const injectFontFaces = () => {
 
 export default function Landing({ setPage }) {
 
+  const nextSectionRef = useRef(null);
+
   useEffect(() => {
     injectFontFaces();
   }, []);
+
+  const scrollToNextSection = () => {
+    if (nextSectionRef.current) {
+      nextSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div id='landing' style={landingStyle}>
@@ -55,11 +63,14 @@ export default function Landing({ setPage }) {
         <p id='blurbText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the <a href='https://lml.yale.edu/' target='_blank'>Lens Media Lab</a> at Yale University.</p>
         <button onClick={() => setPage('app')}>Explore the collection</button>
       </div>
-      <div className="scroll-indicator">
-        <span className="material-icons">keyboard_double_arrow_down</span>
+      <div className="scroll-indicator" onClick={scrollToNextSection}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+          <polyline points="6 15 12 21 18 15" />
+        </svg>
       </div>
       <div className='landingContent'>
-        <div id='s1' className='landingContentSection'>
+        <div id='s1' className='landingContentSection' ref={nextSectionRef}>
             <div className='landingContentSectionTitle'>
               <h2>THE COLLECTION</h2>
               <p className='subtitle'>Our reference collection of gelatin silver photographic papers.</p>
@@ -70,12 +81,6 @@ export default function Landing({ setPage }) {
               </div>
               <div className='landingContentItem'>
                 <p>To address this gap, the Lens Media Lab at Yale University's Institute for the Preservation of Cultural Heritage has undertaken an extensive project to document and characterize its collection of over 7,500 dated and identified gelatin silver papers manufactured between 1890 and 2010. This is believed to be the largest collection of photographic paper samples in the world. Roughly one-third of the samples in the collection come from packages of photographic paper; the remaining two-thirds come from sample books published by manufacturers, and most of the samples in these books are printed photographs. From this collection, the lab has constructed a rich and comprehensive dataset that combines traditional catalog information with extensive material analyses.</p>
-              </div>
-              <div className='landingContentItem'>
-                <p>The dataset includes, for each paper sample, detailed measurements of surface texture, gloss, base color, image color, thickness, and fluorescence to delineate the wide material variety of papers used by both professional and amateur photographers during the twentieth century. Also recorded for each paper sample are the manufacturer, brand, surface code, spatial dimensions, and year of manufacture (sometimes estimated or inferred); any resin coatings, toning agents, backprints, and processing instructions; and any language used by the manufacturer to describe the material properties that we measure: texture terms like "smooth", "rough", and "pebbled"; color terms like "white", "cream", and "ivory"; reflectance terms like "glossy", "matte", and "luster"; and designations of paper thickness, usually "single weight" or "double weight". The lab has done extensive imaging of the collection as well, including microscopic images of the paper surfaces; high-resolution digital images of any paper packages, sample book photographs, and backprints; and scans of any processing instructions. This rich trove of data is now made publicly accessible through Paperbase, a new web-based research platform developed by the Lens Media Lab.</p>
-              </div>
-              <div className='landingContentItem'>
-                <p>By providing access to this unique dataset through Pape  rbase, the Lens Media Lab seeks to catalyze new approaches to characterizing the material practices of twentieth-century photographers. Moreover, Paperbase will enable researchers to chart the evolution of paper-based photographic technologies, such as the introduction of optical brightening agents and resin coatings, and to better understand how the language used to describe photographic papers, including widespread terms like "white" and "glossy," changed over time.</p>
               </div>
             </div>
           </div>
@@ -194,8 +199,8 @@ export default function Landing({ setPage }) {
             <p className='subtitle'>Video walkthroughs of advanced use cases and feature combinations.</p>
           </div>
           <div className='landingContentItems'>
-            <div class='tutorialItem'>
-              <div class='videoContainer'>
+            <div className='tutorialItem'>
+              <div className='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/piMVo9iV-DU?si=sR_zi4Z11HPNeg7e" 
                   title="The Texture Map" 
@@ -203,14 +208,14 @@ export default function Landing({ setPage }) {
                   allowFullScreen>
                 </iframe>
               </div>
-              <div class='tutorialBlurb'>
+              <div className='tutorialBlurb'>
                 <h3>The Texture Map</h3>
-                <p class='tutorialDescription'>The texture map arranges collection items into a 3D landscape where nearby items have similar surface textures. In this tutorial, we show you how to use the texture map to better understand manufacturer texture descriptions.</p>
-                <p class='tutorialAdditional'><b>+</b> categorical color mapping, box selection, surface micrographs, filtering using both texture descriptors and the roughness slider, 3D plot rotation, panel text settings</p>
+                <p className='tutorialDescription'>The texture map arranges collection items into a 3D landscape where nearby items have similar surface textures. In this tutorial, we show you how to use the texture map to better understand manufacturer texture descriptions.</p>
+                <p className='tutorialAdditional'><b>+</b> categorical color mapping, box selection, surface micrographs, filtering using both texture descriptors and the roughness slider, 3D plot rotation, panel text settings</p>
               </div>
             </div>
-            <div class='tutorialItem'>
-              <div class='videoContainer'>
+            <div className='tutorialItem'>
+              <div className='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/ycz1nlf1Mks?si=sjkJ6eOLHxxQ_I1p" 
                   title="Historical Research" 
@@ -218,14 +223,14 @@ export default function Landing({ setPage }) {
                   allowFullScreen>
                 </iframe>
               </div>
-              <div class='tutorialBlurb'>
+              <div className='tutorialBlurb'>
                 <h3>Historical Research</h3>
-                <p class='tutorialDescription'>Paperbase hosts a variety of high-resolution image assets which can be used for deep historical research on photographic papers. In this tutorial, we show you how to use the detail screen to simulate direct contact with our collection materials.</p>
-                <p class='tutorialAdditional'><b>+</b> data download, links to LUX records, backprints, removing panel items</p>
+                <p className='tutorialDescription'>Paperbase hosts a variety of high-resolution image assets which can be used for deep historical research on photographic papers. In this tutorial, we show you how to use the detail screen to simulate direct contact with our collection materials.</p>
+                <p className='tutorialAdditional'><b>+</b> data download, links to LUX records, backprints, removing panel items</p>
               </div>
             </div>
-            <div class='tutorialItem'>
-              <div class='videoContainer'>
+            <div className='tutorialItem'>
+              <div className='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/cd0YKz3Xbmw?si=MFIp4ytnLPsxoECg" 
                   title="Visualizing Continuous Variables" 
@@ -233,14 +238,14 @@ export default function Landing({ setPage }) {
                   allowFullScreen>
                 </iframe>
               </div>
-              <div class='tutorialBlurb'>
+              <div className='tutorialBlurb'>
                 <h3>Visualizing Continuous Variables</h3>
-                <p class='tutorialDescription'>Paperbase offers a number of ways to visualize continuous variables like thickness, gloss, warmth, and roughness. In this tutorial, we show you how to map these variables to layouts and colors, and we discuss the relative merits of each mapping.</p>
-                <p class='tutorialAdditional'><b>+</b> vertical sorting in histograms, representations of missing data, animated layout transitions, 3D plot rotation</p>
+                <p className='tutorialDescription'>Paperbase offers a number of ways to visualize continuous variables like thickness, gloss, warmth, and roughness. In this tutorial, we show you how to map these variables to layouts and colors, and we discuss the relative merits of each mapping.</p>
+                <p className='tutorialAdditional'><b>+</b> vertical sorting in histograms, representations of missing data, animated layout transitions, 3D plot rotation</p>
               </div>
             </div>
-            <div class='tutorialItem'>
-              <div class='videoContainer'>
+            <div className='tutorialItem'>
+              <div className='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/6epRM60L-Cc?si=orIDf_mh6BcCUxNm" 
                   title="Filter Panel as Data Visualization" 
@@ -248,14 +253,14 @@ export default function Landing({ setPage }) {
                   allowFullScreen>
                 </iframe>
               </div>
-              <div class='tutorialBlurb'>
+              <div className='tutorialBlurb'>
                 <h3>Filter Panel as Data Visualization</h3>
-                <p class='tutorialDescription'>Paperbase’s filter panel is both a set of controls for the 3D visualization canvas and a data visualization in its own right, because its buttons and sliders carry information about the relative frequencies of variable values in the filtered data. In this tutorial, we demonstrate the considerable power of the filter panel and how it can be used for research.</p>
-                <p class='tutorialAdditional'><b>+</b> spread slider, filter group expand button, filter counter, year histogram, viewing base colors in the selection panel, surface codes, surface micrographs, sample book browsing</p>
+                <p className='tutorialDescription'>Paperbase’s filter panel is both a set of controls for the 3D visualization canvas and a data visualization in its own right, because its buttons and sliders carry information about the relative frequencies of variable values in the filtered data. In this tutorial, we demonstrate the considerable power of the filter panel and how it can be used for research.</p>
+                <p className='tutorialAdditional'><b>+</b> spread slider, filter group expand button, filter counter, year histogram, viewing base colors in the selection panel, surface codes, surface micrographs, sample book browsing</p>
               </div>
             </div>
-            <div class='tutorialItem'>
-              <div class='videoContainer'>
+            <div className='tutorialItem'>
+              <div className='videoContainer'>
                 <iframe 
                   src="https://www.youtube.com/embed/HTXScEOwze8?si=IJ6cTGYquT_DzuhC" 
                   title="The Cluster Plot" 
@@ -263,10 +268,10 @@ export default function Landing({ setPage }) {
                   allowFullScreen>
                 </iframe>
               </div>
-              <div class='tutorialBlurb'>
+              <div className='tutorialBlurb'>
                 <h3>The Cluster Plot</h3>
-                <p class='tutorialDescription'>The cluster plot is a hybrid of discrete and continuous representations of our collection’s material properties—i.e., thickness, gloss, warmth, and roughness. Collection items are grouped by material similarity, and these groups are then plotted together on a continuous plane, again by material similarity. The cluster plot is an alternative to viewing the collection in a 3D Cartesian space, which may make certain relationships easier to see. In this tutorial, we discuss the cluster plot in depth and compare it with the 3D scatterplot.</p>
-                <p class='tutorialAdditional'><b>+</b> radar charts, radar groups, group color shuffle, spread slider, alternative 3D glyphs, selection highlight tracking</p>
+                <p className='tutorialDescription'>The cluster plot is a hybrid of discrete and continuous representations of our collection’s material properties—i.e., thickness, gloss, warmth, and roughness. Collection items are grouped by material similarity, and these groups are then plotted together on a continuous plane, again by material similarity. The cluster plot is an alternative to viewing the collection in a 3D Cartesian space, which may make certain relationships easier to see. In this tutorial, we discuss the cluster plot in depth and compare it with the 3D scatterplot.</p>
+                <p className='tutorialAdditional'><b>+</b> radar charts, radar groups, group color shuffle, spread slider, alternative 3D glyphs, selection highlight tracking</p>
               </div>
             </div>
           </div>
@@ -605,7 +610,7 @@ export default function Landing({ setPage }) {
                 <div className='logoContainer'>
                   <a id='ami' href="https://ami.withgoogle.com/" target="_blank" rel="noopener noreferrer">
                     <svg width="90" height="60" viewBox="0 0 90 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clip-path="url(#clip0_463_500)">
+                      <g clipPath="url(#clip0_463_500)">
                         <path d="M75.2507 30H67.6855V60H75.2507V30z" fill="currentColor"/>
                         <path d="M31.9639 30V60h7.9158V47.88l6.1323 12h5.04l5.8618-12V60h7.9158V30H56.9138L48.6472 48.05 39.8797 30H31.9639z" fill="currentColor"/>
                         <path d="M20.0401.0 31.9639 30H23.6774L15.9619 10.25 8.66734 30H0L12.4249.0h7.6152zM67.6854 18.1v7.6H90V18.1H67.6854z" fill="currentColor"/>
