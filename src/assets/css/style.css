@@ -251,8 +251,201 @@
   font-family: "Archivo";
 }
 
+.inNumbersSection {
+  margin-top: 2rem;
+}
+
+#firstInNumbersRow {
+  margin-top: 3rem;
+}
+
+.inNumbersGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.inNumbersItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  background-color: none;
+  border-radius: 10px;
+  border: 1px solid var(--yalemidlightgray);
+}
+
+.inNumbersValue {
+  font-family: 'Aleo';
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  color: var(--yalelightgray);
+}
+
+.inNumbersLabel {
+  font-family: 'DM Mono';
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--yalemidlightgray);
+  font-weight: 300;
+}
+
+.sampleCount {
+  color: var(--yaledarkgray);
+  background-color: var(--yalewhite);
+  border-color: var(--yalewhite);
+}
+
 #s2 .subtitle {
   color: var(--yalemidgray);
+}
+
+.methodsSection.landingContentSection {
+  width: 100%;
+  padding: 10vh 0;
+  background-color: var(--yalelightgray);
+}
+
+.methodsSectionInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.methodsSection .landingContentSectionTitle {
+  width: 100%;
+  padding: 0 2rem;
+  margin-bottom: 4rem;
+  box-sizing: border-box;
+  position: static;
+}
+
+.methodsSection .landingContentSectionTitle h2 {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.methodsSection .landingContentSectionTitle .subtitle {
+  text-align: left;
+  color: var(--yalemidgray);
+}
+
+.methodsContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.methodRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 4fr;
+  gap: 4rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.methodBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 10px;
+  text-align: center;
+  min-height: 100px;
+  border: 1px solid var(--yalemidgray);
+  position: relative;
+  z-index: 1;
+}
+
+.methodBlock.empty {
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+.methodConnections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Ensures the SVG doesn't interfere with clicks */
+}
+
+.methodBlock .material-icons {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: var(--yalemidgray);
+}
+
+.methodBlock p {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--yalemidgray);
+  font-weight: 400;
+}
+
+.methodBlock.completeCollection, .methodBlock.collectionSubset {
+  background-color: var(--yalewhite);
+}
+
+.methodBlock.webgl, .methodBlock.radarChart {
+  background-color: var(--yalemidgray);
+}
+
+.methodBlock.webgl p,
+.methodBlock.webgl .material-icons,
+.methodBlock.radarChart p,
+.methodBlock.radarChart .material-icons {
+  color: var(--yalewhite);
+}
+
+.methodBlock.collectionFilter {
+  border-color: var(--yaleorange)
+}
+
+.methodBlock.collectionFilter p {
+  color: var(--yaleorange)
+}
+
+.methodBlock.collectionFilter .material-icons {
+  color: var(--yaleorange);
+}
+
+.methodBlock.collectionGrow {
+  border-color: var(--yalelightblue)
+}
+
+.methodBlock.collectionGrow p {
+  color: var(--yalelightblue)
+}
+
+.methodBlock.collectionGrow .material-icons {
+  color: var(--yalelightblue);
+}
+
+.methodAnnotation {
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  border-left: 2px dotted var(--yalemidgray);
+}
+
+.methodAnnotation p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--yaledarkgray);
+  font-weight: 400;
 }
 
 .landingContentItems {
@@ -280,7 +473,7 @@
 
 .landingContentSection:nth-child(even) {
   background-color: var(--yalelightgray);
-  color: var(--yaledarkgray);
+  color: var(--yalemidgray);
 }
 
 .landingContentSection.dataInsightsSection {
@@ -375,7 +568,7 @@
 .appTutorialsSection .landingContentSectionTitle {
   width: 100%;
   max-width: 1200px;
-  padding: 0 2rem;
+  padding: 0rem 2rem;
   margin-bottom: 3rem;
   box-sizing: border-box;
   position: static;
@@ -432,7 +625,7 @@
 .tutorialBlurb h3 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
-  color: var(--yaledarkgray);
+  color: var(--yalemidgray);
   font-family: var(--alttitle);
 }
 
@@ -514,44 +707,86 @@
 }
 
 .presentationsAndPressContent {
-  display: flex;
-  justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
-  gap: 4rem;
-}
-
-.presentationsColumn, .pressColumn {
-  flex: 1;
 }
 
 .sectionTitle {
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: var(--yaledarkgray);
+  color: var(--yalemidgray);
   font-family: var(--sectiontitle);
   font-weight: 500;
 }
 
-/* Presentations styles */
-.presentationItem {
-  margin-bottom: 2rem;
+/* Public Talks Styles */
+.publicTalksSection {
+  margin-bottom: 4rem;
 }
 
-.presentationsAndPressSection .presentationsColumn .videoContainer {
-  width: 560px;
-  height: 315px;
+#publicTalksTitle {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 2rem;
+  margin-bottom: 4rem;
 }
 
-/* Press styles */
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.videoItem {
+  width: 100%;
+  /* border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 1.5rem; */
+}
+
+.publicTalksSection .videoContainer {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.publicTalksSection .videoContainer iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.videoTitle {
+  font-size: 1rem;
+  color: var(--yalemidgray);
+  text-align: center;
+  font-family: var(--alttitle);
+  font-weight: 400;
+}
+
+.videoPresenter {
+  font-size: 1rem;
+  color: var(--yalemidgray);
+  text-align: center;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* Press Styles */
+.pressGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
 .pressItem {
-  margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.pressItem:last-child {
-  border-bottom: none;
+  padding-top: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .pressSource {
@@ -562,21 +797,20 @@
 
 .pressTitle {
   font-size: 1.2rem;
-  color: var(--yaledarkgray);
+  color: var(--yalemidgray);
   margin-bottom: 0.5rem;
   font-weight: 400;
   font-family: var(--alttitle);
-}
-
-.pressExcerpt {
-  font-size: 1rem;
-  color: var(--yalemidgray);
 }
 
 .companionAppsSection .landingContentItems {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 3rem;
+}
+
+#companionTitle {
+  position: static;
 }
 
 .appUnit {
@@ -620,7 +854,7 @@
 .teamSection .landingContentSectionTitle {
   width: 100%;
   max-width: 1200px;
-  padding: 0 0rem;
+  padding: 0rem 0rem;
   margin-bottom: 4rem;
   box-sizing: border-box;
   position: static;

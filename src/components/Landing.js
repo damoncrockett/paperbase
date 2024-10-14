@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { returnDomain } from '../utils/img';
 
 const landingStyle = {
@@ -44,6 +44,8 @@ const injectFontFaces = () => {
 
 export default function Landing({ setPage }) {
 
+  const [connections, setConnections] = useState([]);
+  const methodsContentRef = useRef(null);
   const nextSectionRef = useRef(null);
 
   useEffect(() => {
@@ -56,6 +58,193 @@ export default function Landing({ setPage }) {
     }
   };
 
+  const methodRows = [
+    { content: [null, { icon: 'apps', text: 'COMPLETE COLLECTION', addClass: 'completeCollection' }, null], annotation: `Paul began collecting gelatin silver photographic papers in 1999, and by 2016, the collection had mostly stabilized. The present count is <b>7245</b>, but we've started collecting again...` },
+    { content: [null, { icon: 'filter_alt', text: 'FILTER', addClass: 'collectionFilter' }, null], annotation: `Paperbase is focused on the material properties of black and white gelatin silver papers, so we filter out any color papers, papers using different photo processes, and empty paper packages. <span style="color: var(--yaleorange);">We lose ~350 collection items during this step.</span>` },
+    { content: [null, { icon: 'view_cozy', text: 'COLLECTION SUBSET', addClass: 'collectionSubset' }, null], annotation: `After filtering, what remains is <b>6898</b> collection items, ready to be measured.` },
+    { content: [{ icon: 'inventory_2', text: 'PACKAGES', addClass: 'collectionSubset' }, null, { icon: 'book', text: 'SAMPLE BOOKS', addClass: 'collectionSubset' }], annotation: `The collection contains two distinct sample types: samples that come from packages of photographic paper, and samples published in manufacturer sample books. Samples from packages are base papers only, fixed but not developed, while sample book photographs contain developed images.` },
+    { content: [{ icon: 'collections', text: 'MULTI-ANGLE PHOTOGRAPHY', addClass: 'collectionGrow' }, null, { icon: 'image', text: 'PHOTOGRAPH' }], annotation: `Sample book photographs are recorded with a single image. Packaged samples are not imaged, but their packages are, on all sides. <span style="color: var(--yalelightblue);">This adds ~4000 images to the dataset.</span>` },
+    { content: [{ icon: 'description', text: 'PROCESSING INSTRUCTIONS', addClass: 'collectionGrow' }, null, null], annotation: `We scan any processing instructions included in paper packages. <span style="color: var(--yalelightblue)">This adds 674 PDFs to the dataset.</span>` },
+    { content: [{ icon: 'fingerprint', text: 'BACKPRINT', addClass: 'collectionGrow' }, null, null], annotation: `We image and catalog any backprints appearing on packaged paper samples. <span style="color: var(--yalelightblue)">There are 788 backprints in our dataset.</span>` },
+    { content: [{ icon: 'texture', text: 'TEXTURE' }, null, { icon: 'texture', text: 'EDGE TEXTURE', addClass: 'collectionFilter' }], annotation: `We capture surface texture via raking light micrograph. Because image-free areas are rare in developed photos, sample book texture images are usually taken on the white edges of the photograph. <span style="color: var(--yaleorange)">Roughly 700 samples have no such edge and could not be imaged.</span>` },
+    { content: [{ icon: 'vertical_align_center', text: 'MICROMETER' }, null, { icon: 'vertical_align_bottom', text: 'DEPTH GAUGE', addClass: 'collectionFilter' }], annotation: `Packaged samples are measured for thickness using a micrometer. Because sample book photographs are mounted, they are measured with a depth gauge where possible. <span style="color: var(--yaleorange)">Nearly 1700 sample book photographs were flush-mounted and could not be measured.</span>` },
+    { content: [{ icon: 'check_box_outline_blank', text: 'BASE COLOR' }, null, { icon: 'account_box', text: 'BASE AND IMAGE COLOR', addClass: 'collectionGrow' }], annotation: `Color measurements are made using a spectrophotometer and converted to CIELAB color space. We measure both the image and base colors of sample book photographs. <span style="color: var(--yalelightblue)">This adds ~4100 color measurements to the dataset.</span>` },
+    { content: [null, { icon: 'flash_on', text: 'GLOSS' }, null], annotation: `Gloss is measured using a glossmeter, with incident light at a 60° angle.` },
+    { content: [null, { icon: 'radar', text: 'RADAR CHART', addClass: 'radarChart' }, null], annotation: `Our material model of a photographic paper sample contains 4 univariate physical measures: thickness, gloss, roughness, and warmth. Texture images are processed via bandpass filtering, and "roughness" is defined as the standard deviation of the resulting pixel brightnesses. "Warmth" is the <b>b*</b> dimension of the CIELAB color space.` },
+    { content: [null, { icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
+  ];
+
+  useEffect(() => {
+    if (methodsContentRef.current) {
+      const content = methodsContentRef.current;
+      const rows = content.querySelectorAll('.methodRow');
+      const contentRect = content.getBoundingClientRect();
+      const newConnections = [];
+  
+      // Handle PHOTOGRAPH to EDGE TEXTURE connection
+      let photographBlock = null;
+      let edgeTextureBlock = null;
+
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i].textContent.includes('PHOTOGRAPH')) {
+          photographBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
+        }
+        if (rows[i].textContent.includes('EDGE TEXTURE')) {
+          edgeTextureBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
+        }
+        if (photographBlock && edgeTextureBlock) break;
+      }
+
+      if (photographBlock && edgeTextureBlock) {
+        const photographRect = photographBlock.getBoundingClientRect();
+        const edgeTextureRect = edgeTextureBlock.getBoundingClientRect();
+        const startX = photographRect.left + photographRect.width / 2 - contentRect.left;
+        const startY = photographRect.bottom - contentRect.top;
+        const endX = edgeTextureRect.left + edgeTextureRect.width / 2 - contentRect.left;
+        const endY = edgeTextureRect.top - contentRect.top;
+        newConnections.push(`M${startX},${startY} L${endX},${endY}`);
+      }
+  
+      // Handle other connections
+      for (let col = 0; col < 3; col++) {
+        let lastFilledBlock = null;
+        let lastFilledRow = 0;
+  
+        for (let row = 0; row < rows.length; row++) {
+          const block = rows[row].querySelector(`.methodBlock:nth-child(${col + 1}):not(.empty)`);
+          
+          if (block) {
+            const blockRect = block.getBoundingClientRect();
+            
+            if (lastFilledBlock) {
+              const lastRect = lastFilledBlock.getBoundingClientRect();
+              const startX = lastRect.left + lastRect.width / 2 - contentRect.left;
+              const startY = lastRect.bottom - contentRect.top;
+              const endX = blockRect.left + blockRect.width / 2 - contentRect.left;
+              const endY = blockRect.top - contentRect.top;
+  
+              if (row - lastFilledRow === 1) {
+                newConnections.push(`M${startX},${startY} L${endX},${endY}`);
+              }
+            }
+  
+            lastFilledBlock = block;
+            lastFilledRow = row;
+          }
+        }
+      }
+
+      function generateRoundedCornerPath(startX, startY, endX, endY, radius, direction) {
+        let path = `M${startX},${startY} `;
+  
+        const horizontalDir = endX > startX ? 1 : -1;
+        const verticalDir = endY > startY ? 1 : -1;
+  
+        if (direction === 'horizontal-first') {
+          // Move horizontally first, then down
+          const cornerX = endX;
+          const cornerY = startY;
+  
+          const horizontalEndX = cornerX - horizontalDir * radius;
+          const verticalStartY = cornerY + verticalDir * radius;
+  
+          path += `H${horizontalEndX} `;
+          path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 1 : 0} ${cornerX},${verticalStartY} `;
+          path += `V${endY}`;
+        } else if (direction === 'vertical-first') {
+          // Move vertically first, then sideways (correct arc handling)
+          const cornerX = startX;
+          const cornerY = endY;
+  
+          const verticalEndY = cornerY - verticalDir * radius;
+          const horizontalStartX = cornerX + horizontalDir * radius;
+  
+          // Correct the sweep flag to avoid the "scoop" effect
+          path += `V${verticalEndY} `;
+          path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 0 : 1} ${horizontalStartX},${cornerY} `;
+          path += `H${endX}`;
+        }
+  
+        return path;
+      }
+  
+      // Connection from SUBSET to PACKAGES (sideways first, then down)
+      const subsetBlock = rows[2].querySelector('.methodBlock:nth-child(2)');
+      const packagesBlock = rows[3].querySelector('.methodBlock:nth-child(1)');
+
+      if (subsetBlock && packagesBlock) {
+        const subsetRect = subsetBlock.getBoundingClientRect();
+        const packagesRect = packagesBlock.getBoundingClientRect();
+
+        const startX = subsetRect.left - contentRect.left;
+        const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
+
+        const endX = packagesRect.left + packagesRect.width / 2 - contentRect.left;  // Center top of PACKAGES
+        const endY = packagesRect.top - contentRect.top;
+
+        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
+
+        newConnections.push(path);
+      }
+
+      // Connection from SUBSET to SAMPLE BOOKS (sideways first, then down)
+      const sampleBooksBlock = rows[3].querySelector('.methodBlock:nth-child(3)');
+
+      if (subsetBlock && sampleBooksBlock) {
+        const subsetRect = subsetBlock.getBoundingClientRect();
+        const sampleBooksRect = sampleBooksBlock.getBoundingClientRect();
+
+        const startX = subsetRect.right - contentRect.left;
+        const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
+
+        const endX = sampleBooksRect.left + sampleBooksRect.width / 2 - contentRect.left;  // Center top of SAMPLE BOOKS
+        const endY = sampleBooksRect.top - contentRect.top;
+
+        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
+
+        newConnections.push(path);
+      }
+
+      // Connection from BASE COLOR to left side of GLOSS (down first, then sideways)
+      const baseColorBlock = rows[9].querySelector('.methodBlock:nth-child(1)');
+      const glossBlock = rows[10].querySelector('.methodBlock:nth-child(2)');
+
+      if (baseColorBlock && glossBlock) {
+        const baseColorRect = baseColorBlock.getBoundingClientRect();
+        const glossRect = glossBlock.getBoundingClientRect();
+
+        const startX = baseColorRect.left + baseColorRect.width / 2 - contentRect.left;  // Center bottom of BASE COLOR
+        const startY = baseColorRect.bottom - contentRect.top;
+
+        const endX = glossRect.left - contentRect.left;  // Left side of GLOSS
+        const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's left side
+
+        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
+
+        newConnections.push(path);
+      }
+
+      // Connection from BASE AND IMAGE COLOR to right side of GLOSS (down first, then sideways)
+      const baseAndImageColorBlock = rows[9].querySelector('.methodBlock:nth-child(3)');
+      if (baseAndImageColorBlock && glossBlock) {
+        const baseAndImageColorRect = baseAndImageColorBlock.getBoundingClientRect();
+        const glossRect = glossBlock.getBoundingClientRect();
+
+        const startX = baseAndImageColorRect.left + baseAndImageColorRect.width / 2 - contentRect.left;  // Center bottom of BASE AND IMAGE COLOR
+        const startY = baseAndImageColorRect.bottom - contentRect.top;
+
+        const endX = glossRect.right - contentRect.left;  // Right side of GLOSS
+        const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's right side
+
+        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
+
+        newConnections.push(path);
+      }
+
+      setConnections(newConnections);
+    }
+  }, []);
+
   return (
     <div id='landing' style={landingStyle}>
       <div id='landingBlurb'>
@@ -64,57 +253,126 @@ export default function Landing({ setPage }) {
         <button onClick={() => setPage('app')}>Explore the collection</button>
       </div>
       <div className="scroll-indicator" onClick={scrollToNextSection}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="6 9 12 15 18 9" />
           <polyline points="6 15 12 21 18 15" />
         </svg>
       </div>
       <div className='landingContent'>
         <div id='s1' className='landingContentSection' ref={nextSectionRef}>
-            <div className='landingContentSectionTitle'>
-              <h2>THE COLLECTION</h2>
-              <p className='subtitle'>Our reference collection of gelatin silver photographic papers.</p>
+          <div className='landingContentSectionTitle'>
+            <h2>THE COLLECTION</h2>
+            <p className='subtitle'>Our reference collection of gelatin silver photographic papers.</p>
+          </div>
+          <div className='landingContentItems'>
+            <div className='landingContentItem'>
+              <p>Throughout the twentieth century, photography was fundamentally a paper-based medium, and photographic papers have played a crucial role in shaping the medium's history and practice. However, little research has been done on how the material, technical, and visual properties of these papers impacted the work of photographers. This lack of scholarly attention stems partly from the difficulty of accessing and analyzing the physical characteristics of historical photographic papers.</p>
             </div>
-            <div className='landingContentItems'>
-              <div className='landingContentItem'>
-                <p>Throughout the twentieth century, photography was fundamentally a paper-based medium, and photographic papers have played a crucial role in shaping the medium's history and practice. However, little research has been done on how the material, technical, and visual properties of these papers impacted the work of photographers. This lack of scholarly attention stems partly from the difficulty of accessing and analyzing the physical characteristics of historical photographic papers.</p>
+            <div className='landingContentItem'>
+              <p>To address this gap, the Lens Media Lab at Yale University's Institute for the Preservation of Cultural Heritage has undertaken an extensive project to document and characterize its collection of over 7,200 dated and identified gelatin silver papers manufactured between 1890 and 2010. <span style={{fontWeight: '200'}}>This is believed to be the largest reference collection of photographic paper samples in the world.</span> From this collection, the lab has constructed a rich and comprehensive dataset that combines traditional catalog information with extensive material analyses. <span style={{fontWeight: '700'}}>This dataset is now public.</span></p>
+            </div>
+            <div id='firstInNumbersRow' className='landingContentItem inNumbersSection'>
+              <div className='inNumbersGrid'>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>95,368</p>
+                  <p className='inNumbersLabel'>measurement trials</p>
+                </div>
+                <div className='inNumbersItem sampleCount'>
+                  <p className='inNumbersValue sampleCount'>6,898</p>
+                  <p className='inNumbersLabel sampleCount'>measured samples</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>6,456</p>
+                  <p className='inNumbersLabel'>package images</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>4,266</p>
+                  <p className='inNumbersLabel'>products</p>
+                </div>
               </div>
-              <div className='landingContentItem'>
-                <p>To address this gap, the Lens Media Lab at Yale University's Institute for the Preservation of Cultural Heritage has undertaken an extensive project to document and characterize its collection of over 7,500 dated and identified gelatin silver papers manufactured between 1890 and 2010. This is believed to be the largest collection of photographic paper samples in the world. Roughly one-third of the samples in the collection come from packages of photographic paper; the remaining two-thirds come from sample books published by manufacturers, and most of the samples in these books are printed photographs. From this collection, the lab has constructed a rich and comprehensive dataset that combines traditional catalog information with extensive material analyses.</p>
+            </div>
+            <div className='landingContentItem inNumbersSection'>
+              <div className='inNumbersGrid'>
+                <div className='inNumbersItem sampleCount'>
+                  <p className='inNumbersValue sampleCount'>4,506</p>
+                  <p className='inNumbersLabel sampleCount'>sample book images</p>
+                </div>
+                <div className='inNumbersItem sampleCount'>
+                  <p className='inNumbersValue sampleCount'>2,391</p>
+                  <p className='inNumbersLabel sampleCount'>packages</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>788</p>
+                  <p className='inNumbersLabel'>backprints</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>388</p>
+                  <p className='inNumbersLabel'>brands</p>
+                </div>
+              </div>
+            </div>
+            <div className='landingContentItem inNumbersSection'>
+              <div className='inNumbersGrid'>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>231</p>
+                  <p className='inNumbersLabel'>sample books</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>209</p>
+                  <p className='inNumbersLabel'>surface descriptors</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>120</p>
+                  <p className='inNumbersLabel'>years</p>
+                </div>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>100</p>
+                  <p className='inNumbersLabel'>manufacturers</p>
+                </div>
               </div>
             </div>
           </div>
-          <div id='s2' className='landingContentSection'>
+        </div>
+        <div id='s2' className='landingContentSection methodsSection'>
+          <div className='methodsSectionInner'>
             <div className='landingContentSectionTitle'>
-              <h2>METHODS</h2>
-              <p className='subtitle'>How we built the collection and the dataset.</p>
+              <h2>DATA PIPELINE</h2>
+              <p className='subtitle'>How the collection became a dataset.</p>
             </div>
-            <div className='landingContentItems'>
-              <div className='landingContentItem'>
-                <p>For loose prints, thickness is measured with a calipers-style micrometer; ours is a Mitutoyo ABSOLUTE Digimatic. For mounted prints, we use a Mitutoyo ABSOLUTE Digimatic depth gauge. Thickness is measured in millimeters (mm), and photographic papers typically fall somewhere between 0.05 and 0.5 mm. We take 3 thickness measurements per print and generally take the median (rather than the mean) as the representative measurement, to mitigate the impact of extreme outliers and anomalies.</p>
-              </div>
-              <div className='landingContentItem'>
-                <p>Gloss is measured using a glossmeter and in gloss units (GU), an industry standard. Our glossmeter is a BYK-Gardner micro-TRI-gloss, which measures specular reflection at 20°, 60°, and 85° angles. We generally consider only the 60° angle, as most photographic papers fall within a range of gloss values well-suited to this angle—values generally between 1-100 GU. As with thickness, we take 3 gloss measurements for every print and use the median.</p>
-              </div>
-              <div className='landingContentItem'>
-                <p>We measure the color of both the paper base and the silver image material using a spectrophotometer. In this study, the prints were measured with X-Rite spectrophotometers, which use the 2° observer and the d65 illuminant. A separate ultraviolet (UV) illuminant can also be used.</p>
-              </div>
-              <div className='landingContentItem'>
-                <p>For the purposes of our expressiveness model, we focus on paper roughness, a property well-defined in the surface metrology literature and measurable directly using an optical profilometer. Roughness is, approximately, the standard deviation of heights of the paper surface. The greater the variation in surface heights, the rougher the surface.</p>
-              </div>
+            <div className='methodsContent' ref={methodsContentRef}>
+              {methodRows.map((row, rowIndex) => (
+                <div key={rowIndex} className='methodRow'>
+                  {row.content.map((block, blockIndex) => (
+                    block ? (
+                      <div key={blockIndex} className={`methodBlock ${block.addClass ? block.addClass : ''}`}>
+                        {block.icon && <span className="material-icons">{block.icon}</span>}
+                        <p>{block.text}</p>
+                      </div>
+                    ) : <div key={blockIndex} className="methodBlock empty"></div>
+                  ))}
+                  <div className='methodAnnotation'>
+                    <p dangerouslySetInnerHTML={{ __html: row.annotation }} />
+                  </div>
+                </div>
+              ))}
+              <svg className="methodConnections" width="100%" height="100%">
+                {connections.map((d, i) => (
+                  <path key={i} d={d} fill="none" stroke="var(--yalemidgray)" strokeWidth="1" />
+                ))}
+              </svg>
             </div>
           </div>
+        </div>
         <div className='landingContentSection dataInsightsSection'>
           <div id='insights' className='landingContentSectionTitle'>
             <h2>DATA INSIGHTS</h2>
           </div>
-          <div className='landingContentItems'>
-            <div className='dataInsightUnit'>
+          <div className='landingContentItems'>coming soon...
+            {/* <div className='dataInsightUnit'>
               <h3>Distribution of Paper Types</h3>
               <p>This visualization shows the distribution of different paper types in our collection. Matte papers make up the largest portion, followed by glossy and semi-glossy papers.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Bar Chart */}
                   <rect x="10" y="10" width="15" height="40" fill="var(--yalelightgray)" />
                   <rect x="30" y="20" width="15" height="30" fill="var(--yalelightgray)" />
                   <rect x="50" y="5" width="15" height="45" fill="var(--yalelightgray)" />
@@ -127,7 +385,6 @@ export default function Landing({ setPage }) {
               <p>This timeline illustrates the evolution of paper production techniques from the late 19th century to the present day.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Line Graph */}
                   <polyline
                     points="10,50 30,30 50,40 70,20 90,10"
                     fill="none"
@@ -142,7 +399,6 @@ export default function Landing({ setPage }) {
               <p>This chart shows how the average gloss levels of photographic papers have changed over the decades.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Scatter Plot */}
                   <circle cx="20" cy="30" r="2" fill="var(--yalelightgray)" />
                   <circle cx="35" cy="40" r="2" fill="var(--yalelightgray)" />
                   <circle cx="50" cy="20" r="2" fill="var(--yalelightgray)" />
@@ -156,7 +412,6 @@ export default function Landing({ setPage }) {
               <p>A breakdown of the market share of different photographic paper brands represented in our collection.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Pie Chart */}
                   <path d="M50,30 L50,5 A25,25 0 0,1 70,40 Z" fill="var(--yalelightgray)" />
                   <path d="M50,30 L70,40 A25,25 0 0,1 30,40 Z" fill="var(--yalelightgray)" opacity="0.7" />
                   <path d="M50,30 L30,40 A25,25 0 0,1 50,5 Z" fill="var(--yalelightgray)" opacity="0.4" />
@@ -168,7 +423,6 @@ export default function Landing({ setPage }) {
               <p>This visualization demonstrates the range and distribution of paper thicknesses in our collection.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Histogram */}
                   <rect x="10" y="40" width="10" height="10" fill="var(--yalelightgray)" />
                   <rect x="25" y="30" width="10" height="20" fill="var(--yalelightgray)" />
                   <rect x="40" y="20" width="10" height="30" fill="var(--yalelightgray)" />
@@ -183,14 +437,13 @@ export default function Landing({ setPage }) {
               <p>A map showing the geographical origins of the photographic papers in our collection.</p>
               <div className='svgContainer'>
                 <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  {/* Simple Map */}
                   <path d="M10,40 Q30,20 50,40 T90,40" fill="none" stroke="var(--yalelightgray)" strokeWidth="2" />
                   <circle cx="30" cy="30" r="3" fill="var(--yalelightgray)" />
                   <circle cx="60" cy="35" r="3" fill="var(--yalelightgray)" />
                   <circle cx="80" cy="25" r="3" fill="var(--yalelightgray)" />
                 </svg>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className='landingContentSection appTutorialsSection'>
@@ -279,7 +532,7 @@ export default function Landing({ setPage }) {
         <div className='landingContentSection researchSection'>
           <div className='landingContentSectionTitle'>
             <h2>THEORY & RESEARCH</h2>
-            <p className='subtitle'>Published papers about our collection and methods.</p>
+            <p className='subtitle'>Published work that laid the foundation for Paperbase.</p>
           </div>
           <div className='landingContentItems'>
             <div className='researchPaperUnit'>
@@ -335,90 +588,94 @@ export default function Landing({ setPage }) {
         </div>
         <div className='landingContentSection presentationsAndPressSection'>
           <div className='presentationsAndPressContent'>
-            <div className='presentationsColumn'>
-              <h2 className='sectionTitle'>PUBLIC TALKS</h2>
-              <div className='presentationItem'>
-                <div className='videoContainer'>
-                  <iframe 
-                    src="https://www.youtube.com/embed/iK6FkDVBT4g?si=86hUYBoxbMAP0Z3u" 
-                    title="Lens Media Lab Background, Collection, Research" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen>
-                  </iframe>
+            <div className='publicTalksSection'>
+              <h2 id='publicTalksTitle' className='sectionTitle'>PUBLIC TALKS</h2>
+              <div className='videoGrid'>
+                <div className='videoItem'>
+                  <div className='videoContainer'>
+                    <iframe 
+                      width="560" 
+                      height="315" 
+                      src="https://www.youtube.com/embed/iK6FkDVBT4g?si=86hUYBoxbMAP0Z3u" 
+                      title="Lens Media Lab Background, Collection, Research" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <p className='videoTitle'>Lens Media Lab Background, Collection, Research</p>
+                  <p className='videoPresenter'>Paul Messier</p>
                 </div>
-              </div>
-              <div className='presentationItem'>
-                <div className='videoContainer'>
-                  <iframe 
-                    src="https://www.youtube.com/embed/IjW6EIEzW-k?si=bJvxfZ3TJdzZGJ9i" 
-                    title="Exploring the Material History of Black and White Paper with Paperbase" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen>
-                  </iframe>
+                <div className='videoItem'>
+                  <div className='videoContainer'>
+                    <iframe 
+                      width="560" 
+                      height="315" 
+                      src="https://www.youtube.com/embed/IjW6EIEzW-k?si=bJvxfZ3TJdzZGJ9i" 
+                      title="Exploring the Material History of Black and White Paper with Paperbase" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <p className='videoTitle'>Exploring the Material History of Black and White Paper with Paperbase</p>
+                  <p className='videoPresenter'>Damon Crockett</p>
                 </div>
-              </div>
-              <div className='presentationItem'>
-                <div className='videoContainer'>
-                  <iframe 
-                    src="https://www.youtube.com/embed/ionDa9Tna8E?si=2jQHfwIgbTGFAZtY" 
-                    title="Paperbase as a Tool for Photo Historical Research" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen>
-                  </iframe>
+                <div className='videoItem'>
+                  <div className='videoContainer'>
+                    <iframe 
+                      width="560" 
+                      height="315" 
+                      src="https://www.youtube.com/embed/ionDa9Tna8E?si=2jQHfwIgbTGFAZtY" 
+                      title="Paperbase as a Tool for Photo Historical Research" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <p className='videoTitle'>Paperbase as a Tool for Photo Historical Research</p>
+                  <p className='videoPresenter'>Katherine Mintie</p>
                 </div>
-              </div>
-              <div className='presentationItem'>
-                <div className='videoContainer'>
-                  <iframe 
-                    src="https://www.youtube.com/embed/CDKS7Qvr1sM?si=ECmx1BdLHrODi--0" 
-                    title="The LML Method" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen>
-                  </iframe>
+                <div className='videoItem'>
+                  <div className='videoContainer'>
+                    <iframe 
+                      width="560" 
+                      height="315" 
+                      src="https://www.youtube.com/embed/CDKS7Qvr1sM?si=ECmx1BdLHrODi--0" 
+                      title="The LML Method" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen>
+                    </iframe>
+                  </div>
+                  <p className='videoTitle'>The LML Method</p>
+                  <p className='videoPresenter'>Damon Crockett</p>
                 </div>
               </div>
             </div>
-            <div className='pressColumn'>
+            <div className='pressSection'>
               <h2 className='sectionTitle'>PRESS</h2>
-              <div className='pressItem'>
-                <div className='pressSource'>Yale News</div>
-                <div className='pressTitle'>Analyzing the photographic process from darkroom to data</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>The Classic Magazine</div>
-                <div className='pressTitle'>Paperbase: A New Lens on Photographic History</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>Scientific American</div>
-                <div className='pressTitle'>The Science Behind Paperbase</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>Art in America</div>
-                <div className='pressTitle'>Paperbase: A New Lens on Photographic History</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>The New York Times</div>
-                <div className='pressTitle'>The Impresario of Photo Paper</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>Wired</div>
-                <div className='pressTitle'>Paperbase: A New Frontier in Photographic Research</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>The Atlantic</div>
-                <div className='pressTitle'>The Hidden Stories of Photographic Paper</div>
-              </div>
-              <div className='pressItem'>
-                <div className='pressSource'>Gigaom</div>
-                <div className='pressTitle'>The Mad Scientists Revolutionizing Photographic Research</div>
+              <div className='pressGrid'>
+                <div className='pressItem'>
+                  <div className='pressSource'>Yale News</div>
+                  <div className='pressTitle'>Analyzing the photographic process from darkroom to data</div>
+                </div>
+                <div className='pressItem'>
+                  <div className='pressSource'>The Classic Magazine</div>
+                  <div className='pressTitle'>Paperbase: Visualizing the Material History of Black and White Paper</div>
+                </div>
+                {/* <div className='pressItem'>
+                  <div className='pressSource'>Scientific American</div>
+                  <div className='pressTitle'>The Science Behind Paperbase</div>
+                </div>
+                <div className='pressItem'>
+                  <div className='pressSource'>Art in America</div>
+                  <div className='pressTitle'>Paul Messier: The Impresario of Photo Paper</div>
+                </div> */}
               </div>
             </div>
           </div>
         </div>
         <div className='landingContentSection companionAppsSection'>
-          <div className='landingContentSectionTitle'>
+          <div id='companionTitle' className='landingContentSectionTitle'>
             <h2>COMPANION APPLICATIONS</h2>
-            <p className='subtitle'>Explore these additional tools that complement our main platform.</p>
+            <p className='subtitle'>Additional ways to access and explore our collection.</p>
           </div>
           <div className='landingContentItems'>
             <a href="https://lux.collections.yale.edu/view/group/6e15bc74-fc7c-425f-9ae0-0123c1adf405" target='_blank' rel="noopener noreferrer">
@@ -454,7 +711,7 @@ export default function Landing({ setPage }) {
         <div className='landingContentSection teamSection'>
           <div className='landingContentSectionTitle'>
             <h2>OUR TEAM</h2>
-            <p className='subtitle'>The dedicated individuals behind our research and platform.</p>
+            <p className='subtitle'>Every lab member, present or former, who helped make Paperbase happen.</p>
           </div>
           <div className='landingContentItems'>
             <div className='teamMember'>
@@ -462,8 +719,8 @@ export default function Landing({ setPage }) {
                 <img src={returnDomain() + 'crockett2.jpg'} alt="Damon Crockett" />
               </div>
               <div className='member-name'>DAMON CROCKETT</div>
-              <div className='project-role'>data science, app and site design, measurement</div>
-              <div className='job-title'>AI Engineer, Lens Media Lab, Yale University</div>
+              <div className='project-role'>data science, app and site design</div>
+              <div className='job-title'>Lead AI Engineer, Lens Media Lab, Yale University</div>
             </div>
             <div className='teamMember'>
               <div className='headshot-container'>
@@ -523,6 +780,14 @@ export default function Landing({ setPage }) {
             </div>
             <div className='teamMember'>
               <div className='headshot-container'>
+                <img src={returnDomain() + 'evans.jpg'} alt="Khari Evans" />
+              </div>
+              <div className='member-name'>KHARI EVANS</div>
+              <div className='project-role'>measurement</div>
+              <div className='job-title'>Former Research Associate, Lens Media Lab, Yale University</div>
+            </div>
+            <div className='teamMember'>
+              <div className='headshot-container'>
                 <img src={returnDomain() + 'canales.jpg'} alt="Austin Canales" />
               </div>
               <div className='member-name'>AUSTIN CANALES</div>
@@ -536,14 +801,6 @@ export default function Landing({ setPage }) {
               <div className='member-name'>LEAH LACKEY</div>
               <div className='project-role'>measurement</div>
               <div className='job-title'>Ph.D. Student, Robotics, Cornell University</div>
-            </div>
-            <div className='teamMember'>
-              <div className='headshot-container'>
-                <img src={returnDomain() + 'evans.jpg'} alt="Khari Evans" />
-              </div>
-              <div className='member-name'>KHARI EVANS</div>
-              <div className='project-role'>measurement</div>
-              <div className='job-title'>Former Research Associate, Lens Media Lab, Yale University</div>
             </div>
             <div className='teamMember'>
               <div className='headshot-container'>
