@@ -16,6 +16,7 @@ fonts
 src/assets/img
 src/assets/csv
 src/assets/tifs
+src/assets/videos
 src/assets/neuralcrops
 src/assets/neuralcropsbw
 lux
