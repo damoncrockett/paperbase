@@ -12,6 +12,23 @@
   --alttitle: "Aleo";
 }
 
+#sorry {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--yaledarkgray);
+  color: var(--yalewhite);
+  font-family: 'Archivo';
+}
+
+#sorry > h1 {
+  font-family: quiverleaf-cf;
+  font-size: 4rem;
+}
+
 #downloadTermsModal {
   position: fixed;
   left: 0;
@@ -426,7 +443,7 @@
 }
 
 .methodBlock.collectionGrow p {
-  color: var(--yalelightblue)
+  color: var(--yaleblue)
 }
 
 .methodBlock.collectionGrow .material-icons {
@@ -782,6 +799,10 @@
   gap: 2rem;
 }
 
+.pressItem > a {
+  text-decoration: none;
+}
+
 .pressItem {
   padding-bottom: 1.5rem;
   padding-top: 1.5rem;
@@ -873,18 +894,84 @@
   color: var(--yalemidgray);
 }
 
+.teamMember {
+  width: 100%;
+}
+
 .teamSection .landingContentItems {
   width: 100%;
   max-width: 1200px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2rem;
-  padding: 0;
+  padding: 0 0 4rem 0;
   box-sizing: border-box;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.teamMember {
-  width: 100%;
+.citationSection {
+  max-width: 1200px;
+  margin-top: 2rem;
+  padding: 2rem;
+  background-color: var(--yalelightgray);
+  border-radius: 10px;
+}
+
+.citationSection h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--yalemidgray);
+  font-family: var(--sectiontitle);
+}
+
+.citationSection p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: var(--yalemidgray);
+  font-weight: 300;
+}
+
+.citationContainer {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.citationText {
+  flex-grow: 1;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  background-color: var(--yalelightgray);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--yalemidgray);
+  color: var(--yaledarkgray);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.copyButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: var(--yalemidgray);
+  border: none;
+  padding: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.copyButton:focus {
+  outline: none;
+}
+
+.copyButton .material-icons {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .headshot-container {

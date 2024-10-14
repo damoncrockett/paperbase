@@ -48,6 +48,18 @@ export default function Landing({ setPage }) {
   const methodsContentRef = useRef(null);
   const nextSectionRef = useRef(null);
 
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleCopyClick = () => {
+    const citationText = "Crockett, D., P. Messier, and K. Mintie. (2024). Paperbase. Lens Media Lab, Yale University. https://paperbase.xyz";
+    navigator.clipboard.writeText(citationText).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+    });
+  };
+
   useEffect(() => {
     injectFontFaces();
   }, []);
@@ -60,17 +72,17 @@ export default function Landing({ setPage }) {
 
   const methodRows = [
     { content: [null, { icon: 'apps', text: 'COMPLETE COLLECTION', addClass: 'completeCollection' }, null], annotation: `Paul began collecting gelatin silver photographic papers in 1999, and by 2016, the collection had mostly stabilized. The present count is <b>7245</b>, but we've started collecting again...` },
-    { content: [null, { icon: 'filter_alt', text: 'FILTER', addClass: 'collectionFilter' }, null], annotation: `Paperbase is focused on the material properties of black and white gelatin silver papers, so we filter out any color papers, papers using different photo processes, and empty paper packages. <span style="color: var(--yaleorange);">We lose ~350 collection items during this step.</span>` },
+    { content: [null, { icon: 'filter_alt', text: 'FILTER', addClass: 'collectionFilter' }, null], annotation: `Paperbase is focused on the material properties of black and white gelatin silver papers, so we filter out any color papers, papers using different photo processes, and empty paper packages. <span style="color: var(--yaleorange); font-weight: 700;">We lose ~350 collection items during this step.</span>` },
     { content: [null, { icon: 'view_cozy', text: 'COLLECTION SUBSET', addClass: 'collectionSubset' }, null], annotation: `After filtering, what remains is <b>6898</b> collection items, ready to be measured.` },
     { content: [{ icon: 'inventory_2', text: 'PACKAGES', addClass: 'collectionSubset' }, null, { icon: 'book', text: 'SAMPLE BOOKS', addClass: 'collectionSubset' }], annotation: `The collection contains two distinct sample types: samples that come from packages of photographic paper, and samples published in manufacturer sample books. Samples from packages are base papers only, fixed but not developed, while sample book photographs contain developed images.` },
-    { content: [{ icon: 'collections', text: 'MULTI-ANGLE PHOTOGRAPHY', addClass: 'collectionGrow' }, null, { icon: 'image', text: 'PHOTOGRAPH' }], annotation: `Sample book photographs are recorded with a single image. Packaged samples are not imaged, but their packages are, on all sides. <span style="color: var(--yalelightblue);">This adds ~4000 images to the dataset.</span>` },
-    { content: [{ icon: 'description', text: 'PROCESSING INSTRUCTIONS', addClass: 'collectionGrow' }, null, null], annotation: `We scan any processing instructions included in paper packages. <span style="color: var(--yalelightblue)">This adds 674 PDFs to the dataset.</span>` },
-    { content: [{ icon: 'fingerprint', text: 'BACKPRINT', addClass: 'collectionGrow' }, null, null], annotation: `We image and catalog any backprints appearing on packaged paper samples. <span style="color: var(--yalelightblue)">There are 788 backprints in our dataset.</span>` },
-    { content: [{ icon: 'texture', text: 'TEXTURE' }, null, { icon: 'texture', text: 'EDGE TEXTURE', addClass: 'collectionFilter' }], annotation: `We capture surface texture via raking light micrograph. Because image-free areas are rare in developed photos, sample book texture images are usually taken on the white edges of the photograph. <span style="color: var(--yaleorange)">Roughly 700 samples have no such edge and could not be imaged.</span>` },
-    { content: [{ icon: 'vertical_align_center', text: 'MICROMETER' }, null, { icon: 'vertical_align_bottom', text: 'DEPTH GAUGE', addClass: 'collectionFilter' }], annotation: `Packaged samples are measured for thickness using a micrometer. Because sample book photographs are mounted, they are measured with a depth gauge where possible. <span style="color: var(--yaleorange)">Nearly 1700 sample book photographs were flush-mounted and could not be measured.</span>` },
-    { content: [{ icon: 'check_box_outline_blank', text: 'BASE COLOR' }, null, { icon: 'account_box', text: 'BASE AND IMAGE COLOR', addClass: 'collectionGrow' }], annotation: `Color measurements are made using a spectrophotometer and converted to CIELAB color space. We measure both the image and base colors of sample book photographs. <span style="color: var(--yalelightblue)">This adds ~4100 color measurements to the dataset.</span>` },
+    { content: [{ icon: 'collections', text: 'MULTI-ANGLE PHOTOGRAPHY', addClass: 'collectionGrow' }, null, { icon: 'image', text: 'PHOTOGRAPH' }], annotation: `Sample book photographs are recorded with a single image. Packaged samples are not imaged, but their packages are, on all sides. <span style="color: var(--yaleblue); font-weight: 700;">This adds ~4000 images to the dataset.</span>` },
+    { content: [{ icon: 'description', text: 'PROCESSING INSTRUCTIONS', addClass: 'collectionGrow' }, null, null], annotation: `We scan any processing instructions included in paper packages. <span style="color: var(--yaleblue); font-weight: 700;">This adds 674 PDFs to the dataset.</span>` },
+    { content: [{ icon: 'fingerprint', text: 'BACKPRINT', addClass: 'collectionGrow' }, null, null], annotation: `We image and catalog any backprints appearing on packaged paper samples. <span style="color: var(--yaleblue); font-weight: 700;">There are 788 backprints in our dataset.</span>` },
+    { content: [{ icon: 'texture', text: 'TEXTURE' }, null, { icon: 'texture', text: 'EDGE TEXTURE', addClass: 'collectionFilter' }], annotation: `We capture surface texture via raking light micrography. Because image-free areas are rare in developed photos, sample book texture images are usually taken on the white edges of the photograph. <span style="color: var(--yaleorange); font-weight: 700;">Roughly 700 samples have no such edge and could not be imaged.</span>` },
+    { content: [{ icon: 'vertical_align_center', text: 'MICROMETER' }, null, { icon: 'vertical_align_bottom', text: 'DEPTH GAUGE', addClass: 'collectionFilter' }], annotation: `Packaged samples are measured for thickness using a micrometer. Because sample book photographs are mounted, they are measured with a depth gauge where possible. <span style="color: var(--yaleorange); font-weight: 700;">Nearly 1700 sample book photographs were flush-mounted and could not be measured.</span>` },
+    { content: [{ icon: 'check_box_outline_blank', text: 'BASE COLOR' }, null, { icon: 'account_box', text: 'BASE AND IMAGE COLOR', addClass: 'collectionGrow' }], annotation: `Color measurements are made using a spectrophotometer and converted to CIELAB color space. We measure both the image and base colors of sample book photographs. <span style="color: var(--yaleblue); font-weight: 700;">This adds ~4100 color measurements to the dataset.</span>` },
     { content: [null, { icon: 'flash_on', text: 'GLOSS' }, null], annotation: `Gloss is measured using a glossmeter, with incident light at a 60° angle.` },
-    { content: [null, { icon: 'radar', text: 'RADAR CHART', addClass: 'radarChart' }, null], annotation: `Our material model of a photographic paper sample contains 4 univariate physical measures: thickness, gloss, roughness, and warmth. Texture images are processed via bandpass filtering, and "roughness" is defined as the standard deviation of the resulting pixel brightnesses. "Warmth" is the <b>b*</b> dimension of the CIELAB color space.` },
+    { content: [null, { icon: 'radar', text: 'RADAR CHART', addClass: 'radarChart' }, null], annotation: `Our material model of a photographic paper sample contains 4 univariate measures that populate the axes of a radar chart: thickness, gloss, roughness, and warmth. Texture images are processed via bandpass filtering, and roughness is the standard deviation of the resulting pixel brightnesses. Warmth is the <b>b*</b> dimension of the CIELAB color space.` },
     { content: [null, { icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
   ];
 
@@ -336,8 +348,8 @@ export default function Landing({ setPage }) {
         <div id='s2' className='landingContentSection methodsSection'>
           <div className='methodsSectionInner'>
             <div className='landingContentSectionTitle'>
-              <h2>DATA PIPELINE</h2>
-              <p className='subtitle'>How the collection became a dataset.</p>
+              <h2>THE DATASET</h2>
+              <p className='subtitle'>How the collection is photographed, measured, processed, and modeled.</p>
             </div>
             <div className='methodsContent' ref={methodsContentRef}>
               {methodRows.map((row, rowIndex) => (
@@ -653,12 +665,16 @@ export default function Landing({ setPage }) {
               <h2 className='sectionTitle'>PRESS</h2>
               <div className='pressGrid'>
                 <div className='pressItem'>
-                  <div className='pressSource'>Yale News</div>
-                  <div className='pressTitle'>Analyzing the photographic process from darkroom to data</div>
+                  <a href="https://news.yale.edu/2024/08/28/analyzing-photographic-process-darkroom-data" target='_blank' rel="noopener noreferrer">
+                    <div className='pressSource'>Yale News</div>
+                    <div className='pressTitle'>Analyzing the photographic process from darkroom to data</div>
+                  </a>
                 </div>
                 <div className='pressItem'>
-                  <div className='pressSource'>The Classic Magazine</div>
-                  <div className='pressTitle'>Paperbase: Visualizing the Material History of Black and White Paper</div>
+                  <a href="https://theclassicphotomag.com/paperbase-visualizing-material-black-and-white-paper/" target='_blank' rel="noopener noreferrer">
+                    <div className='pressSource'>The Classic Magazine</div>
+                    <div className='pressTitle'>Paperbase: Visualizing the Material History of Black and White Paper</div>
+                  </a>
                 </div>
                 {/* <div className='pressItem'>
                   <div className='pressSource'>Scientific American</div>
@@ -825,6 +841,18 @@ export default function Landing({ setPage }) {
               <div className='member-name'>SARAH SCHLICK</div>
               <div className='project-role'>cataloging</div>
               <div className='job-title'>Assistant Editor, Gallery Books, Simon & Schuster</div>
+            </div>
+          </div>
+          <div className='citationSection'>
+            <h3>How to Cite</h3>
+            <p>For scholarly work referencing this resource, please use the following citation:</p>
+            <div className='citationContainer'>
+              <div className='citationText'>
+                Crockett, D., P. Messier, and K. Mintie. (2024). Paperbase. Lens Media Lab, Yale University. https://paperbase.xyz
+              </div>
+              <button className='copyButton' onClick={handleCopyClick}>
+                <span className="material-icons">{copySuccess ? 'done' : 'content_copy'}</span>
+              </button>
             </div>
           </div>
         </div>
