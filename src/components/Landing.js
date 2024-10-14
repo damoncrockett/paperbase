@@ -305,9 +305,9 @@ export default function Landing({ setPage }) {
             </div>
             <div className='landingContentItem inNumbersSection'>
               <div className='inNumbersGrid'>
-                <div className='inNumbersItem sampleCount'>
-                  <p className='inNumbersValue sampleCount'>4,506</p>
-                  <p className='inNumbersLabel sampleCount'>sample book images</p>
+                <div className='inNumbersItem'>
+                  <p className='inNumbersValue'>4,506</p>
+                  <p className='inNumbersLabel'>sample book images</p>
                 </div>
                 <div className='inNumbersItem sampleCount'>
                   <p className='inNumbersValue sampleCount'>2,391</p>
@@ -325,9 +325,9 @@ export default function Landing({ setPage }) {
             </div>
             <div className='landingContentItem inNumbersSection'>
               <div className='inNumbersGrid'>
-                <div className='inNumbersItem'>
-                  <p className='inNumbersValue'>231</p>
-                  <p className='inNumbersLabel'>sample books</p>
+                <div className='inNumbersItem sampleCount'>
+                  <p className='inNumbersValue sampleCount'>231</p>
+                  <p className='inNumbersLabel sampleCount'>sample books</p>
                 </div>
                 <div className='inNumbersItem'>
                   <p className='inNumbersValue'>209</p>
