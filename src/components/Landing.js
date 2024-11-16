@@ -676,14 +676,11 @@ export default function Landing({ setPage }) {
                     <div className='pressTitle'>Paperbase: Visualizing the Material History of Black and White Paper</div>
                   </a>
                 </div>
-                {/* <div className='pressItem'>
-                  <div className='pressSource'>Scientific American</div>
-                  <div className='pressTitle'>The Science Behind Paperbase</div>
-                </div>
                 <div className='pressItem'>
-                  <div className='pressSource'>Art in America</div>
-                  <div className='pressTitle'>Paul Messier: The Impresario of Photo Paper</div>
-                </div> */}
+                  <a href={returnDomain() + "PaperbasePressKit.zip"} download>
+                    <div className='pressTitle' style={{ color: '#63aaff' }}><span className="material-icons" style={{ color: '#63aaff', fontSize: '2rem', verticalAlign: 'middle', marginRight: '0.5rem' }}>download</span>Download our press kit</div>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
