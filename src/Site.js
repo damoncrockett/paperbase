@@ -24,7 +24,7 @@ export default function Site() {
     return (
       <div id='sorry'>
         <h1>Paperbase.</h1>
-        <p>Please visit us on your desktop computer to access our full site. Mobile version launching December 2024.</p>
+        <p>Please visit us on your desktop computer to access our site. Mobile version launching December 2024.</p>
       </div>
 
     )

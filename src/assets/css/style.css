@@ -29,6 +29,11 @@
   font-size: 4rem;
 }
 
+#sorry > p {
+  margin: 0 15vw;
+  text-align: center;
+}
+
 #downloadTermsModal {
   position: fixed;
   left: 0;
