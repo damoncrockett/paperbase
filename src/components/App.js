@@ -1457,7 +1457,7 @@ useEffect(() => {
           className='material-icons detailScreenLUX'
           onClick={(e) => {
             e.stopPropagation();
-            const luxURL = "https://lux.collections.yale.edu/view/group/6e15bc74-fc7c-425f-9ae0-0123c1adf405";
+            const luxURL = "https://lux.collections.yale.edu/api/resolve/objects/lml/" + data['catalog'][detailImageIndex];
             window.open(luxURL, '_blank');
           }}
           >
