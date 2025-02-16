@@ -4,7 +4,7 @@ import { returnDomain } from '../utils/img';
 const landingStyle = {
   minHeight: '100vh',
   width: '100vw',
-  backgroundImage: `url(${returnDomain()}hero.jpg)`,
+  backgroundImage: `url(${returnDomain()}hero.webp)`,
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'center',
   backgroundSize: 'cover',
@@ -63,6 +63,19 @@ export default function Landing({ setPage }) {
   useEffect(() => {
     injectFontFaces();
   }, []);
+
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = `${returnDomain()}hero.webp`;
+    document.head.appendChild(link);
+  
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+  
 
   const scrollToNextSection = () => {
     if (nextSectionRef.current) {
