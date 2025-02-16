@@ -21,10 +21,7 @@ src/assets/neuralcrops
 src/assets/neuralcropsbw
 lux
 notes.txt
-notebooks/.ipynb_checkpoints
-notebooks/.DS_Store
-notebooks/*.pkl
-notebooks/*.jpg
+notebooks
 schnitt.js
 
 terms.txt
