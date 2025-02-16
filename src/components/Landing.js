@@ -379,8 +379,8 @@ export default function Landing({ setPage }) {
           <div id='insights' className='landingContentSectionTitle'>
             <h2>DATA INSIGHTS</h2>
           </div>
-          <div className='landingContentItems'>coming soon...
-            {/* <div className='dataInsightUnit'>
+          <div className='landingContentItems'>
+            <div className='dataInsightUnit'>
               <h3>Distribution of Paper Types</h3>
               <p>This visualization shows the distribution of different paper types in our collection. Matte papers make up the largest portion, followed by glossy and semi-glossy papers.</p>
               <div className='svgContainer'>
@@ -455,7 +455,7 @@ export default function Landing({ setPage }) {
                   <circle cx="80" cy="25" r="3" fill="var(--yalelightgray)" />
                 </svg>
               </div>
-            </div> */}
+            </div>
           </div>
         </div>
         <div className='landingContentSection appTutorialsSection'>

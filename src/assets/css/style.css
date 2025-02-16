@@ -2013,3 +2013,226 @@ select {
   margin: 2vh;
   font-weight: 700;
 }
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  /* Landing section */
+  #blurbTitle {
+    font-size: 4rem;
+    margin-bottom: 2vh;
+  }
+
+  #blurbText {
+    font-size: 1.25rem;
+    max-width: 85vw;
+    margin-top: 2vh;
+  }
+
+  #landingBlurb > button {
+    padding: 2vh 4vh;
+    font-size: 1rem;
+    margin-top: 4vh;
+  }
+
+  /* Content sections - restructure from two columns to single column */
+  .landingContentSection {
+    flex-direction: column;
+    padding: 5vh 2vh;
+    font-size: 1rem;
+  }
+
+  .landingContentSectionTitle {
+    width: 100%;
+    padding-right: 0;
+    position: static;
+    margin-bottom: 4vh;
+  }
+
+  .landingContentSectionTitle h2 {
+    font-size: 2rem;
+    text-align: left;
+  }
+
+  .landingContentSectionTitle .subtitle {
+    text-align: left;
+  }
+
+  .landingContentItems {
+    width: 100%;
+    padding: 0 2vh;
+  }
+
+  /* Numbers grid */
+  .inNumbersGrid {
+    grid-template-columns: 1fr;
+    gap: 2vh;
+  }
+
+  .inNumbersItem {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Methods section */
+  .methodsSectionInner {
+    width: 100%;
+    padding: 2vh;
+  }
+
+  .methodRow {
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+    margin: 4vh 0;
+  }
+
+  .methodBlock {
+    width: 100%;
+    margin: 0;
+  }
+
+  .methodAnnotation {
+    width: 100%;
+    margin-top: 2vh;
+    border-left: none;
+    border-top: 2px dotted var(--yalemidgray);
+    padding-top: 2vh;
+  }
+
+  /* Data insights section */
+  .dataInsightsSection .landingContentItems {
+    grid-template-columns: 1fr;
+    gap: 4vh;
+    padding: 0 2vh;
+  }
+
+  .dataInsightUnit {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Videos and press */
+  .videoGrid {
+    grid-template-columns: 1fr;
+    gap: 4vh;
+  }
+
+  .pressGrid {
+    grid-template-columns: 1fr;
+    gap: 3vh;
+  }
+
+  /* Team section */
+  .teamSection .landingContentItems {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4vh;
+    padding: 0 2vh;
+  }
+
+  /* Footer */
+  .footerSection.landingContentSection {
+    padding: 5vh 2vh;
+  }
+
+  .footerContent {
+    flex-direction: column;
+    gap: 4vh;
+  }
+
+  .footerSubsection {
+    width: 100%;
+    padding: 0;
+    text-align: left;
+  }
+
+  .supportLogos {
+    align-items: flex-start;
+  }
+
+  .logoContainer {
+    margin: 2vh 0;
+  }
+
+  /* Modal */
+  #downloadTermsModalContent {
+    width: 90vw;
+    padding: 4vh;
+  }
+
+  /* Citation */
+  .citationContainer {
+    flex-direction: column;
+    gap: 2vh;
+  }
+
+  .citationText {
+    font-size: 0.9rem;
+    padding: 2vh;
+  }
+
+  /* Fixed elements */
+  #terms-of-use {
+    font-size: 1.75vh;
+    left: 2vh;
+  }
+
+  .external-nav {
+    font-size: 2.5vh;
+    left: 2vh;
+  }
+
+  #github-icon {
+    right: 2vh;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  #blurbTitle {
+    font-size: 3rem;
+  }
+
+  #blurbText {
+    font-size: 1rem;
+  }
+
+  .landingContentSectionTitle h2 {
+    font-size: 1.75rem;
+  }
+
+  .methodBlock .material-icons {
+    font-size: 2rem;
+  }
+
+  .methodBlock p {
+    font-size: 0.9rem;
+  }
+
+  .methodAnnotation p {
+    font-size: 0.9rem;
+  }
+
+  /* Team section - single column for very small screens */
+  .teamSection .landingContentItems {
+    grid-template-columns: 1fr;
+  }
+
+  /* Adjust fixed elements for very small screens */
+  #terms-of-use {
+    font-size: 1.5vh;
+  }
+
+  .external-nav {
+    font-size: 2.25vh;
+  }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+  #landing {
+    min-height: -webkit-fill-available;
+  }
+  
+  .landingContent {
+    min-height: -webkit-fill-available;
+  }
+}
