@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { returnDomain } from '../utils/img';
+import Descriptors from './Vis/Descriptors';
+import Yellow from './Vis/Yellow';
+import UV from './Vis/UV';
+import visData from '../assets/data/visData.json';
+import Basetone from './Vis/Basetone';
+import basetoneData from '../assets/data/basetoneData.json';
+import Surfs from './Vis/Surfs';
+import Diversity from './Vis/Diversity';
 
 const landingStyle = {
   minHeight: '100vh',
@@ -45,10 +53,12 @@ const injectFontFaces = () => {
 export default function Landing({ setPage }) {
 
   const [connections, setConnections] = useState([]);
+  const [layoutReady, setLayoutReady] = useState(false);
   const methodsContentRef = useRef(null);
   const nextSectionRef = useRef(null);
 
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleCopyClick = () => {
     const citationText = "Crockett, D., P. Messier, and K. Mintie. (2024). Paperbase. Lens Media Lab, Yale University. https://paperbase.xyz";
@@ -99,176 +109,221 @@ export default function Landing({ setPage }) {
     { content: [null, { icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
   ];
 
+  // One-time layout detection
   useEffect(() => {
-    if (methodsContentRef.current) {
-      const content = methodsContentRef.current;
-      const rows = content.querySelectorAll('.methodRow');
-      const contentRect = content.getBoundingClientRect();
-      const newConnections = [];
-  
-      // Handle PHOTOGRAPH to EDGE TEXTURE connection
-      let photographBlock = null;
-      let edgeTextureBlock = null;
+    if (!methodsContentRef.current) return;
 
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i].textContent.includes('PHOTOGRAPH')) {
-          photographBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
-        }
-        if (rows[i].textContent.includes('EDGE TEXTURE')) {
-          edgeTextureBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
-        }
-        if (photographBlock && edgeTextureBlock) break;
-      }
+    const resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        setLayoutReady(true);
+        // Disconnect after layout is detected
+        resizeObserver.disconnect();
+      });
+    });
 
-      if (photographBlock && edgeTextureBlock) {
-        const photographRect = photographBlock.getBoundingClientRect();
-        const edgeTextureRect = edgeTextureBlock.getBoundingClientRect();
-        const startX = photographRect.left + photographRect.width / 2 - contentRect.left;
-        const startY = photographRect.bottom - contentRect.top;
-        const endX = edgeTextureRect.left + edgeTextureRect.width / 2 - contentRect.left;
-        const endY = edgeTextureRect.top - contentRect.top;
-        newConnections.push(`M${startX},${startY} L${endX},${endY}`);
-      }
-  
-      // Handle other connections
-      for (let col = 0; col < 3; col++) {
-        let lastFilledBlock = null;
-        let lastFilledRow = 0;
-  
-        for (let row = 0; row < rows.length; row++) {
-          const block = rows[row].querySelector(`.methodBlock:nth-child(${col + 1}):not(.empty)`);
-          
-          if (block) {
-            const blockRect = block.getBoundingClientRect();
-            
-            if (lastFilledBlock) {
-              const lastRect = lastFilledBlock.getBoundingClientRect();
-              const startX = lastRect.left + lastRect.width / 2 - contentRect.left;
-              const startY = lastRect.bottom - contentRect.top;
-              const endX = blockRect.left + blockRect.width / 2 - contentRect.left;
-              const endY = blockRect.top - contentRect.top;
-  
-              if (row - lastFilledRow === 1) {
-                newConnections.push(`M${startX},${startY} L${endX},${endY}`);
-              }
-            }
-  
-            lastFilledBlock = block;
-            lastFilledRow = row;
-          }
-        }
-      }
-
-      function generateRoundedCornerPath(startX, startY, endX, endY, radius, direction) {
-        let path = `M${startX},${startY} `;
-  
-        const horizontalDir = endX > startX ? 1 : -1;
-        const verticalDir = endY > startY ? 1 : -1;
-  
-        if (direction === 'horizontal-first') {
-          // Move horizontally first, then down
-          const cornerX = endX;
-          const cornerY = startY;
-  
-          const horizontalEndX = cornerX - horizontalDir * radius;
-          const verticalStartY = cornerY + verticalDir * radius;
-  
-          path += `H${horizontalEndX} `;
-          path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 1 : 0} ${cornerX},${verticalStartY} `;
-          path += `V${endY}`;
-        } else if (direction === 'vertical-first') {
-          // Move vertically first, then sideways (correct arc handling)
-          const cornerX = startX;
-          const cornerY = endY;
-  
-          const verticalEndY = cornerY - verticalDir * radius;
-          const horizontalStartX = cornerX + horizontalDir * radius;
-  
-          // Correct the sweep flag to avoid the "scoop" effect
-          path += `V${verticalEndY} `;
-          path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 0 : 1} ${horizontalStartX},${cornerY} `;
-          path += `H${endX}`;
-        }
-  
-        return path;
-      }
-  
-      // Connection from SUBSET to PACKAGES (sideways first, then down)
-      const subsetBlock = rows[2].querySelector('.methodBlock:nth-child(2)');
-      const packagesBlock = rows[3].querySelector('.methodBlock:nth-child(1)');
-
-      if (subsetBlock && packagesBlock) {
-        const subsetRect = subsetBlock.getBoundingClientRect();
-        const packagesRect = packagesBlock.getBoundingClientRect();
-
-        const startX = subsetRect.left - contentRect.left;
-        const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
-
-        const endX = packagesRect.left + packagesRect.width / 2 - contentRect.left;  // Center top of PACKAGES
-        const endY = packagesRect.top - contentRect.top;
-
-        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
-
-        newConnections.push(path);
-      }
-
-      // Connection from SUBSET to SAMPLE BOOKS (sideways first, then down)
-      const sampleBooksBlock = rows[3].querySelector('.methodBlock:nth-child(3)');
-
-      if (subsetBlock && sampleBooksBlock) {
-        const subsetRect = subsetBlock.getBoundingClientRect();
-        const sampleBooksRect = sampleBooksBlock.getBoundingClientRect();
-
-        const startX = subsetRect.right - contentRect.left;
-        const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
-
-        const endX = sampleBooksRect.left + sampleBooksRect.width / 2 - contentRect.left;  // Center top of SAMPLE BOOKS
-        const endY = sampleBooksRect.top - contentRect.top;
-
-        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
-
-        newConnections.push(path);
-      }
-
-      // Connection from BASE COLOR to left side of GLOSS (down first, then sideways)
-      const baseColorBlock = rows[9].querySelector('.methodBlock:nth-child(1)');
-      const glossBlock = rows[10].querySelector('.methodBlock:nth-child(2)');
-
-      if (baseColorBlock && glossBlock) {
-        const baseColorRect = baseColorBlock.getBoundingClientRect();
-        const glossRect = glossBlock.getBoundingClientRect();
-
-        const startX = baseColorRect.left + baseColorRect.width / 2 - contentRect.left;  // Center bottom of BASE COLOR
-        const startY = baseColorRect.bottom - contentRect.top;
-
-        const endX = glossRect.left - contentRect.left;  // Left side of GLOSS
-        const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's left side
-
-        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
-
-        newConnections.push(path);
-      }
-
-      // Connection from BASE AND IMAGE COLOR to right side of GLOSS (down first, then sideways)
-      const baseAndImageColorBlock = rows[9].querySelector('.methodBlock:nth-child(3)');
-      if (baseAndImageColorBlock && glossBlock) {
-        const baseAndImageColorRect = baseAndImageColorBlock.getBoundingClientRect();
-        const glossRect = glossBlock.getBoundingClientRect();
-
-        const startX = baseAndImageColorRect.left + baseAndImageColorRect.width / 2 - contentRect.left;  // Center bottom of BASE AND IMAGE COLOR
-        const startY = baseAndImageColorRect.bottom - contentRect.top;
-
-        const endX = glossRect.right - contentRect.left;  // Right side of GLOSS
-        const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's right side
-
-        const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
-
-        newConnections.push(path);
-      }
-
-      setConnections(newConnections);
-    }
+    resizeObserver.observe(methodsContentRef.current);
+    
+    return () => resizeObserver.disconnect();
   }, []);
+
+  // Connection-drawing effect
+  useEffect(() => {
+    if (!layoutReady || !methodsContentRef.current) return;
+
+    const content = methodsContentRef.current;
+    const rows = content.querySelectorAll('.methodRow');
+    const contentRect = content.getBoundingClientRect();
+    const newConnections = [];
+  
+    // Handle PHOTOGRAPH to EDGE TEXTURE connection
+    let photographBlock = null;
+    let edgeTextureBlock = null;
+
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].textContent.includes('PHOTOGRAPH')) {
+        photographBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
+      }
+      if (rows[i].textContent.includes('EDGE TEXTURE')) {
+        edgeTextureBlock = rows[i].querySelector('.methodBlock:nth-child(3)');
+      }
+      if (photographBlock && edgeTextureBlock) break;
+    }
+
+    if (photographBlock && edgeTextureBlock) {
+      const photographRect = photographBlock.getBoundingClientRect();
+      const edgeTextureRect = edgeTextureBlock.getBoundingClientRect();
+      const startX = photographRect.left + photographRect.width / 2 - contentRect.left;
+      const startY = photographRect.bottom - contentRect.top;
+      const endX = edgeTextureRect.left + edgeTextureRect.width / 2 - contentRect.left;
+      const endY = edgeTextureRect.top - contentRect.top;
+      newConnections.push(`M${startX},${startY} L${endX},${endY}`);
+    }
+  
+    // Handle other connections
+    for (let col = 0; col < 3; col++) {
+      let lastFilledBlock = null;
+      let lastFilledRow = 0;
+  
+      for (let row = 0; row < rows.length; row++) {
+        const block = rows[row].querySelector(`.methodBlock:nth-child(${col + 1}):not(.empty)`);
+        
+        if (block) {
+          const blockRect = block.getBoundingClientRect();
+          
+          if (lastFilledBlock) {
+            const lastRect = lastFilledBlock.getBoundingClientRect();
+            const startX = lastRect.left + lastRect.width / 2 - contentRect.left;
+            const startY = lastRect.bottom - contentRect.top;
+            const endX = blockRect.left + blockRect.width / 2 - contentRect.left;
+            const endY = blockRect.top - contentRect.top;
+  
+            if (row - lastFilledRow === 1) {
+              newConnections.push(`M${startX},${startY} L${endX},${endY}`);
+            }
+          }
+  
+          lastFilledBlock = block;
+          lastFilledRow = row;
+        }
+      }
+    }
+
+    function generateRoundedCornerPath(startX, startY, endX, endY, radius, direction) {
+      let path = `M${startX},${startY} `;
+  
+      const horizontalDir = endX > startX ? 1 : -1;
+      const verticalDir = endY > startY ? 1 : -1;
+  
+      if (direction === 'horizontal-first') {
+        // Move horizontally first, then down
+        const cornerX = endX;
+        const cornerY = startY;
+  
+        const horizontalEndX = cornerX - horizontalDir * radius;
+        const verticalStartY = cornerY + verticalDir * radius;
+  
+        path += `H${horizontalEndX} `;
+        path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 1 : 0} ${cornerX},${verticalStartY} `;
+        path += `V${endY}`;
+      } else if (direction === 'vertical-first') {
+        // Move vertically first, then sideways (correct arc handling)
+        const cornerX = startX;
+        const cornerY = endY;
+  
+        const verticalEndY = cornerY - verticalDir * radius;
+        const horizontalStartX = cornerX + horizontalDir * radius;
+  
+        // Correct the sweep flag to avoid the "scoop" effect
+        path += `V${verticalEndY} `;
+        path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 0 : 1} ${horizontalStartX},${cornerY} `;
+        path += `H${endX}`;
+      }
+  
+      return path;
+    }
+  
+    // Connection from SUBSET to PACKAGES (sideways first, then down)
+    const subsetBlock = rows[2].querySelector('.methodBlock:nth-child(2)');
+    const packagesBlock = rows[3].querySelector('.methodBlock:nth-child(1)');
+
+    if (subsetBlock && packagesBlock) {
+      const subsetRect = subsetBlock.getBoundingClientRect();
+      const packagesRect = packagesBlock.getBoundingClientRect();
+
+      const startX = subsetRect.left - contentRect.left;
+      const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
+
+      const endX = packagesRect.left + packagesRect.width / 2 - contentRect.left;  // Center top of PACKAGES
+      const endY = packagesRect.top - contentRect.top;
+
+      const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
+
+      newConnections.push(path);
+    }
+
+    // Connection from SUBSET to SAMPLE BOOKS (sideways first, then down)
+    const sampleBooksBlock = rows[3].querySelector('.methodBlock:nth-child(3)');
+
+    if (subsetBlock && sampleBooksBlock) {
+      const subsetRect = subsetBlock.getBoundingClientRect();
+      const sampleBooksRect = sampleBooksBlock.getBoundingClientRect();
+
+      const startX = subsetRect.right - contentRect.left;
+      const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
+
+      const endX = sampleBooksRect.left + sampleBooksRect.width / 2 - contentRect.left;  // Center top of SAMPLE BOOKS
+      const endY = sampleBooksRect.top - contentRect.top;
+
+      const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
+
+      newConnections.push(path);
+    }
+
+    // Connection from BASE COLOR to left side of GLOSS (down first, then sideways)
+    const baseColorBlock = rows[9].querySelector('.methodBlock:nth-child(1)');
+    const glossBlock = rows[10].querySelector('.methodBlock:nth-child(2)');
+
+    if (baseColorBlock && glossBlock) {
+      const baseColorRect = baseColorBlock.getBoundingClientRect();
+      const glossRect = glossBlock.getBoundingClientRect();
+
+      const startX = baseColorRect.left + baseColorRect.width / 2 - contentRect.left;  // Center bottom of BASE COLOR
+      const startY = baseColorRect.bottom - contentRect.top;
+
+      const endX = glossRect.left - contentRect.left;  // Left side of GLOSS
+      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's left side
+
+      const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
+
+      newConnections.push(path);
+    }
+
+    // Connection from BASE AND IMAGE COLOR to right side of GLOSS (down first, then sideways)
+    const baseAndImageColorBlock = rows[9].querySelector('.methodBlock:nth-child(3)');
+    if (baseAndImageColorBlock && glossBlock) {
+      const baseAndImageColorRect = baseAndImageColorBlock.getBoundingClientRect();
+      const glossRect = glossBlock.getBoundingClientRect();
+
+      const startX = baseAndImageColorRect.left + baseAndImageColorRect.width / 2 - contentRect.left;  // Center bottom of BASE AND IMAGE COLOR
+      const startY = baseAndImageColorRect.bottom - contentRect.top;
+
+      const endX = glossRect.right - contentRect.left;  // Right side of GLOSS
+      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's right side
+
+      const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
+
+      newConnections.push(path);
+    }
+
+    setConnections(newConnections);
+  }, [layoutReady]);
+
+  useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      const mobile = window.matchMedia('(max-width: 768px)').matches;
+      setIsMobile(mobile);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add listener for window resize
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    mediaQuery.addListener(checkMobile);
+
+    // Cleanup
+    return () => mediaQuery.removeListener(checkMobile);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div id="sorry">
+        <h1>Paperbase.</h1>
+        <p>Sorry! This application is not yet optimized for mobile devices. A mobile-friendly version is coming soon. Please visit us on a desktop browser for the full experience.</p>
+      </div>
+    );
+  }
 
   return (
     <div id='landing' style={landingStyle}>
@@ -394,80 +449,34 @@ export default function Landing({ setPage }) {
           </div>
           <div className='landingContentItems'>
             <div className='dataInsightUnit'>
-              <h3>Distribution of Paper Types</h3>
-              <p>This visualization shows the distribution of different paper types in our collection. Matte papers make up the largest portion, followed by glossy and semi-glossy papers.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="10" y="10" width="15" height="40" fill="var(--yalelightgray)" />
-                  <rect x="30" y="20" width="15" height="30" fill="var(--yalelightgray)" />
-                  <rect x="50" y="5" width="15" height="45" fill="var(--yalelightgray)" />
-                  <rect x="70" y="25" width="15" height="25" fill="var(--yalelightgray)" />
-                </svg>
-              </div>
+              <h3>White Keeps Getting Whiter</h3>
+              <p>For nearly all color descriptors in our data, including "White", shown below, the whiteness of the paper has increased over time. It's unclear whether this is due to the aging of older papers, or whether this was a conscious stylistic choice.</p>
+              <Yellow data={visData.yellowData} />
             </div>
             <div className='dataInsightUnit'>
-              <h3>Temporal Trends in Paper Production</h3>
-              <p>This timeline illustrates the evolution of paper production techniques from the late 19th century to the present day.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <polyline
-                    points="10,50 30,30 50,40 70,20 90,10"
-                    fill="none"
-                    stroke="var(--yalelightgray)"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+              <h3>Manufacturer Descriptions</h3>
+              <p>There is some standardization across manufacturers of the language used to describe the physical properties of photographic papers. This visualization shows the distribution of the most common descriptors across our collection.</p>
+              <Descriptors categories={visData.descriptorsData.categories} />
             </div>
             <div className='dataInsightUnit'>
-              <h3>Gloss Levels Over Time</h3>
-              <p>This chart shows how the average gloss levels of photographic papers have changed over the decades.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="20" cy="30" r="2" fill="var(--yalelightgray)" />
-                  <circle cx="35" cy="40" r="2" fill="var(--yalelightgray)" />
-                  <circle cx="50" cy="20" r="2" fill="var(--yalelightgray)" />
-                  <circle cx="65" cy="35" r="2" fill="var(--yalelightgray)" />
-                  <circle cx="80" cy="25" r="2" fill="var(--yalelightgray)" />
-                </svg>
-              </div>
+              <h3>Highlights and Shadows</h3>
+              <p>We expected base color and image color to be strongly correlated, but the correlation is actually quite weak: 0.17. Here, we show this relationship using an iconographic scatterplot.</p>
+              <Basetone data={basetoneData} />
             </div>
             <div className='dataInsightUnit'>
-              <h3>Brand Market Share</h3>
-              <p>A breakdown of the market share of different photographic paper brands represented in our collection.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M50,30 L50,5 A25,25 0 0,1 70,40 Z" fill="var(--yalelightgray)" />
-                  <path d="M50,30 L70,40 A25,25 0 0,1 30,40 Z" fill="var(--yalelightgray)" opacity="0.7" />
-                  <path d="M50,30 L30,40 A25,25 0 0,1 50,5 Z" fill="var(--yalelightgray)" opacity="0.4" />
-                </svg>
-              </div>
+              <h3>The Sudden Appearance of Fluorescence</h3>
+              <p>Beginning around 1950, photographic paper manufacturers started using optical brightening agents (OBAs) to make paper whiter. These additives also make the paper fluoresce under ultraviolet light. The proportion of papers containing OBAs increased rapidly after 1980, as measured by the intensity of the fluorescence.</p>
+              <UV data={visData.uvData} />
             </div>
             <div className='dataInsightUnit'>
-              <h3>Paper Thickness Variations</h3>
-              <p>This visualization demonstrates the range and distribution of paper thicknesses in our collection.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="10" y="40" width="10" height="10" fill="var(--yalelightgray)" />
-                  <rect x="25" y="30" width="10" height="20" fill="var(--yalelightgray)" />
-                  <rect x="40" y="20" width="10" height="30" fill="var(--yalelightgray)" />
-                  <rect x="55" y="10" width="10" height="40" fill="var(--yalelightgray)" />
-                  <rect x="70" y="25" width="10" height="25" fill="var(--yalelightgray)" />
-                  <rect x="85" y="35" width="10" height="15" fill="var(--yalelightgray)" />
-                </svg>
-              </div>
+              <h3>Paper Surfaces</h3>
+              <p>The same paper surfaces can reappear frequently in our data. For many combinations of manufacturer, brand, and surface, we have many dozens of examples in our collection. Here is every surface in the collection with at least 50 examples. All but one are Kodak!</p>
+              <Surfs />
             </div>
             <div className='dataInsightUnit'>
-              <h3>Geographical Origins</h3>
-              <p>A map showing the geographical origins of the photographic papers in our collection.</p>
-              <div className='svgContainer'>
-                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10,40 Q30,20 50,40 T90,40" fill="none" stroke="var(--yalelightgray)" strokeWidth="2" />
-                  <circle cx="30" cy="30" r="3" fill="var(--yalelightgray)" />
-                  <circle cx="60" cy="35" r="3" fill="var(--yalelightgray)" />
-                  <circle cx="80" cy="25" r="3" fill="var(--yalelightgray)" />
-                </svg>
-              </div>
+              <h3>Material Diversity</h3>
+              <p>Manufacturer descriptions of paper surfaces are not physically uniform. Here, we illustrate this point by looking at the distribution of measured thicknesses for the weight descriptors "Single Weight" and "Double Weight". The two distributions overlap more than you'd expect! We see this across all descriptor types.</p>
+              <Diversity />
             </div>
           </div>
         </div>
@@ -533,7 +542,7 @@ export default function Landing({ setPage }) {
               </div>
               <div className='tutorialBlurb'>
                 <h3>Filter Panel as Data Visualization</h3>
-                <p className='tutorialDescription'>Paperbase’s filter panel is both a set of controls for the 3D visualization canvas and a data visualization in its own right, because its buttons and sliders carry information about the relative frequencies of variable values in the filtered data. In this tutorial, we demonstrate the considerable power of the filter panel and how it can be used for research.</p>
+                <p className='tutorialDescription'>Paperbase's filter panel is both a set of controls for the 3D visualization canvas and a data visualization in its own right, because its buttons and sliders carry information about the relative frequencies of variable values in the filtered data. In this tutorial, we demonstrate the considerable power of the filter panel and how it can be used for research.</p>
                 <p className='tutorialAdditional'><b>+</b> spread slider, filter group expand button, filter counter, year histogram, viewing base colors in the selection panel, surface codes, surface micrographs, sample book browsing</p>
               </div>
             </div>
@@ -548,7 +557,7 @@ export default function Landing({ setPage }) {
               </div>
               <div className='tutorialBlurb'>
                 <h3>The Cluster Plot</h3>
-                <p className='tutorialDescription'>The cluster plot is a hybrid of discrete and continuous representations of our collection’s material properties—i.e., thickness, gloss, warmth, and roughness. Collection items are grouped by material similarity, and these groups are then plotted together on a continuous plane, again by material similarity. The cluster plot is an alternative to viewing the collection in a 3D Cartesian space, which may make certain relationships easier to see. In this tutorial, we discuss the cluster plot in depth and compare it with the 3D scatterplot.</p>
+                <p className='tutorialDescription'>The cluster plot is a hybrid of discrete and continuous representations of our collection's material properties—i.e., thickness, gloss, warmth, and roughness. Collection items are grouped by material similarity, and these groups are then plotted together on a continuous plane, again by material similarity. The cluster plot is an alternative to viewing the collection in a 3D Cartesian space, which may make certain relationships easier to see. In this tutorial, we discuss the cluster plot in depth and compare it with the 3D scatterplot.</p>
                 <p className='tutorialAdditional'><b>+</b> radar charts, radar groups, group color shuffle, spread slider, alternative 3D glyphs, selection highlight tracking</p>
               </div>
             </div>
@@ -564,7 +573,7 @@ export default function Landing({ setPage }) {
               <h3>Closer Looking: Computer Vision in Material Studies of Art</h3>
               <p className='author'>Katherine Mintie, Paul Messier, and Damon Crockett</p>
               <p className='journal'>Art Bulletin 106 (2), 29-32, 2024.</p>
-              <p className='abstract'>Knowledge of the materiality of artworks is essential to understanding how they are made, their visual qualities, and their significance. To date, art historians and conservators have assessed key physical characteristics of works primarily by eye; however, this practice becomes challenging in projects such as catalogue raisonnés or studies of artist circles that require scholars to scale up their observations and compare numerous works across collections. This paper proposes that computational methods coupled with domain-specific expertise offer a powerful tool for recognizing material differences and similarities across large corpora. Computational methods can be broadly defined as research in which various data are collected, modelled, and analyzed by computers to support scholarly inquiry. While the application of “immaterial” data to the study of the material properties of artworks may strike some as counterintuitive, this article will suggest that computational methods can complement and deepen traditional art historical methods, such as close looking, in specific contexts. In arguing for the applicability of computational methods to materials-based art historical research, this paper will address key questions such as how to determine when this approach is appropriate, the central role of subject matter expertise in data selection and visualization, and the potential of these methods to inform scholarship going forward.</p>
+              <p className='abstract'>Knowledge of the materiality of artworks is essential to understanding how they are made, their visual qualities, and their significance. To date, art historians and conservators have assessed key physical characteristics of works primarily by eye; however, this practice becomes challenging in projects such as catalogue raisonnés or studies of artist circles that require scholars to scale up their observations and compare numerous works across collections. This paper proposes that computational methods coupled with domain-specific expertise offer a powerful tool for recognizing material differences and similarities across large corpora. Computational methods can be broadly defined as research in which various data are collected, modelled, and analyzed by computers to support scholarly inquiry. While the application of "immaterial" data to the study of the material properties of artworks may strike some as counterintuitive, this article will suggest that computational methods can complement and deepen traditional art historical methods, such as close looking, in specific contexts. In arguing for the applicability of computational methods to materials-based art historical research, this paper will address key questions such as how to determine when this approach is appropriate, the central role of subject matter expertise in data selection and visualization, and the potential of these methods to inform scholarship going forward.</p>
               <a href="https://www.tandfonline.com/doi/full/10.1080/00043079.2024.2296276" target='_blank' className='readLink'>Read the essay</a>
             </div>
             <div className='researchPaperUnit'>
@@ -578,7 +587,7 @@ export default function Landing({ setPage }) {
               <h3>Reading the Paper: Expressive Dimensions of Photographic Prints</h3>
               <p className='author'>Paul Messier and Jennifer McGlinchey Sexton</p>
               <p className='journal'>in <i>Photography Inc.: Your Image Is Our Business</i>, Lannoo, 2015.</p>
-              <p className='abstract'>Paper, everywhere and ordinary, is typically ‘the poor relation’ to applied media. Markings are different whether in charcoal, ink, graphite, or silver. Media on paper conveys meaning: words or pictures, literature or art. The same is certainly true in photography where the image is the message; the image is everything. Or is it?</p>
+              <p className='abstract'>Paper, everywhere and ordinary, is typically 'the poor relation' to applied media. Markings are different whether in charcoal, ink, graphite, or silver. Media on paper conveys meaning: words or pictures, literature or art. The same is certainly true in photography where the image is the message; the image is everything. Or is it?</p>
               <a href="https://www.researchgate.net/publication/301891399_Reading_the_Paper" target='_blank' className='readLink'>Read the paper</a>
             </div>
             <div className='researchPaperUnit'>
@@ -603,10 +612,10 @@ export default function Landing({ setPage }) {
               <a href="https://hal.science/hal-03464914/document" target='_blank' className='readLink'>Read the paper</a>
             </div>
             <div className='researchPaperUnit'>
-              <h3>Image Isn’t Everything: Revealing Affinities across Collections through the Language of the Photographic Print</h3>
+              <h3>Image Isn't Everything: Revealing Affinities across Collections through the Language of the Photographic Print</h3>
               <p className='author'>Paul Messier</p>
               <p className='journal'>in <i>Object:Photo. Modern Photographs: The Thomas Walther Collection 1909-1949</i>, Museum of Modern Art, 332-339, 2014.</p>
-              <p className='abstract'>A photograph is more than an image. Paper, the physical material of the photographer, plays a vital role in the appearance of a photographic print and in conveying the photographer’s intention for it. Texture, gloss, highlight color, and sheet thickness — the defining characteristics of photographic paper — each contribute significantly to the visual impact of a print. Paper manufacturers have long manipulated these key characteristics, singly and in combination, to differentiate their products and to satisfy a broad spectrum of market demands.</p>
+              <p className='abstract'>A photograph is more than an image. Paper, the physical material of the photographer, plays a vital role in the appearance of a photographic print and in conveying the photographer's intention for it. Texture, gloss, highlight color, and sheet thickness — the defining characteristics of photographic paper — each contribute significantly to the visual impact of a print. Paper manufacturers have long manipulated these key characteristics, singly and in combination, to differentiate their products and to satisfy a broad spectrum of market demands.</p>
               <a href="https://scholar.google.com/scholar?oi=bibs&cluster=12319685399683587963&btnI=1&hl=en" target='_blank' className='readLink'>Read the paper</a>
             </div>
           </div>

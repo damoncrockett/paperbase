@@ -544,7 +544,7 @@
 }
 
 .dataInsightUnit h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin-bottom: 1rem;
   font-family: 'DM Sans';
   font-weight: 500;
@@ -562,10 +562,15 @@
 .dataInsightUnit .svgContainer {
   width: 100%;
   margin-bottom: 1rem;
+  margin-top: 1rem;
   aspect-ratio: 16 / 9; /* Maintain consistent aspect ratio for visualizations */
   background-color: var(--yaledarkgray); /* Dark background to contrast with light gray SVGs */
   border-radius: 8px; /* Rounded corners for consistency */
   padding: 1rem; /* Add some padding around the SVG */
+}
+
+.dataInsightUnit .svgContainer .containerItem {
+  margin-bottom: 0;
 }
 
 .dataInsightUnit .svgContainer svg {
@@ -575,8 +580,8 @@
 }
 
 .dataInsightUnit p {
-  font-size: 1.2rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.5;
   color: var(--yalelightgray); /* Consistent text color */
 }
 

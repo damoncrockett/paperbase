@@ -1,0 +1,78 @@
+{
+  "descriptorsData": {
+    "categories": [
+      {
+        "title": "Thickness",
+        "data": [
+          { "label": "Other", "value": 0.579153 },
+          { "label": "Double Weight", "value": 0.231806 },
+          { "label": "Single Weight", "value": 0.189040 }
+        ]
+      },
+      {
+        "title": "Color",
+        "data": [
+          { "label": "Other", "value": 0.390113 },
+          { "label": "White", "value": 0.350971 },
+          { "label": "", "value": 0.155262 },
+          { "label": "Cream White", "value": 0.066541 },
+          { "label": "Cream", "value": 0.037112 }
+        ]
+      },
+      {
+        "title": "Gloss",
+        "data": [
+          { "label": "Glossy", "value": 0.289504 },
+          { "label": "Other", "value": 0.272688 },
+          { "label": "Luster", "value": 0.176138 },
+          { "label": "Matte", "value": 0.088141 },
+          { "label": "Semi Matte", "value": 0.076544 },
+          { "label": "", "value": 0.063497 },
+          { "label": "High Luster", "value": 0.033488 }
+        ]
+      },
+      {
+        "title": "Texture",
+        "data": [
+          { "label": "", "value": 0.309655 },
+          { "label": "Smooth", "value": 0.276747 },
+          { "label": "Other", "value": 0.187301 },
+          { "label": "Fine Grained", "value": 0.112496 },
+          { "label": "Silk", "value": 0.048710 },
+          { "label": "Rough", "value": 0.034648 },
+          { "label": "Velvet Grain", "value": 0.030444 }
+        ]
+      }
+    ]
+  },
+  "yellowData": {
+    "points": [
+      { "decade": "1910", "warmth": 14.925 },
+      { "decade": "1920", "warmth": 11.210 },
+      { "decade": "1930", "warmth": 9.545 },
+      { "decade": "1940", "warmth": 5.690 },
+      { "decade": "1950", "warmth": 5.665 },
+      { "decade": "1960", "warmth": 3.700 },
+      { "decade": "1970", "warmth": 4.450 },
+      { "decade": "1980", "warmth": 2.680 },
+      { "decade": "1990", "warmth": 1.080 },
+      { "decade": "2000", "warmth": 0.530 }
+    ]
+  },
+  "uvData": {
+    "points": [
+      { "decade": "1890", "auc": 0.0130 },
+      { "decade": "1900", "auc": 0.1070 },
+      { "decade": "1910", "auc": 0.1110 },
+      { "decade": "1920", "auc": 0.1050 },
+      { "decade": "1930", "auc": 0.1340 },
+      { "decade": "1940", "auc": 0.1580 },
+      { "decade": "1950", "auc": 0.1800 },
+      { "decade": "1960", "auc": 0.2450 },
+      { "decade": "1970", "auc": 0.2840 },
+      { "decade": "1980", "auc": 2.7740 },
+      { "decade": "1990", "auc": 4.9985 },
+      { "decade": "2000", "auc": 6.9240 }
+    ]
+  }
+}
