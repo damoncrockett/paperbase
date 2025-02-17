@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { select } from 'd3-selection';
 import { scaleLinear, scaleSequential } from 'd3-scale';
-import { interpolateInferno } from 'd3-scale-chromatic';
 import { path } from 'd3-path';
 import { forceSimulation, forceX, forceY, forceCollide } from 'd3-force';
+import { categoricalColors } from '../../utils/color';
 
 const ProportionalBar = ({ data, title, barIndex = 0 }) => {
   const svgRef = useRef();
@@ -45,10 +45,9 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       };
     });
 
-    // Create color scale
-    const color = scaleSequential()
-      .domain([0, segments.length - 1])
-      .interpolator(interpolateInferno);
+    const numColorsNeeded = segments.length;
+    const startIdx = 5;
+    const colors = categoricalColors.slice(startIdx, startIdx + numColorsNeeded);
 
     // Add title if provided
     if (title) {
@@ -101,7 +100,7 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       
       segment
         .attr('d', pathGen.toString())
-        .attr('fill', color(i));
+        .attr('fill', colors[i % colors.length]);  // Cycle through colors if more segments than colors
     });
 
     // Function to check if label fits inside its segment
@@ -138,7 +137,7 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
           .attr('y', barHeight / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'middle')
-          .attr('fill', d.label === "Single Weight" ? 'black' : 'white')
+          .attr('fill', 'black')
           .attr('font-size', '12px')
           .attr('font-family', 'DM Sans')
           .attr('font-weight', 400)

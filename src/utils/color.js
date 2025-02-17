@@ -9,7 +9,7 @@ Colors, between 50 and 85 lightness, chosen for name uniqueness, using Colorgori
 Had to eliminate two colors [#f228a0,#f24219] because they were too close to our highlight magenta.
  */
 
-let categoricalColors = [
+export const categoricalColors = [
     "#78b4c6", "#c66a5a", "#52dea9", "#b5a3cf", "#a1d832", "#f59ae7", "#698e4e", 
     "#f4bb8f", "#00d618", "#2282f5", "#f24219", "#9a63ff", "#fe8f06", "#9d7f50", "#f4d403"
 ];
@@ -17,15 +17,13 @@ let categoricalColors = [
 let categoricalColorArray;
 
 export function makeColorArray() {
-    categoricalColorArray = categoricalColors.sort(function () {
-        return Math.random() - 0.5;
-    });
+  categoricalColorArray = [...categoricalColors].sort(() => Math.random() - 0.5);
 
-    const lastColor = categoricalColorArray[categoricalColorArray.length - 1];
-    const lastColorArray = Array.from({length: 600}, () => lastColor); // there are 600 distinct 'bran' values, so we are adding 600 here to be safe
-    categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
+  const lastColor = categoricalColorArray[categoricalColorArray.length - 1];
+  const lastColorArray = Array.from({ length: 600 }, () => lastColor);
+  categoricalColorArray = [...categoricalColorArray, ...lastColorArray];
 
-    return categoricalColorArray
+  return categoricalColorArray;
 }
 
 const highlightColor = 0xff00ff;

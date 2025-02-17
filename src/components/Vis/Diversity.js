@@ -5,6 +5,7 @@ import { line, curveBasis, area } from 'd3-shape';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { bin, max } from 'd3-array';
 import diversityData from '../../assets/data/diversityData.json';
+import { categoricalColors } from '../../utils/color';
 
 const Diversity = () => {
   const svgRef = useRef();
@@ -16,15 +17,17 @@ const Diversity = () => {
     const height = container.offsetHeight;
     const margin = { top: 30, right: 20, bottom: 40, left: 0 };
 
-    // Colors for the two distributions
-    const colors = {
+    const colors = ["#f59ae7", "#698e4e"];
+
+    // Colors for the two distributions - using first two categorical colors
+    const histogramColors = {
       single: {
-        stroke: '#4e79a7',
-        fill: 'rgba(78, 121, 167, 0.3)'
+        stroke: '#f59ae7',  // First color
+        fill: 'rgba(245, 154, 231, 0.3)'  // Same color with opacity
       },
       double: {
-        stroke: '#e15759',
-        fill: 'rgba(225, 87, 89, 0.3)'
+        stroke: '#698e4e',  // Second color
+        fill: 'rgba(105, 142, 78, 0.3)'   // Same color with opacity
       }
     };
 
@@ -99,26 +102,26 @@ const Diversity = () => {
     // Draw areas
     svg.append('path')
       .datum(singleBins)
-      .attr('fill', colors.single.fill)
+      .attr('fill', histogramColors.single.fill)
       .attr('d', areaGenerator);
 
     svg.append('path')
       .datum(doubleBins)
-      .attr('fill', colors.double.fill)
+      .attr('fill', histogramColors.double.fill)
       .attr('d', areaGenerator);
 
     // Draw lines
     svg.append('path')
       .datum(singleBins)
       .attr('fill', 'none')
-      .attr('stroke', colors.single.stroke)
+      .attr('stroke', histogramColors.single.stroke)
       .attr('stroke-width', 2)
       .attr('d', lineGenerator);
 
     svg.append('path')
       .datum(doubleBins)
       .attr('fill', 'none')
-      .attr('stroke', colors.double.stroke)
+      .attr('stroke', histogramColors.double.stroke)
       .attr('stroke-width', 2)
       .attr('d', lineGenerator);
 
@@ -145,7 +148,7 @@ const Diversity = () => {
       .attr('x2', 20)
       .attr('y1', 0)
       .attr('y2', 0)
-      .attr('stroke', colors.single.stroke)
+      .attr('stroke', histogramColors.single.stroke)
       .attr('stroke-width', 2);
 
     legend.append('text')
@@ -163,7 +166,7 @@ const Diversity = () => {
       .attr('x2', 20)
       .attr('y1', 20)
       .attr('y2', 20)
-      .attr('stroke', colors.double.stroke)
+      .attr('stroke', histogramColors.double.stroke)
       .attr('stroke-width', 2);
 
     legend.append('text')
