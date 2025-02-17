@@ -460,7 +460,7 @@ export default function Landing({ setPage }) {
             </div>
             <div className='dataInsightUnit'>
               <h3>Highlights and Shadows</h3>
-              <p>We expected base color and image color to be strongly correlated, but the correlation is actually quite weak: 0.17. Here, we show this relationship using an iconographic scatterplot.</p>
+              <p>We expected base warmth and image warmth to be strongly correlated, but the correlation is actually quite weak: ρ = 0.17. Here, we show this relationship using an iconographic scatterplot.</p>
               <Basetone data={basetoneData} />
             </div>
             <div className='dataInsightUnit'>
