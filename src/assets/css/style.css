@@ -315,6 +315,7 @@ svg {
   border: none;
   background: none;
   color: transparent;
+  z-index: 2;
 }
 
 .openDetailScreen {
@@ -347,6 +348,11 @@ svg {
 .panelItem::-webkit-scrollbar { /* hides scrollbar in Safari + Chrome */
     width: 0;
     height: 0;
+}
+
+.panelItem > svg {
+  pointer-events: none;
+  z-index: 0;
 }
 
 .grid {

@@ -193,11 +193,15 @@ export default function PanelItem({
               : backprintImage
                 ? { backgroundImage: `url(${imgStringBackprint})`, backgroundPosition: 'center' }
                 : svgRadar 
-                ? { backgroundColor: 'var(--yalemidgray)' } 
+                ? { backgroundColor: 'var(--yalemidgray)' }
                 : { backgroundColor: 'var(--yalewhite)' }
               }
       >
-        {svgRadar && <svg xmlns="http://www.w3.org/2000/svg" width={svgSide} height={svgSide} >
+        {svgRadar && <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width={svgSide} 
+          height={svgSide}
+        >
   
             <line x1={sHalf} y1={0} x2={sHalf} y2={svgSide} stroke={stroke} />
             <line x1={0} y1={sHalf} x2={svgSide} y2={sHalf} stroke={stroke} />
@@ -220,7 +224,13 @@ export default function PanelItem({
             <polygon points={polygonPoints(dataU,clickedItem,svgSide)} stroke={"none"} fill={"#63aaff"} fillOpacity={0.5} />
   
           </svg>}
-        <button title='remove from selection' className='selectionRemove material-icons' onClick={handleRemove} >cancel</button>
+        <button 
+          title='remove from selection' 
+          className='selectionRemove material-icons' 
+          onClick={handleRemove}
+        >
+          cancel
+        </button>
         <button title='open detail panel' className='openDetailScreen material-icons' onClick={(e) => {e.stopPropagation(); setDetailScreen(true); setDetailImageStringState(detailImgString); setDetailImageIndex(clickedItem); setPackageImageIndex(0)}} >open_in_full</button>
         {textLength > 0 && <div className={svgRadar ? 'allText fixedOverlay' : 'allText'} >
           {textLength === 2 && <div className={infoPanelFontSize===1 ? 'catalogSmall' : infoPanelFontSize===2 ? 'catalogMid' : 'catalog'}>
