@@ -5,12 +5,10 @@ import { axisBottom, axisLeft } from 'd3-axis';
 
 const Basetone = ({ data }) => {
   const svgRef = useRef();
-  const containerRef = useRef();
 
   useEffect(() => {
-    const container = containerRef.current;
-    const width = container.offsetWidth;
-    const height = 400;
+    const width = 400;  // 20 grid squares * 20px baseUnit
+    const height = 400; // Square visualization
     const margin = { top: 30, right: 20, bottom: 30, left: 0 };
     
     // Base unit for scaling the entire visualization
@@ -25,10 +23,9 @@ const Basetone = ({ data }) => {
     // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG
+    // Create SVG with viewBox
     const svg = select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -132,8 +129,8 @@ const Basetone = ({ data }) => {
   }, [data]);
 
   return (
-    <div ref={containerRef} className="svgContainer" >
-      <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>
+    <div className="svgContainer" >
+      <svg ref={svgRef} style={{ width: '100%', height: '100%', overflow: 'visible' }}></svg>
     </div>
   );
 };

@@ -162,7 +162,7 @@ export default function PanelItem({
     
     const textureThumbSize = smallItem ? 256 : 512;
     const imgThumbSize = smallItem ? 512 : 1024;
-    const imgFolder = sb === '1' ? 'samplebooks' : 'packages';
+    const imgFolder = sb === '1' || sb === '-1' ? 'samplebooks' : 'packages';
   
     const imgStringTexture = returnDomain() + 'texture_' + textureThumbSize + '/' + catalog + '.jpg';
     const imgStringBackprint = returnDomain() + 'backprints_detail_' + textureThumbSize + '/bp' + catalog + '.jpg';

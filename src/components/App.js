@@ -409,7 +409,7 @@ export function getDetailImageString(texture,backprintImage,i) {
   catalog = catalog.includes('1860') ? '1860' : catalog;
   
   const sb = data['sb'][i];
-  const detailFolder = texture ? 'texture/' : backprintImage ? 'backprints_detail/bp' : sb === '1' ? 'samplebooks_2048/' : 'packages_2048/'; 
+  const detailFolder = texture ? 'texture/' : backprintImage ? 'backprints_detail/bp' : sb === '1' || sb === '-1' ? 'samplebooks_2048/' : 'packages_2048/'; 
   const detailImgString = returnDomain() + detailFolder + catalog + '.jpg';
 
   return detailImgString;
@@ -1639,7 +1639,7 @@ useEffect(() => {
         {filterModal==='expanded' && <button title='contract filter window' className='material-icons expandButtons' style={{right:'56vw'}} onClick={e => {e.stopPropagation; setFilterModal('open')}} >chevron_right</button>}
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >REFERENCE COLLECTION</p></div>
-          {Object.keys(collValCounts).sort().map((d,i) => <button key={i} data-cat='sb' data-val={d} onClick={handleFilter} className={filterList['sb'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredCollFrequencies,d)} >{d === '0' ? 'LML Packages' : 'LML Sample Books'}</button>)}
+          {Object.keys(collValCounts).sort().map((d,i) => <button key={i} data-cat='sb' data-val={d} onClick={handleFilter} className={filterList['sb'].includes(d) ? 'filterButtonActive' : 'filterButton'} style={filterButtonStyle(filteredCollFrequencies,d)} >{d === '0' ? 'LML Packages' : d === '-1' ? 'GCI' : 'LML Sample Books'}</button>)}
         </div>
         <div className='filterCategoryContainer'>
           <div className='filterCategoryHeadingContainer'><p className="filterCategoryHeading" >YEAR</p></div>

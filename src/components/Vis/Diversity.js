@@ -9,25 +9,23 @@ import { categoricalColors } from '../../utils/color';
 
 const Diversity = () => {
   const svgRef = useRef();
-  const containerRef = useRef();
 
   useEffect(() => {
-    const container = containerRef.current;
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
+    const width = 550;  // Fixed width
+    const height = 400; // Fixed height to match other visualizations
     const margin = { top: 30, right: 20, bottom: 40, left: 0 };
 
     const colors = ["#f59ae7", "#698e4e"];
 
-    // Colors for the two distributions - using first two categorical colors
+    // Colors for the two distributions
     const histogramColors = {
       single: {
-        stroke: '#f59ae7',  // First color
-        fill: 'rgba(245, 154, 231, 0.3)'  // Same color with opacity
+        stroke: '#f59ae7',
+        fill: 'rgba(245, 154, 231, 0.3)'
       },
       double: {
-        stroke: '#698e4e',  // Second color
-        fill: 'rgba(105, 142, 78, 0.3)'   // Same color with opacity
+        stroke: '#698e4e',
+        fill: 'rgba(105, 142, 78, 0.3)'
       }
     };
 
@@ -38,10 +36,9 @@ const Diversity = () => {
     // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG and append transformed group
+    // Create SVG with viewBox
     const svg = select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -181,8 +178,8 @@ const Diversity = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="svgContainer">
-      <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>
+    <div className="svgContainer">
+      <svg ref={svgRef} style={{ width: '100%', height: '100%', overflow: 'visible' }}></svg>
     </div>
   );
 };

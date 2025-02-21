@@ -7,21 +7,18 @@ import { interpolate } from 'd3-interpolate';
 
 const Yellow = ({ data }) => {
   const svgRef = useRef();
-  const containerRef = useRef();
 
   useEffect(() => {
-    const container = containerRef.current;
-    const width = 552;
+    const width = 550;  // Slightly adjusted from 552 to match other components
     const height = 400;
     const margin = { top: 30, right: 20, bottom: 30, left: 0 };
     
     // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG
+    // Create SVG with viewBox
     const svg = select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -97,8 +94,8 @@ const Yellow = ({ data }) => {
   }, [data]);
 
   return (
-    <div ref={containerRef} className="svgContainer" >
-      <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>
+    <div className="svgContainer">
+      <svg ref={svgRef} style={{ width: '100%', height: '100%', overflow: 'visible' }}></svg>
     </div>
   );
 };

@@ -6,7 +6,6 @@ import { path } from 'd3-path';
 
 const Surfs = () => {
   const svgRef = useRef();
-  const containerRef = useRef();
 
   const data = [
     { name: "Kodak Velox F", value: 179 },
@@ -17,23 +16,20 @@ const Surfs = () => {
     { name: "Kodak Polycontrast F", value: 56 },
     { name: "Kodak Ektalure X", value: 52 },
     { name: "Kodak Medalist J", value: 51 },
-    
   ];
 
   useEffect(() => {
-    const container = containerRef.current;
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
+    const width = 550;  // Fixed width
+    const height = 400; // Fixed height to match other visualizations
     const margin = { top: 30, right: 20, bottom: 30, left: 0 };
     const cornerRadius = 8;
     
     // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG and append transformed group
+    // Create SVG with viewBox
     const svg = select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -104,8 +100,8 @@ const Surfs = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="svgContainer" style={{ paddingLeft: 0 }}>
-      <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>
+    <div className="svgContainer">
+      <svg ref={svgRef} style={{ width: '100%', height: '100%', overflow: 'visible' }}></svg>
     </div>
   );
 };

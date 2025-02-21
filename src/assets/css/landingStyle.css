@@ -20,22 +20,6 @@
     text-align: center;
     }
 
-/* #landing {
-  overflow-x: hidden;
-} */
-
-#landingFooter {
-    position: fixed;
-    bottom: 3vh;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  
-#jpffLogo {
-    width: auto;
-    height: 5vh;
-  }
-
 #landingBlurb {
     background-color: transparent;
     position: absolute;
@@ -68,20 +52,60 @@
 #landingBlurb > button:hover {
     border-color: var(--yalewhite);
   }
+
+#tooNarrowMsg {
+  border-radius: 3vh;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--yalemidgray);
+  display: block;
+  color: var(--yalemidgray);
+  background-color: rgba(255, 255, 255, 0.7);
+  padding-top: 3vh;
+  padding-bottom: 3vh;
+  padding-left: 7vh;
+  padding-right: 7vh;
+  margin-top: 8vh;
+  font-weight: 500;
+  font-size: 1.1rem;
+  font-style: italic;
+  max-width: 50%;
+}
   
 #blurbText {
     color: var(--yalemidgray);
     font-size: 2rem;
     margin-top: 4vh;
     font-weight: 100;
-    max-width: 60vw;
+    max-width: 60%;
   }
-  
+
 #blurbTitle {
     color: var(--yalemidgray);
     font-size: 8rem;
     font-family: quiverleaf-cf;
   }
+
+@media screen and (max-width: 1024px) {
+
+  #blurbTitle {
+    font-size: 7rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #blurbText {
+    font-size: 1.75rem;
+  }
+
+  #blurbTitle {
+    font-size: 6rem;
+  }
+
+  #blurbText {
+    max-width: 75%;
+  }
+}
 
 .scroll-indicator {
     position: absolute;
@@ -177,6 +201,12 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
   }
+
+  @media screen and (max-width: 1660px) {
+    .inNumbersGrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
   
   .inNumbersItem {
     display: flex;
@@ -210,6 +240,57 @@
     color: var(--yaledarkgray);
     background-color: var(--yalewhite);
     border-color: var(--yalewhite);
+  }
+
+  @media screen and (max-width: 1280px) {
+    #s1.landingContentSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10vh 0;
+    }
+
+    #s1 .landingContentSectionTitle {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      margin-bottom: 3rem;
+      box-sizing: border-box;
+      position: static;
+    }
+
+    #s1 .landingContentSectionTitle h2 {
+      text-align: left;
+    }
+
+    #s1 .subtitle {
+      text-align: left;
+    }
+
+    #s1 .landingContentItems {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      box-sizing: border-box;
+    }
+
+    #s1 .inNumbersGrid {
+      width: 100%;
+      margin: 0 auto;
+    }
+  }
+
+  @media screen and (max-width: 1080px) {
+    #s1 .landingContentSectionTitle,
+    #s1 .landingContentItems {
+      max-width: 768px;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .inNumbersGrid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
   
   #s2 .subtitle {
@@ -258,7 +339,8 @@
     position: relative;
   }
   
-  .methodRow {
+  .methodRow.earlyRow,
+  .methodRow.lateRow {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 4fr;
     gap: 4rem;
@@ -360,6 +442,77 @@
     color: var(--yaledarkgray);
     font-weight: 400;
   }
+
+  @media screen and (max-width: 1200px) {
+    .methodBlock {
+      min-height: 80px;
+    }
+
+    .methodBlock .material-icons {
+      font-size: 2rem;
+    }
+
+    .methodBlock p {
+      font-size: 0.75rem;
+    }
+
+    .methodAnnotation p {
+      font-size: 0.75rem;
+    }
+
+    .methodRow {
+      gap: 2rem;
+    }
+
+  }
+
+  @media screen and (max-width: 1000px) {
+    .methodBlock {
+      min-height: 60px;
+    }
+
+    .methodBlock .material-icons {
+      font-size: 1.5rem;
+    }
+
+    .methodBlock p {
+      font-size: 0.5rem;
+    }
+
+    .methodAnnotation p {
+      font-size: 0.75rem;
+    }
+
+  }
+
+  @media screen and (max-width: 800px) {
+    
+    .methodConnections {
+      display: none;
+    }
+
+    .methodRow.earlyRow {
+      grid-template-columns: 1fr 1fr 4fr;
+    }
+
+    .methodRow.lateRow {
+      grid-template-columns: 1fr 1fr 4fr;
+    }
+
+  }
+
+  @media screen and (max-width: 600px) {
+    
+    .methodBlock {
+      display: none;
+    }
+
+    .methodRow.earlyRow,
+    .methodRow.lateRow {
+      display: block;
+    }
+
+  }
   
   .landingContentItems {
     width: 50%;
@@ -454,10 +607,10 @@
     width: 100%;
     margin-bottom: 1rem;
     margin-top: 1rem;
-    aspect-ratio: 16 / 9; /* Maintain consistent aspect ratio for visualizations */
-    background-color: var(--yaledarkgray); /* Dark background to contrast with light gray SVGs */
-    border-radius: 8px; /* Rounded corners for consistency */
-    padding: 1rem; /* Add some padding around the SVG */
+    background-color: var(--yaledarkgray); 
+    border-radius: 8px;
+    max-width: 550px;
+    aspect-ratio: 550/400;
   }
   
   .dataInsightUnit .svgContainer .containerItem {
@@ -475,7 +628,23 @@
     line-height: 1.5;
     color: var(--yalelightgray); /* Consistent text color */
   }
-  
+
+  @media screen and (max-width: 1024px) {
+
+    .dataInsightsSection .landingContentItems {
+      grid-template-columns: repeat(1, 1fr);
+    }
+
+    .dataInsightsSection .landingContentSectionTitle,
+    .dataInsightsSection .landingContentItems {
+      max-width: 550px; 
+    }
+
+    .dataInsightUnit .svgContainer {
+      max-width: 550px;
+    }
+  }
+
   .appTutorialsSection.landingContentSection {
     display: flex;
     flex-direction: column;
@@ -520,7 +689,7 @@
     gap: 2rem;
     align-items: flex-start;
   }
-  
+
   .appTutorialsSection .videoContainer {
     width: 640px; 
     height: 360px;
@@ -559,6 +728,70 @@
     margin-top: 1rem;
     font-weight: 400;
     font-family: 'DM Mono';
+  }
+  
+  @media screen and (max-width: 1160px) {
+    .tutorialItem {
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 60px;
+    }
+
+    .appTutorialsSection .videoContainer {
+      width: 100%;
+      max-width: 640px;
+      margin: 0;
+    }
+
+    .tutorialBlurb {
+      width: 100%;
+      max-width: 640px;
+      margin: 0;
+    }
+
+    .tutorialBlurb h3 {
+      margin-top: 0;
+    }
+
+    #s4 .landingContentSectionTitle {
+      max-width: 640px;
+      padding-left: 0;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .appTutorialsSection .videoContainer {
+      width: 500px; 
+      height: 281px;
+    }
+
+    #s4 .landingContentSectionTitle {
+      max-width: 500px;
+    }
+
+    .tutorialBlurb {
+      max-width: 500px;
+    }
+    
+  }
+
+  @media screen and (max-width: 590px) {
+    .appTutorialsSection .videoContainer {
+      width: 400px; 
+      height: 225px;
+    }
+
+    #s4 .landingContentSectionTitle {
+      max-width: 400px;
+    }
+
+    .tutorialBlurb {
+      max-width: 400px;
+    }
+    
   }
   
   .researchSection .landingContentItems {
@@ -618,6 +851,47 @@
   .researchPaperUnit .readLink::before {
     content: '📄';
     margin-right: 0.5rem;
+  }
+
+  @media screen and (max-width: 1280px) {
+    #s5.landingContentSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10vh 0;
+    }
+
+    #s5 .landingContentSectionTitle {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      margin-bottom: 3rem;
+      box-sizing: border-box;
+      position: static;
+    }
+
+    #s5 .landingContentSectionTitle h2 {
+      text-align: left;
+    }
+
+    #s5 .subtitle {
+      text-align: left;
+    }
+
+    #s5 .landingContentItems {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      box-sizing: border-box;
+    }
+
+  }
+
+  @media screen and (max-width: 1080px) {
+    #s5 .landingContentSectionTitle,
+    #s5 .landingContentItems {
+      max-width: 768px;
+    }
   }
   
   .presentationsAndPressSection {
@@ -731,6 +1005,23 @@
     font-weight: 400;
     font-family: var(--alttitle);
   }
+
+  @media screen and (max-width: 1150px) {
+    .pressGrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 865px) {
+    .videoGrid {
+      grid-template-columns: repeat(1, 1fr);
+      max-width: 600px;
+    }
+    .pressGrid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
   
   .companionAppsSection .landingContentItems {
     display: grid;
@@ -751,7 +1042,7 @@
   
   .appImage {
     width: 100%;
-    max-width: 300px;
+    max-width: 400px;
     height: auto;
     margin-bottom: 1rem;
     border-radius: 10px;
@@ -771,6 +1062,75 @@
     font-size: 1rem;
     line-height: 1.6;
     color: var(--yalelightgray);
+  }
+
+  @media screen and (max-width: 1280px) {
+    #s7.landingContentSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10vh 0;
+    }
+
+    #s7 .landingContentSectionTitle {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      margin-bottom: 3rem;
+      box-sizing: border-box;
+      position: static;
+    }
+
+    #s7 .landingContentSectionTitle h2 {
+      text-align: left;
+    }
+
+    #s7 .subtitle {
+      text-align: left;
+    }
+
+    #s7 .landingContentItems {
+      width: 100%;
+      max-width: 1024px;
+      padding: 0 2rem;
+      box-sizing: border-box;
+    }
+
+  }
+
+  @media screen and (max-width: 830px) {
+    .appTitle {
+      font-size: 1.25rem;
+    }
+
+  }
+
+  @media screen and (max-width: 768px) {
+    .appTitle {
+      font-size: 1rem;
+    }
+
+  }
+
+  @media screen and (max-width: 590px) {
+    .companionAppsSection .landingContentItems {
+      grid-template-columns: repeat(1, 1fr);
+      gap: 1rem;
+    }
+
+    .appBlurb {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--yalelightgray);
+      max-width: 400px;
+    }
+
+    #s7 .landingContentSectionTitle {
+      max-width: 400px;
+      padding-left: 0;
+    }
+   
+
   }
   
   .teamSection.landingContentSection {
@@ -815,6 +1175,50 @@
     padding: 0 0 4rem 0;
     box-sizing: border-box;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  @media screen and (max-width: 1365px) {
+    .teamSection .landingContentItems {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .teamSection .landingContentItems,
+    .teamSection .landingContentSectionTitle {
+      max-width: 1024px;
+    }
+  }
+
+  @media screen and (max-width: 1280px) {
+    .teamSection .landingContentItems {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .teamSection .landingContentItems,
+    .teamSection .landingContentSectionTitle {
+      max-width: 768px;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    .teamSection .landingContentItems {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .teamSection .landingContentItems,
+    .teamSection .landingContentSectionTitle {
+      max-width: 540px;
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    .teamSection .landingContentItems {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .teamSection .landingContentItems,
+    .teamSection .landingContentSectionTitle {
+      max-width: 365px;
+    }
   }
   
   .citationSection {
@@ -925,16 +1329,16 @@
   }
   
   .footerSection.landingContentSection {
-    padding: 10vh 0 5vh;  /* Remove horizontal padding */
+    padding: 10vh 0 5vh;
   }
   
   .footerContent {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;  /* Move padding here */
+    padding: 0 2rem;
     box-sizing: border-box;
   }
   
@@ -947,7 +1351,7 @@
     font-size: 1.5rem;
     margin-bottom: 1rem;
     margin-top: 0;
-    color: inherit; /* Use the color from landingContentSection */
+    color: inherit;
     font-family: var(--alttitle);
   }
   
@@ -1036,13 +1440,104 @@
   #yale {
     text-decoration: none;
   }
+
+  .mobileLogosSection {
+    display: none;
+    width: 100%;
+    background-color: var(--yaledarkgray);
+    padding: 2rem 0;
+  }
+
+  .mobileLogosRow {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    box-sizing: border-box;
+  }
+  
+  .jpRow {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  
+  .otherLogosRow {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    max-width: 300px;
+    margin: 0 auto;
+
+  }
+
+  @media screen and (max-width: 1365px) {
+    
+    .footerContent {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    #footer-blurb {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    .logoText {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 830px) {
+    .footerContent {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footerSection {
+      padding-bottom: 2rem;
+    }
+
+    .supportSection {
+      display: none;  
+    }
+
+    .mobileLogosSection {
+      display: block;
+    }
+  
+    .jpRow .logoContainer {
+      max-width: 260px;
+    }
+  
+    .mobileLogosRow .logoContainer {
+      justify-content: center;
+    }
+  }
   
   .footerBottom {
     width: 100%;
+    background-color: var(--yaledarkgray); 
+    color: rgb(221,221,221);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
+  }
+  
+  .footerBottom > * {
+    max-width: 1200px;
+    width: 100%;
+    padding: 0 2rem;
+    box-sizing: border-box;
     text-align: center;
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light separator line */
+  }
+  
+  .footerBottom::before {
+    content: '';
+    display: block;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
   
   .footerBottom p {
@@ -1065,15 +1560,29 @@
     text-decoration: underline;
   }
   
-  #github-icon {
-    position: fixed;
-    bottom: 4vh;
-    right: 4vh;
-    fill: var(--yalewhite);
-    width: 4vh;
-    height: 4vh;
-    transition: fill 0.3s;
-    margin: 0;
+  @media screen and (max-width: 1365px) {
+    .footerBottom {
+      max-width: 1024px;
+    }
   }
 
-  
+  @media screen and (max-width: 1280px) {
+    
+    .footerBottom {
+      max-width: 768px;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    
+    .footerBottom {
+      max-width: 540px;
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+   
+    .footerBottom {
+      max-width: 365px;
+    }
+  }

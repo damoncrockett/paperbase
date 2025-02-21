@@ -109,6 +109,22 @@ export default function Landing({ setPage }) {
     { content: [null, { icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
   ];
 
+  const methodRowsNarrow = [
+    { content: [{ icon: 'apps', text: 'COMPLETE COLLECTION', addClass: 'completeCollection' }, null], annotation: `Paul began collecting gelatin silver photographic papers in 1999, and by 2016, the collection had mostly stabilized. The present count is <b>7245</b>, but we've started collecting again...` },
+    { content: [{ icon: 'filter_alt', text: 'FILTER', addClass: 'collectionFilter' }, null], annotation: `Paperbase is focused on the material properties of black and white gelatin silver papers, so we filter out any color papers, papers using different photo processes, and empty paper packages. <span style="color: var(--yaleorange); font-weight: 700;">We lose ~350 collection items during this step.</span>` },
+    { content: [{ icon: 'view_cozy', text: 'COLLECTION SUBSET', addClass: 'collectionSubset' }, null], annotation: `After filtering, what remains is <b>6898</b> collection items, ready to be measured.` },
+    { content: [{ icon: 'inventory_2', text: 'PACKAGES', addClass: 'collectionSubset' }, { icon: 'book', text: 'SAMPLE BOOKS', addClass: 'collectionSubset' }], annotation: `The collection contains two distinct sample types: samples that come from packages of photographic paper, and samples published in manufacturer sample books. Samples from packages are base papers only, fixed but not developed, while sample book photographs contain developed images.` },
+    { content: [{ icon: 'collections', text: 'MULTI-ANGLE PHOTOGRAPHY', addClass: 'collectionGrow' }, { icon: 'image', text: 'PHOTOGRAPH' }], annotation: `Sample book photographs are recorded with a single image. Packaged samples are not imaged, but their packages are, on all sides. <span style="color: var(--yaleblue); font-weight: 700;">This adds ~4000 images to the dataset.</span>` },
+    { content: [{ icon: 'description', text: 'PROCESSING INSTRUCTIONS', addClass: 'collectionGrow' }, null], annotation: `We scan any processing instructions included in paper packages. <span style="color: var(--yaleblue); font-weight: 700;">This adds 674 PDFs to the dataset.</span>` },
+    { content: [{ icon: 'fingerprint', text: 'BACKPRINT', addClass: 'collectionGrow' }, null], annotation: `We image and catalog any backprints appearing on packaged paper samples. <span style="color: var(--yaleblue); font-weight: 700;">There are 788 backprints in our dataset.</span>` },
+    { content: [{ icon: 'texture', text: 'TEXTURE' }, { icon: 'texture', text: 'EDGE TEXTURE', addClass: 'collectionFilter' }], annotation: `We capture surface texture via raking light micrography. Because image-free areas are rare in developed photos, sample book texture images are usually taken on the white edges of the photograph. <span style="color: var(--yaleorange); font-weight: 700;">Roughly 700 samples have no such edge and could not be imaged.</span>` },
+    { content: [{ icon: 'vertical_align_center', text: 'MICROMETER' }, { icon: 'vertical_align_bottom', text: 'DEPTH GAUGE', addClass: 'collectionFilter' }], annotation: `Packaged samples are measured for thickness using a micrometer. Because sample book photographs are mounted, they are measured with a depth gauge where possible. <span style="color: var(--yaleorange); font-weight: 700;">Nearly 1700 sample book photographs were flush-mounted and could not be measured.</span>` },
+    { content: [{ icon: 'check_box_outline_blank', text: 'BASE COLOR' }, { icon: 'account_box', text: 'BASE AND IMAGE COLOR', addClass: 'collectionGrow' }], annotation: `Color measurements are made using a spectrophotometer and converted to CIELAB color space. We measure both the image and base colors of sample book photographs. <span style="color: var(--yaleblue); font-weight: 700;">This adds ~4100 color measurements to the dataset.</span>` },
+    { content: [{ icon: 'flash_on', text: 'GLOSS' }, null], annotation: `Gloss is measured using a glossmeter, with incident light at a 60° angle.` },
+    { content: [{ icon: 'radar', text: 'RADAR CHART', addClass: 'radarChart' }, null], annotation: `Our material model of a photographic paper sample contains 4 univariate measures that populate the axes of a radar chart: thickness, gloss, roughness, and warmth. Texture images are processed via bandpass filtering, and roughness is the standard deviation of the resulting pixel brightnesses. Warmth is the <b>b*</b> dimension of the CIELAB color space.` },
+    { content: [{ icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
+  ];
+
   // One-time layout detection
   useEffect(() => {
     if (!methodsContentRef.current) return;
@@ -298,39 +314,16 @@ export default function Landing({ setPage }) {
     setConnections(newConnections);
   }, [layoutReady]);
 
-  useEffect(() => {
-    // Check if device is mobile
-    const checkMobile = () => {
-      const mobile = window.matchMedia('(max-width: 768px)').matches;
-      setIsMobile(mobile);
-    };
-
-    // Initial check
-    checkMobile();
-
-    // Add listener for window resize
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-    mediaQuery.addListener(checkMobile);
-
-    // Cleanup
-    return () => mediaQuery.removeListener(checkMobile);
-  }, []);
-
-  if (isMobile) {
-    return (
-      <div id="sorry">
-        <h1>Paperbase.</h1>
-        <p>Sorry! This application is not yet optimized for mobile devices. A mobile-friendly version is coming soon. Please visit us on a desktop browser for the full experience.</p>
-      </div>
-    );
-  }
+  const tooNarrowMsg = "Please use a larger screen to view the collection.";
+  const tooNarrow = window.matchMedia("(max-width: 1375px)").matches;
 
   return (
     <div id='landing' style={landingStyle}>
       <div id='landingBlurb'>
         <p id='blurbTitle'>Paperbase.</p>
         <p id='blurbText'>Paperbase is an interactive visual platform for exploring and analyzing the world's largest collection of photographic paper. Designed and built by the <a href='https://lml.yale.edu/' target='_blank'>Lens Media Lab</a> at Yale University.</p>
-        <button onClick={() => setPage('app')}>Explore the collection</button>
+        {!tooNarrow && <button onClick={() => setPage('app')}>Explore the collection</button>}
+        {tooNarrow && <p id='tooNarrowMsg'>{tooNarrowMsg}</p>}
       </div>
       <div className="scroll-indicator" onClick={scrollToNextSection}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -369,10 +362,6 @@ export default function Landing({ setPage }) {
                   <p className='inNumbersValue'>4,266</p>
                   <p className='inNumbersLabel'>products</p>
                 </div>
-              </div>
-            </div>
-            <div className='landingContentItem inNumbersSection'>
-              <div className='inNumbersGrid'>
                 <div className='inNumbersItem'>
                   <p className='inNumbersValue'>4,506</p>
                   <p className='inNumbersLabel'>sample book images</p>
@@ -389,10 +378,6 @@ export default function Landing({ setPage }) {
                   <p className='inNumbersValue'>388</p>
                   <p className='inNumbersLabel'>brands</p>
                 </div>
-              </div>
-            </div>
-            <div className='landingContentItem inNumbersSection'>
-              <div className='inNumbersGrid'>
                 <div className='inNumbersItem sampleCount'>
                   <p className='inNumbersValue sampleCount'>231</p>
                   <p className='inNumbersLabel sampleCount'>sample books</p>
@@ -420,8 +405,8 @@ export default function Landing({ setPage }) {
               <p className='subtitle'>How the collection is photographed, measured, processed, and modeled.</p>
             </div>
             <div className='methodsContent' ref={methodsContentRef}>
-              {methodRows.map((row, rowIndex) => (
-                <div key={rowIndex} className='methodRow'>
+              {(window.matchMedia("(max-width: 800px)").matches ? methodRowsNarrow : methodRows).map((row, rowIndex) => (
+                <div key={rowIndex} className={`methodRow ${rowIndex < 3 || [5,6,10,11,12].includes(rowIndex) ? 'earlyRow' : 'lateRow'}`}>
                   {row.content.map((block, blockIndex) => (
                     block ? (
                       <div key={blockIndex} className={`methodBlock ${block.addClass ? block.addClass : ''}`}>
@@ -443,7 +428,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection dataInsightsSection'>
+        <div id='s3' className='landingContentSection dataInsightsSection'>
           <div id='insights' className='landingContentSectionTitle'>
             <h2>DATA INSIGHTS</h2>
           </div>
@@ -480,7 +465,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection appTutorialsSection'>
+        <div id='s4' className='landingContentSection appTutorialsSection'>
           <div className='landingContentSectionTitle'>
             <h2>VIDEO TUTORIALS</h2>
             <p className='subtitle'>Video walkthroughs of advanced use cases and feature combinations.</p>
@@ -563,7 +548,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection researchSection'>
+        <div id='s5' className='landingContentSection researchSection'>
           <div className='landingContentSectionTitle'>
             <h2>THEORY & RESEARCH</h2>
             <p className='subtitle'>Published work that laid the foundation for Paperbase.</p>
@@ -620,7 +605,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection presentationsAndPressSection'>
+        <div id='s6' className='landingContentSection presentationsAndPressSection'>
           <div className='presentationsAndPressContent'>
             <div className='publicTalksSection'>
               <h2 id='publicTalksTitle' className='sectionTitle'>PUBLIC TALKS</h2>
@@ -707,7 +692,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection companionAppsSection'>
+        <div id='s7' className='landingContentSection companionAppsSection'>
           <div id='companionTitle' className='landingContentSectionTitle'>
             <h2>COMPANION APPLICATIONS</h2>
             <p className='subtitle'>Additional ways to access and explore our collection.</p>
@@ -743,7 +728,7 @@ export default function Landing({ setPage }) {
             </a>
           </div>
         </div>
-        <div className='landingContentSection teamSection'>
+        <div id='s8' className='landingContentSection teamSection'>
           <div className='landingContentSectionTitle'>
             <h2>OUR TEAM</h2>
             <p className='subtitle'>Every lab member, present or former, who helped make Paperbase happen.</p>
@@ -875,7 +860,7 @@ export default function Landing({ setPage }) {
             </div>
           </div>
         </div>
-        <div className='landingContentSection footerSection'>
+        <div id='s9' className='landingContentSection footerSection'>
           <div className='footerContent'>
             <div className='footerSubsection'>
               <h3>Contact</h3>
@@ -903,7 +888,7 @@ export default function Landing({ setPage }) {
                 </a>
               </div>
             </div>
-            <div className='footerSubsection'>
+            <div className='footerSubsection supportSection'>
               <h3>Support</h3>
               <div className='supportLogos'>
                 <div id='jp' className='logoContainer'>
@@ -935,14 +920,47 @@ export default function Landing({ setPage }) {
                 </div>
               </div>
             </div>
-            <div className='footerSubsection'>
+            <div id='footer-blurb' className='footerSubsection'>
               <p>This project is made possible through the generous support of our partners and sponsors. Their contributions enable us to continue our research, maintain our extensive collection, and provide this platform as a resource for scholars and enthusiasts worldwide.</p>
             </div>
-            <div className='footerBottom'>
-              <p>&copy; {new Date().getFullYear()} Lens Media Lab. All rights reserved.</p>
-              <p><a id='termslink' href={returnDomain() + "terms.html"} target='_blank'>Terms of Use</a></p>
+          </div>
+        </div>
+        <div className='mobileLogosSection'>
+          <div className='mobileLogosRow jpRow'>
+            <div id='jp' className='logoContainer'>
+              <a href="https://www.jpfamilyfund.org/" target="_blank" rel="noopener noreferrer">
+                <img src={returnDomain() + "jpff_white.png"} alt="John Pritzker Family Fund" />
+              </a>
             </div>
           </div>
+          <div className='mobileLogosRow otherLogosRow'>
+            <div className='logoContainer'>
+                <a id='ami' href="https://ami.withgoogle.com/" target="_blank" rel="noopener noreferrer">
+                  <svg width="90" height="60" viewBox="0 0 90 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clipPath="url(#clip0_463_500)">
+                      <path d="M75.2507 30H67.6855V60H75.2507V30z" fill="currentColor"/>
+                      <path d="M31.9639 30V60h7.9158V47.88l6.1323 12h5.04l5.8618-12V60h7.9158V30H56.9138L48.6472 48.05 39.8797 30H31.9639z" fill="currentColor"/>
+                      <path d="M20.0401.0 31.9639 30H23.6774L15.9619 10.25 8.66734 30H0L12.4249.0h7.6152zM67.6854 18.1v7.6H90V18.1H67.6854z" fill="currentColor"/>
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_463_500">
+                        <rect width="90" height="60" fill="#fff"/>
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <span className='logoText' style={{ fontFamily: 'GoogleSans, sans-serif' }}>Artists + Machine Intelligence</span>
+                </a>
+              </div>
+              <div className='logoContainer'>
+                <a id='yale' href="https://www.yale.edu/" target="_blank" rel="noopener noreferrer">
+                  <span className='yaleLogoText' style={{ fontFamily: 'YaleNew, serif' }}>Yale</span>
+                </a>
+              </div>
+          </div>
+        </div>
+        <div className='footerBottom'>
+            <p>&copy; {new Date().getFullYear()} Lens Media Lab. All rights reserved.</p>
+            <p><a id='termslink' href={returnDomain() + "terms.html"} target='_blank'>Terms of Use</a></p>
         </div>
       </div>  
     </div>

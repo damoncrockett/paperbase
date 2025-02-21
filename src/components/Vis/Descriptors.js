@@ -7,23 +7,20 @@ import { categoricalColors } from '../../utils/color';
 
 const ProportionalBar = ({ data, title, barIndex = 0 }) => {
   const svgRef = useRef();
-  const containerRef = useRef();
 
   useEffect(() => {
-    const container = containerRef.current;
-    const width = container.offsetWidth;
+    const width = 550;  // Fixed width
     const height = 80;
-    const margin = { top: 30, right: 60, bottom: 30, left: 0 };
+    const margin = { top: 60, right: 60, bottom: 30, left: 0 };
     const barHeight = 40;
     const cornerRadius = 8;
 
     // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG with fixed height
+    // Create SVG with viewBox
     const svg = select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height)
+      .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -192,8 +189,8 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
   }, [data, title, barIndex]);
 
   return (
-    <div ref={containerRef} className="containerItem" style={{ height: '100px' }}>
-      <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>
+    <div className="containerItem">
+      <svg ref={svgRef} style={{ width: '100%', height: '100%', overflow: 'visible' }}></svg>
     </div>
   );
 };
