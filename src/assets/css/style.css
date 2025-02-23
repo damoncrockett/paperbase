@@ -936,3 +936,9 @@ select {
   margin: 2vh;
   font-weight: 700;
 }
+
+select:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

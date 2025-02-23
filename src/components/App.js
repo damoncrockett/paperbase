@@ -1515,77 +1515,95 @@ useEffect(() => {
       </div>
       <div id='bottomControls'>
         <div className={isDragging ? 'controls noPointerEvents' : 'controls'} id='axisMenus'>
-          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis'>
-            <option value='year'>year</option>
-            <option value='thickness'>thickness</option>
-            <option value='gloss'>gloss</option>
-            <option value='dmin'>base color</option>
-            <option value='dmax'>tone</option>
-            <option value='roughness'>roughness</option>
-            <option value='expressiveness'>expressiveness</option>
-            <option value='auc'>fluorescence</option>
-            <option value='colorGroupColl'>collection</option>
-            <option value='colorGroupMan'>manufacturer</option>
-            <option value='colorGroupBran'>brand</option>
-            <option value='colorGroupTextureWord'>texture description</option>
-            <option value='colorGroupColorWord'>base color description</option>
-            <option value='colorGroupGlossWord'>gloss description</option>
-            <option value='colorGroupThickWord'>weight description</option>
-            <option value='radarColor'>radar group</option>
-            <option value='colorGroupProcessing'>has processing instructions</option>
-            <option value='colorGroupBackp'>backprint</option>
-            <option value='colorGroupSurf'>surface</option>
-            <option value='colorGroupResin'>is resin-coated</option>
-            <option value='colorGroupToner'>toner</option>
-            <option value='colorGroupPostcard'>is postcard</option>
-            <option value='colorGroupCirca'>date is approximate</option>
-            <option value='colorGroupSbid'>sample book</option>
-            <option value='colorGroupDims'>dimensions</option>
+          <select value={xcol} onChange={e => setXcol(e.target.value)} title='x-axis' disabled={model === 'gep' || model === 'tmap'}>
+          {model === 'gep' && <option value='cluster plot x'>cluster plot x</option>}
+          {model === 'tmap' && <option value='texture map x'>texture map x</option>}
+          {model !== 'gep' && model !== 'tmap' && (
+            <>
+              <option value='year'>year</option>
+              <option value='thickness'>thickness</option>
+              <option value='gloss'>gloss</option>
+              <option value='dmin'>base color</option>
+              <option value='dmax'>tone</option>
+              <option value='roughness'>roughness</option>
+              <option value='expressiveness'>expressiveness</option>
+              <option value='auc'>fluorescence</option>
+              <option value='colorGroupColl'>collection</option>
+              <option value='colorGroupMan'>manufacturer</option>
+              <option value='colorGroupBran'>brand</option>
+              <option value='colorGroupTextureWord'>texture description</option>
+              <option value='colorGroupColorWord'>base color description</option>
+              <option value='colorGroupGlossWord'>gloss description</option>
+              <option value='colorGroupThickWord'>weight description</option>
+              <option value='radarColor'>radar group</option>
+              <option value='colorGroupProcessing'>has processing instructions</option>
+              <option value='colorGroupBackp'>backprint</option>
+              <option value='colorGroupSurf'>surface</option>
+              <option value='colorGroupResin'>is resin-coated</option>
+              <option value='colorGroupToner'>toner</option>
+              <option value='colorGroupPostcard'>is postcard</option>
+              <option value='colorGroupCirca'>date is approximate</option>
+              <option value='colorGroupSbid'>sample book</option>
+              <option value='colorGroupDims'>dimensions</option>
+            </>
+          )}
           </select>
-          {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} >arrow_downward</button>}
-          {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} >arrow_upward</button>}
-          <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis'>
-            <option value='year'>year</option>
-            <option value='thickness'>thickness</option>
-            <option value='gloss'>gloss</option>
-            <option value='dmin'>base color</option>
-            <option value='dmax'>tone</option>
-            <option value='roughness'>roughness</option>
-            <option value='expressiveness'>expressiveness</option>
-            <option value='auc'>fluorescence</option>
-            <option value='colorGroupColl'>collection</option>
-            <option value='colorGroupMan'>manufacturer</option>
-            <option value='colorGroupBran'>brand</option>
-            <option value='colorGroupTextureWord'>texture description</option>
-            <option value='colorGroupColorWord'>base color description</option>
-            <option value='colorGroupGlossWord'>gloss description</option>
-            <option value='colorGroupThickWord'>weight description</option>
-            <option value='radarColor'>radar group</option>
-            <option value='colorGroupProcessing'>has processing instructions</option>
-            <option value='colorGroupBackp'>backprint</option>
-            <option value='colorGroupSurf'>surface</option>
-            <option value='colorGroupResin'>is resin-coated</option>
-            <option value='colorGroupToner'>toner</option>
-            <option value='colorGroupPostcard'>is postcard</option>
-            <option value='colorGroupCirca'>date is approximate</option>
-            <option value='colorGroupSbid'>sample book</option>
-            <option value='colorGroupDims'>dimensions</option>
+          {xcolAsc && <button className={'material-icons'} title='sort x-axis descending' onClick={() => setXcolAsc(false)} disabled={model === 'gep' || model === 'tmap'} >arrow_downward</button>}
+          {!xcolAsc && <button className={'material-icons active'} title='sort x-axis ascending' onClick={() => setXcolAsc(true)} disabled={model === 'gep' || model === 'tmap'} >arrow_upward</button>}
+          <select value={ycol} onChange={e => setYcol(e.target.value)} title='y-axis' disabled={model === 'gep' || model === 'tmap'}>
+          {model === 'gep' && <option value='cluster plot y'>cluster plot y</option>}
+          {model === 'tmap' && <option value='texture map y'>texture map y</option>}
+          {model !== 'gep' && model !== 'tmap' && (
+            <>
+              <option value='year'>year</option>
+              <option value='thickness'>thickness</option>
+              <option value='gloss'>gloss</option>
+              <option value='dmin'>base color</option>
+              <option value='dmax'>tone</option>
+              <option value='roughness'>roughness</option>
+              <option value='expressiveness'>expressiveness</option>
+              <option value='auc'>fluorescence</option>
+              <option value='colorGroupColl'>collection</option>
+              <option value='colorGroupMan'>manufacturer</option>
+              <option value='colorGroupBran'>brand</option>
+              <option value='colorGroupTextureWord'>texture description</option>
+              <option value='colorGroupColorWord'>base color description</option>
+              <option value='colorGroupGlossWord'>gloss description</option>
+              <option value='colorGroupThickWord'>weight description</option>
+              <option value='radarColor'>radar group</option>
+              <option value='colorGroupProcessing'>has processing instructions</option>
+              <option value='colorGroupBackp'>backprint</option>
+              <option value='colorGroupSurf'>surface</option>
+              <option value='colorGroupResin'>is resin-coated</option>
+              <option value='colorGroupToner'>toner</option>
+              <option value='colorGroupPostcard'>is postcard</option>
+              <option value='colorGroupCirca'>date is approximate</option>
+              <option value='colorGroupSbid'>sample book</option>
+              <option value='colorGroupDims'>dimensions</option>
+            </>
+          )}
           </select>
-          {ycolAsc && <button className={'material-icons'} title='sort y-axis descending' onClick={() => setYcolAsc(false)} >arrow_downward</button>}
-          {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} >arrow_upward</button>}
-          <select value={zcol} onChange={e => setZcol(e.target.value)} title='z-axis'>
-            <option value='none'>no z-axis</option>
-            <option value='year'>year</option>
-            <option value='thickness'>thickness</option>
-            <option value='gloss'>gloss</option>
-            <option value='dmin'>base color</option>
-            <option value='dmax'>tone</option>
-            <option value='roughness'>roughness</option>
-            <option value='expressiveness'>expressiveness</option>
-            <option value='auc'>fluorescence</option>
+          {ycolAsc && <button className={'material-icons'} title='sort y-axis descending' onClick={() => setYcolAsc(false)} disabled={model === 'gep' || model === 'tmap'} >arrow_downward</button>}
+          {!ycolAsc && <button className={'material-icons active'} title='sort y-axis ascending' onClick={() => setYcolAsc(true)} disabled={model === 'gep' || model === 'tmap'}  >arrow_upward</button>}
+          <select value={zcol} onChange={e => setZcol(e.target.value)} title='z-axis' disabled={model === 'gep' || model === 'tmap'}>
+          {model === 'gep' && <option value='cluster plot z'>no z-axis</option>}
+          {model === 'tmap' && <option value='texture map z'>texture map z</option>}
+          {model !== 'gep' && model !== 'tmap' && (
+            <>
+              <option value='none'>no z-axis</option>
+              <option value='year'>year</option>
+              <option value='thickness'>thickness</option>
+              <option value='gloss'>gloss</option>
+              <option value='dmin'>base color</option>
+              <option value='dmax'>tone</option>
+              <option value='roughness'>roughness</option>
+              <option value='expressiveness'>expressiveness</option>
+              <option value='auc'>fluorescence</option>
+            </>
+          )}
           </select>
-          {zcolAsc && <button className={'material-icons'} title='sort z-axis descending' onClick={() => setZcolAsc(false)} >arrow_downward</button>}
-          {!zcolAsc && <button className={'material-icons active'} title='sort z-axis ascending' onClick={() => setZcolAsc(true)} >arrow_upward</button>}
+          {zcolAsc && <button className={'material-icons'} title='sort z-axis descending' onClick={() => setZcolAsc(false)} disabled={model === 'gep' || model === 'tmap'} >arrow_downward</button>}
+          {!zcolAsc && <button className={'material-icons active'} title='sort z-axis ascending' onClick={() => setZcolAsc(true)} disabled={model === 'gep' || model === 'tmap'} >arrow_upward</button>}
           <select value={group} onChange={e => setGroup(e.target.value)} title='glyph color'>
             <option value='dminHex'>base color</option>
             <option value='dmaxHex'>tone</option>
