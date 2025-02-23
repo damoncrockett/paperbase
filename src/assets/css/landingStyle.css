@@ -1,24 +1,54 @@
-#sorry {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--yaledarkgray);
-    color: var(--yalewhite);
-    font-family: 'Archivo';
-    }
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  min-height: -webkit-fill-available;
+}
 
-#sorry > h1 {
-    font-family: quiverleaf-cf;
-    font-size: 4rem;
-    }
+* {
+  max-width: 100vw;
+  box-sizing: border-box;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
 
-#sorry > p {
-    margin: 0 15vw;
-    text-align: center;
-    }
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+html, body {
+  overflow-x: hidden;  /* prevent horizontal scroll only */
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+#landing {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: 0;
+}
+
+.landingContent {
+  position: absolute;  /* Changed from relative to absolute */
+  top: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--yaledarkgray);
+  font-weight: 200;
+  z-index: 1;  /* Ensures content scrolls over the hero image */
+}
 
 #landingBlurb {
     background-color: transparent;
@@ -107,6 +137,26 @@
   }
 }
 
+@media screen and (max-width: 600px) {
+  #blurbText {
+    font-size: 1.5rem;
+  }
+
+  #blurbTitle {
+    font-size: 6rem;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  #blurbText {
+    font-size: 1.25rem;
+  }
+
+  #blurbTitle {
+    font-size: 5rem;
+  }
+}
+
 .scroll-indicator {
     position: absolute;
     bottom: 15vh;
@@ -138,18 +188,12 @@
     }
   }
 
-  .landingContent {
-    position: relative;
-    top: 100vh;
-    box-sizing: border-box;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: var(--yaledarkgray);
-    font-weight: 200;
+@media screen and (max-width: 600px) {
+  .scroll-indicator {
+    display: none;
   }
-  
+}
+
   .landingContentSection {
     width: 100%;
     display: flex;
@@ -742,7 +786,7 @@
 
     .appTutorialsSection .videoContainer {
       width: 100%;
-      max-width: 640px;
+      width: 640px;
       margin: 0;
     }
 
@@ -792,6 +836,21 @@
       max-width: 400px;
     }
     
+  }
+
+  @media screen and (max-width: 450px) {
+    .appTutorialsSection .videoContainer {
+      width: 300px;
+      height: 169px;
+    }
+
+    #s4 .landingContentSectionTitle {
+      max-width: 300px;
+    }
+
+    .tutorialBlurb {
+      max-width: 300px;
+    }
   }
   
   .researchSection .landingContentItems {
@@ -1019,6 +1078,11 @@
     }
     .pressGrid {
       grid-template-columns: repeat(2, 1fr);
+    }
+
+    #publicTalksTitle {
+      max-width: 600px;
+      margin: 0 auto 40px auto;
     }
   }
   

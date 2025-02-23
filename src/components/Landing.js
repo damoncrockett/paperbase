@@ -10,13 +10,7 @@ import Surfs from './Vis/Surfs';
 import Diversity from './Vis/Diversity';
 
 const landingStyle = {
-  minHeight: '100vh',
-  width: '100vw',
   backgroundImage: `url(${returnDomain()}hero.webp)`,
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: 'center',
-  backgroundSize: 'cover',
-  backgroundAttachment: 'fixed',
 };
 
 const injectFontFaces = () => {
