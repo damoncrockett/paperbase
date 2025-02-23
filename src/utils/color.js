@@ -88,13 +88,10 @@ export function adjustLightness(color, targetDarkness, weight, sOffset) {
     const hsl = {};
     color.getHSL(hsl);
   
-    // Linearly interpolate between current lightness and target darkness
     const newLightness = (1 - weight) * hsl.l + weight * targetDarkness;
   
-    // Calculate the lightness offset
     const lOffset = newLightness - hsl.l;
   
-    // Apply the offset to the color
     color.offsetHSL(0, sOffset, lOffset);
 }
 

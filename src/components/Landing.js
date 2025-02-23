@@ -58,7 +58,7 @@ export default function Landing({ setPage }) {
     const citationText = "Crockett, D., P. Messier, and K. Mintie. (2024). Paperbase. Lens Media Lab, Yale University. https://paperbase.xyz";
     navigator.clipboard.writeText(citationText).then(() => {
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setCopySuccess(false), 2000);
     }, (err) => {
       console.error('Could not copy text: ', err);
     });
@@ -119,7 +119,6 @@ export default function Landing({ setPage }) {
     { content: [{ icon: 'view_in_ar', text: 'WEBGL', addClass: 'webgl' }, null], annotation: `The Paperbase application uses WebGL to create an interactive 3D visualization of the collection data.` },
   ];
 
-  // One-time layout detection
   useEffect(() => {
     if (!methodsContentRef.current) return;
 
@@ -136,7 +135,6 @@ export default function Landing({ setPage }) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Connection-drawing effect
   useEffect(() => {
     if (!layoutReady || !methodsContentRef.current) return;
 
@@ -145,7 +143,6 @@ export default function Landing({ setPage }) {
     const contentRect = content.getBoundingClientRect();
     const newConnections = [];
   
-    // Handle PHOTOGRAPH to EDGE TEXTURE connection
     let photographBlock = null;
     let edgeTextureBlock = null;
 
@@ -169,7 +166,6 @@ export default function Landing({ setPage }) {
       newConnections.push(`M${startX},${startY} L${endX},${endY}`);
     }
   
-    // Handle other connections
     for (let col = 0; col < 3; col++) {
       let lastFilledBlock = null;
       let lastFilledRow = 0;
@@ -216,14 +212,14 @@ export default function Landing({ setPage }) {
         path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 1 : 0} ${cornerX},${verticalStartY} `;
         path += `V${endY}`;
       } else if (direction === 'vertical-first') {
-        // Move vertically first, then sideways (correct arc handling)
+        // Move vertically first, then sideways 
         const cornerX = startX;
         const cornerY = endY;
   
         const verticalEndY = cornerY - verticalDir * radius;
         const horizontalStartX = cornerX + horizontalDir * radius;
   
-        // Correct the sweep flag to avoid the "scoop" effect
+        // Correct the sweep flag to avoid scoop effect
         path += `V${verticalEndY} `;
         path += `A${radius},${radius} 0 0 ${horizontalDir === verticalDir ? 0 : 1} ${horizontalStartX},${cornerY} `;
         path += `H${endX}`;
@@ -232,7 +228,6 @@ export default function Landing({ setPage }) {
       return path;
     }
   
-    // Connection from SUBSET to PACKAGES (sideways first, then down)
     const subsetBlock = rows[2].querySelector('.methodBlock:nth-child(2)');
     const packagesBlock = rows[3].querySelector('.methodBlock:nth-child(1)');
 
@@ -251,7 +246,6 @@ export default function Landing({ setPage }) {
       newConnections.push(path);
     }
 
-    // Connection from SUBSET to SAMPLE BOOKS (sideways first, then down)
     const sampleBooksBlock = rows[3].querySelector('.methodBlock:nth-child(3)');
 
     if (subsetBlock && sampleBooksBlock) {
@@ -261,7 +255,7 @@ export default function Landing({ setPage }) {
       const startX = subsetRect.right - contentRect.left;
       const startY = subsetRect.top + subsetRect.height / 2 - contentRect.top;
 
-      const endX = sampleBooksRect.left + sampleBooksRect.width / 2 - contentRect.left;  // Center top of SAMPLE BOOKS
+      const endX = sampleBooksRect.left + sampleBooksRect.width / 2 - contentRect.left;  
       const endY = sampleBooksRect.top - contentRect.top;
 
       const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'horizontal-first');
@@ -269,7 +263,6 @@ export default function Landing({ setPage }) {
       newConnections.push(path);
     }
 
-    // Connection from BASE COLOR to left side of GLOSS (down first, then sideways)
     const baseColorBlock = rows[9].querySelector('.methodBlock:nth-child(1)');
     const glossBlock = rows[10].querySelector('.methodBlock:nth-child(2)');
 
@@ -277,28 +270,27 @@ export default function Landing({ setPage }) {
       const baseColorRect = baseColorBlock.getBoundingClientRect();
       const glossRect = glossBlock.getBoundingClientRect();
 
-      const startX = baseColorRect.left + baseColorRect.width / 2 - contentRect.left;  // Center bottom of BASE COLOR
+      const startX = baseColorRect.left + baseColorRect.width / 2 - contentRect.left;  
       const startY = baseColorRect.bottom - contentRect.top;
 
-      const endX = glossRect.left - contentRect.left;  // Left side of GLOSS
-      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's left side
+      const endX = glossRect.left - contentRect.left;  
+      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  
 
       const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
 
       newConnections.push(path);
     }
 
-    // Connection from BASE AND IMAGE COLOR to right side of GLOSS (down first, then sideways)
     const baseAndImageColorBlock = rows[9].querySelector('.methodBlock:nth-child(3)');
     if (baseAndImageColorBlock && glossBlock) {
       const baseAndImageColorRect = baseAndImageColorBlock.getBoundingClientRect();
       const glossRect = glossBlock.getBoundingClientRect();
 
-      const startX = baseAndImageColorRect.left + baseAndImageColorRect.width / 2 - contentRect.left;  // Center bottom of BASE AND IMAGE COLOR
+      const startX = baseAndImageColorRect.left + baseAndImageColorRect.width / 2 - contentRect.left;  
       const startY = baseAndImageColorRect.bottom - contentRect.top;
 
-      const endX = glossRect.right - contentRect.left;  // Right side of GLOSS
-      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  // Center of GLOSS's right side
+      const endX = glossRect.right - contentRect.left;  
+      const endY = glossRect.top + glossRect.height / 2 - contentRect.top;  
 
       const path = generateRoundedCornerPath(startX, startY, endX, endY, 10, 'vertical-first');
 

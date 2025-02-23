@@ -285,8 +285,8 @@ svg {
   position: absolute;
   left: 100%;
   margin-left: 6px;
-  top: 50%;     /* Centers it vertically relative to the parent */
-  transform: translateY(-35%); /* Aligns the center of the element with the top value */
+  top: 50%;    
+  transform: translateY(-35%); 
 }
 
 #infoPanel {

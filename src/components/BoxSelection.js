@@ -27,7 +27,6 @@ export default function BoxSelection({
         setIsSelecting(true);
         setSelectionBox({ x: x, y: y, width: 0, height: 0 });
     
-        // Show the selection div
         if ( selectionDivRef.current ) {
           selectionDivRef.current.style.left = `${x}px`;
           selectionDivRef.current.style.top = `${y}px`;

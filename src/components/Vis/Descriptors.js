@@ -9,27 +9,23 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
   const svgRef = useRef();
 
   useEffect(() => {
-    const width = 550;  // Fixed width
+    const width = 550;  
     const height = 80;
     const margin = { top: 60, right: 60, bottom: 30, left: 0 };
     const barHeight = 40;
     const cornerRadius = 8;
 
-    // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG with viewBox
     const svg = select(svgRef.current)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Create scale
     const x = scaleLinear()
       .domain([0, 1])
       .range([0, width - margin.left - margin.right]);
 
-    // Calculate cumulative positions
     let cumulative = 0;
     const segments = data.map(d => {
       const start = cumulative;
@@ -46,7 +42,6 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
     const startIdx = 5;
     const colors = categoricalColors.slice(startIdx, startIdx + numColorsNeeded);
 
-    // Add title if provided
     if (title) {
       svg.append('text')
         .attr('x', 0)
@@ -57,7 +52,6 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
         .text(title);
     }
 
-    // Draw bars with rounded corners
     segments.forEach((d, i) => {
       const isFirst = i === 0;
       const isLast = i === segments.length - 1;
@@ -66,10 +60,8 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       const x1 = x(d.start);
       const x2 = x(d.end);
       
-      // Create rounded rectangle path
       const pathGen = path();
       if (isFirst) {
-        // Round left corners only
         pathGen.moveTo(x1 + cornerRadius, 0);
         pathGen.lineTo(x2, 0);
         pathGen.lineTo(x2, barHeight);
@@ -78,7 +70,6 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
         pathGen.lineTo(x1, cornerRadius);
         pathGen.arcTo(x1, 0, x1 + cornerRadius, 0, cornerRadius);
       } else if (isLast) {
-        // Round right corners only
         pathGen.moveTo(x1, 0);
         pathGen.lineTo(x2 - cornerRadius, 0);
         pathGen.arcTo(x2, 0, x2, cornerRadius, cornerRadius);
@@ -87,7 +78,6 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
         pathGen.lineTo(x1, barHeight);
         pathGen.closePath();
       } else {
-        // No rounded corners for middle segments
         pathGen.moveTo(x1, 0);
         pathGen.lineTo(x2, 0);
         pathGen.lineTo(x2, barHeight);
@@ -97,16 +87,14 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       
       segment
         .attr('d', pathGen.toString())
-        .attr('fill', colors[i % colors.length]);  // Cycle through colors if more segments than colors
+        .attr('fill', colors[i % colors.length]);  
     });
 
-    // Function to check if label fits inside its segment
     const labelFitsInside = (d) => {
       const labelWidth = d.label.length * 6;
       return x(d.value) > labelWidth + 10;
     };
 
-    // Prepare data for external labels that need force layout
     const externalLabels = segments.filter(d => !labelFitsInside(d) && d.label);
     const labelNodes = externalLabels.map(d => ({
       x: x(d.middle),
@@ -115,20 +103,16 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       initialX: x(d.middle)
     }));
 
-    // Create force simulation for external labels with adjusted parameters
     const simulation = forceSimulation(labelNodes)
       .force('x', forceX(d => d.initialX).strength(0.1))
       .force('y', forceY(barHeight + 25).strength(0.1))
       .force('collision', forceCollide().radius(25))
       .stop();
 
-    // Run the simulation longer
     for (let i = 0; i < 200; i++) simulation.tick();
 
-    // Add labels with dynamic positioning
     segments.forEach(d => {
       if (labelFitsInside(d)) {
-        // Inside label
         svg.append('text')
           .attr('x', x(d.middle))
           .attr('y', barHeight / 2)
@@ -142,11 +126,9 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
       }
     });
 
-    // Add external labels using simulation results
     labelNodes.forEach(node => {
       const g = svg.append('g').attr('class', 'external-label');
       
-      // Curved connecting line
       const pathGen = path();
       pathGen.moveTo(node.initialX, barHeight);
       pathGen.quadraticCurveTo(
@@ -173,7 +155,6 @@ const ProportionalBar = ({ data, title, barIndex = 0 }) => {
         .text(node.segment.label);
     });
 
-    // Percentage labels - updated to round to nearest integer
     svg.selectAll('.percentage')
       .data(segments)
       .enter()

@@ -15,7 +15,6 @@ export default function InfoModal({ show, onClose, modalSequence, currentStep, o
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
 
-          // Calculate available space in each direction
           const spaceAbove = targetRect.top;
           const spaceBelow = viewportHeight - targetRect.bottom;
           const spaceLeft = targetRect.left;
@@ -23,7 +22,6 @@ export default function InfoModal({ show, onClose, modalSequence, currentStep, o
 
           let top, left;
 
-          // Determine vertical position
           if (spaceBelow >= modalRect.height + 10) {
             top = targetRect.bottom + 10;
           } else if (spaceAbove >= modalRect.height + 10) {
@@ -32,7 +30,6 @@ export default function InfoModal({ show, onClose, modalSequence, currentStep, o
             top = Math.max(10, (viewportHeight - modalRect.height) / 2);
           }
 
-          // Determine horizontal position
           if (spaceRight >= modalRect.width + 10) {
             left = targetRect.right + 10;
           } else if (spaceLeft >= modalRect.width + 10) {
@@ -41,13 +38,11 @@ export default function InfoModal({ show, onClose, modalSequence, currentStep, o
             left = Math.max(10, (viewportWidth - modalRect.width) / 2);
           }
 
-          // Directly set the position
           modalRef.current.style.top = `${top}px`;
           modalRef.current.style.left = `${left}px`;
         }
       };
 
-      // Position immediately and after a short delay to account for any layout shifts
       positionModal();
       setTimeout(positionModal, 0);
     }

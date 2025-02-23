@@ -7,7 +7,6 @@ const keeperKeys = [
     'expressiveness','auc','processing','backp','toner','resin','postcard'
 ];
 
-// Define a mapping from the original key to the new header name
 const headerNames = {
     'sb': 'IsSampleBook',
     'catalog': 'CatalogNumber',
@@ -38,27 +37,19 @@ const Download = ({ data, idxList, etitle, filename = 'lml.csv' }) => {
     const [showModal, setShowModal] = useState(false);
 
     const handleDownload = () => {
-        setShowModal(false); // Close the modal once the download is initiated
+        setShowModal(false); 
 
-        // Filter headers to include only keeper keys
         const headers = Object.keys(data).filter(key => keeperKeys.includes(key));
-        
-        // Rename headers according to the headerNames map
         const renamedHeaders = headers.map(header => headerNames[header] || header);
-
-        const csvRows = [renamedHeaders.join(',')]; // First row as renamed headers
-
+        const csvRows = [renamedHeaders.join(',')]; 
         const indices = idxList.length > 0 ? idxList : Array.from({ length: data[headers[0]].length }, (_, i) => i);
     
-        // Filter each column's data based on indices
         const filteredData = headers.map(header => (
             indices.map(index => data[header][index])
         ));
 
-        // Determine the number of rows in the filtered data
         const numRows = filteredData[0].length;
 
-        // Construct each row by iterating over the number of filtered rows
         for (let i = 0; i < numRows; i++) {
             const values = headers.map((header, headerIndex) => {
                 const value = filteredData[headerIndex][i];

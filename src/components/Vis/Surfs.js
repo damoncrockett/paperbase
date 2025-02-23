@@ -19,21 +19,18 @@ const Surfs = () => {
   ];
 
   useEffect(() => {
-    const width = 550;  // Fixed width
-    const height = 400; // Fixed height to match other visualizations
+    const width = 550;  
+    const height = 400; 
     const margin = { top: 30, right: 20, bottom: 30, left: 0 };
     const cornerRadius = 8;
     
-    // Clear previous SVG content
     select(svgRef.current).selectAll("*").remove();
 
-    // Create SVG with viewBox
     const svg = select(svgRef.current)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Create scales
     const xScale = scaleLinear()
       .domain([0, Math.max(...data.map(d => d.value))])
       .range([0, width - margin.left - margin.right]);
@@ -45,14 +42,12 @@ const Surfs = () => {
 
     const fontSize = Math.min(12, yScale.bandwidth() * 0.7);
 
-    // Create bars
     const bars = svg.selectAll('.bar')
       .data(data)
       .enter()
       .append('g')
       .attr('class', 'bar');
 
-    // Add rounded rectangles
     bars.each(function(d) {
       const bar = select(this);
       const barWidth = xScale(d.value);
@@ -76,7 +71,6 @@ const Surfs = () => {
         .attr('fill', d => d.name.includes('Kodak') ? "#dfbf4e" : "#c96a40");
     });
 
-    // Add labels (surface names)
     bars.append('text')
       .attr('x', 10)
       .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)
@@ -87,7 +81,6 @@ const Surfs = () => {
       .attr('font-weight', 400)
       .text(d => d.name);
 
-    // Add values
     bars.append('text')
       .attr('x', d => xScale(d.value) + 5)
       .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)

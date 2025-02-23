@@ -36,10 +36,9 @@ html, body {
   z-index: 0;
 }
 
-/* Mobile-specific override */
 @media (hover: none) {
   #landing {
-    background-attachment: scroll; /* Fallback for mobile */
+    background-attachment: scroll;
     position: relative;
     height: 100vh;
   }
@@ -47,7 +46,7 @@ html, body {
   .landingContent {
     position: relative;
     top: 0;
-    margin-top: -1px; /* Prevents gap between sections */
+    margin-top: -1px;
   }
 }
 
@@ -100,19 +99,19 @@ html, body {
 
 #tooNarrowMsg {
   border-radius: 3vh;
-  border-width: 2px;
+  border-width: 1px;
   border-style: dashed;
   border-color: var(--yalemidgray);
   display: block;
   color: var(--yalemidgray);
-  background-color: rgba(255, 255, 255, 0.7);
-  padding-top: 3vh;
-  padding-bottom: 3vh;
-  padding-left: 7vh;
-  padding-right: 7vh;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+  padding-left: 5vh;
+  padding-right: 5vh;
   margin-top: 8vh;
   font-weight: 500;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-style: italic;
   max-width: 50%;
 }
@@ -217,7 +216,7 @@ html, body {
 
 @media screen and (max-width: 600px) {
   .scroll-indicator {
-    bottom: 20vh;
+    bottom: 15vh;
   }
 }
 
@@ -444,7 +443,7 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Ensures the SVG doesn't interfere with clicks */
+    pointer-events: none; 
   }
   
   .methodBlock .material-icons {
@@ -586,15 +585,15 @@ html, body {
     }
 
     .methodAnnotation {
-      grid-column: 1 / -1; /* Span all columns */
-      grid-row: 2; /* Place on second row */
+      grid-column: 1 / -1; 
+      grid-row: 2; 
       border-left: none;
       padding: 0.5rem 0;
     }
 
     .methodBlock {
-      height: 70px; /* Fixed height for consistency */
-      width: 80px; /* Fixed width for consistency */
+      height: 70px; 
+      width: 80px; 
       padding: 0.5rem;
       display: flex;
       flex-direction: column;
@@ -615,7 +614,6 @@ html, body {
       font-size: 0.85rem;
     }
 
-    /* Hide empty blocks in mobile view */
     .methodBlock.empty {
       display: none;
     }
@@ -650,7 +648,7 @@ html, body {
   }
   
   .landingContentSection.dataInsightsSection {
-    padding: 10vh 0; /* Remove horizontal padding */
+    padding: 10vh 0; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -691,7 +689,7 @@ html, body {
   .dataInsightUnit {
     width: 100%;
     box-sizing: border-box;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Light separator line */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
   }
   
   .dataInsightUnit h3 {
@@ -727,13 +725,13 @@ html, body {
   .dataInsightUnit .svgContainer svg {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ensure the entire SVG is visible */
+    object-fit: contain; 
   }
   
   .dataInsightUnit p {
     font-size: 1rem;
     line-height: 1.5;
-    color: var(--yalelightgray); /* Consistent text color */
+    color: var(--yalelightgray); 
   }
 
   @media screen and (max-width: 1024px) {
@@ -1077,7 +1075,7 @@ html, body {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    max-width: 100%;  /* Ensure iframe doesn't exceed container */
+    max-width: 100%; 
   }
   
   .videoTitle {
@@ -1683,7 +1681,7 @@ html, body {
   .footerBottom p {
     font-size: 0.9rem;
     color: inherit;
-    opacity: 0.7; /* Slightly faded text */
+    opacity: 0.7; 
   }
   
   .footerBottom a {
