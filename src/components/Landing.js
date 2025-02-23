@@ -439,7 +439,7 @@ export default function Landing({ setPage }) {
             </div>
             <div className='dataInsightUnit'>
               <h3>Highlights and Shadows</h3>
-              <p>We expected base warmth and image warmth to be strongly correlated, but the correlation is actually quite weak: ρ = 0.17. Here, we show this relationship using a scatterplot with icons containing both the base(background) and image (foreground) colors.</p>
+              <p>We expected base warmth and image warmth to be strongly correlated, but the correlation is actually quite weak: ρ = 0.17. Here, we show this relationship using a scatterplot with icons containing both base and imagecolors.</p>
               <Basetone data={basetoneData} />
             </div>
             <div className='dataInsightUnit'>
@@ -449,12 +449,12 @@ export default function Landing({ setPage }) {
             </div>
             <div className='dataInsightUnit'>
               <h3>Paper Surfaces</h3>
-              <p>The same paper surfaces can reappear frequently in our data. For many combinations of manufacturer, brand, and surface, we have many dozens of examples in our collection. Here is every surface in the collection with at least 50 examples. All but one are Kodak!</p>
+              <p>The same paper surfaces can reappear frequently in our data. For many combinations of manufacturer, brand, and surface, we have many dozens of examples in our collection. Here is every surface in the collection with at least 50 examples, and all but one are Kodak.</p>
               <Surfs />
             </div>
             <div className='dataInsightUnit'>
               <h3>Material Diversity</h3>
-              <p>Manufacturer descriptions of paper surfaces are not physically uniform. Here, we illustrate this point by looking at the distribution of measured thicknesses for the weight descriptors "Single Weight" and "Double Weight". The two distributions overlap more than you'd expect! We see this across all descriptor types.</p>
+              <p>Manufacturer descriptions of paper surfaces are not physically uniform. Here, we illustrate this point by looking at the distribution of measured thicknesses for the weight descriptors "Single Weight" and "Double Weight". The two distributions overlap more than you'd expect, and we see this across all descriptor types.</p>
               <Diversity />
             </div>
           </div>
@@ -552,7 +552,7 @@ export default function Landing({ setPage }) {
               <h3>Closer Looking: Computer Vision in Material Studies of Art</h3>
               <p className='author'>Katherine Mintie, Paul Messier, and Damon Crockett</p>
               <p className='journal'>Art Bulletin 106 (2), 29-32, 2024.</p>
-              <p className='abstract'>This paper proposes that computational methods coupled with domain-specific expertise offer a powerful tool for recognizing material differences and similarities across large corpora. Computational methods can be broadly defined as research in which various data are collected, modelled, and analyzed by computers to support scholarly inquiry. In arguing for the applicability of computational methods to materials-based art historical research, this paper will address key questions such as how to determine when this approach is appropriate, the central role of subject matter expertise in data selection and visualization, and the potential of these methods to inform scholarship going forward.</p>
+              <p className='abstract'>This paper proposes that computational methods coupled with domain-specific expertise offer a powerful tool for recognizing material differences and similarities across large corpora.</p>
               <a href="https://www.tandfonline.com/doi/full/10.1080/00043079.2024.2296276" target='_blank' className='readLink'>
                 <span className="material-icons">article</span>
                 Read the essay
@@ -562,7 +562,7 @@ export default function Landing({ setPage }) {
               <h3>An Objective Revaluation of Photograms by László Moholy-Nagy</h3>
               <p className='author'>Sylvie Pénichon, Krista Lough, and Paul Messier</p>
               <p className='journal'>Leonardo 53 (3), 292-295, 2017.</p>
-              <p className='abstract'>Throughout his career, László Moholy-Nagy (1895–1946) produced many photograms, a selection of which was examined in European and American collections. Sheet dimensions and thickness, base color, surface gloss and texture were recorded. The analysis of the data and the results of this investigation are presented in this article. The article also explores the effectiveness of paper characterization and how it can contribute to and enhance historical research when applied to a particular body of work by one artist.</p>
+              <p className='abstract'>Throughout his career, László Moholy-Nagy (1895–1946) produced many photograms, a selection of which was examined in European and American collections. Sheet dimensions and thickness, base color, surface gloss and texture were recorded. The analysis of the data and the results of this investigation are presented in this article.</p>
               <a href="https://www.researchgate.net/profile/Sylvie-Penichon/publication/315987819_An_Objective_Revaluation_of_Photograms_by_Laszlo_Moholy-Nagy/links/5a7dca77aca272341af0d16d/An-Objective-Revaluation-of-Photograms-by-Laszlo-Moholy-Nagy.pdf" target='_blank' className='readLink'>
                 <span className="material-icons">article</span>
                 Read the paper
@@ -612,7 +612,7 @@ export default function Landing({ setPage }) {
               <h3>Image Isn't Everything: Revealing Affinities across Collections through the Language of the Photographic Print</h3>
               <p className='author'>Paul Messier</p>
               <p className='journal'>in <i>Object:Photo. Modern Photographs: The Thomas Walther Collection 1909-1949</i>, Museum of Modern Art, 332-339, 2014.</p>
-              <p className='abstract'>A photograph is more than an image. Paper, the physical material of the photographer, plays a vital role in the appearance of a photographic print and in conveying the photographer's intention for it. Texture, gloss, highlight color, and sheet thickness — the defining characteristics of photographic paper — each contribute significantly to the visual impact of a print. Paper manufacturers have long manipulated these key characteristics, singly and in combination, to differentiate their products and to satisfy a broad spectrum of market demands.</p>
+              <p className='abstract'>Paper, the physical material of the photographer, plays a vital role in the appearance of a photographic print and in conveying the photographer's intention for it. Texture, gloss, highlight color, and sheet thickness — the defining characteristics of photographic paper — each contribute significantly to the visual impact of a print. Paper manufacturers have long manipulated these key characteristics, singly and in combination, to differentiate their products and to satisfy a broad spectrum of market demands.</p>
               <a href="https://scholar.google.com/scholar?oi=bibs&cluster=12319685399683587963&btnI=1&hl=en" target='_blank' className='readLink'>
                 <span className="material-icons">article</span>
                 Read the paper
