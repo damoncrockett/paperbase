@@ -150,6 +150,10 @@ html, body {
   #blurbText {
     max-width: 75%;
   }
+
+  #tooNarrowMsg {
+    max-width: 80%;
+  }
 }
 
 @media screen and (max-width: 600px) {
@@ -160,6 +164,10 @@ html, body {
   #blurbTitle {
     font-size: 6rem;
   }
+
+  #tooNarrowMsg {
+    font-size: 0.9rem;
+  }
 }
 
 @media screen and (max-width: 450px) {
@@ -169,6 +177,10 @@ html, body {
 
   #blurbTitle {
     font-size: 5rem;
+  }
+
+  #tooNarrowMsg {
+    font-size: 0.8rem;
   }
 }
 
@@ -205,7 +217,7 @@ html, body {
 
 @media screen and (max-width: 600px) {
   .scroll-indicator {
-    bottom: 7vh;
+    bottom: 20vh;
   }
 }
 
