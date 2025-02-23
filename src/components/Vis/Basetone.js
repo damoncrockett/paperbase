@@ -75,30 +75,26 @@ const Basetone = ({ data }) => {
       .attr('ry', cornerRadius-1)
       .attr('fill', d => d.dmaxHex);
 
-    // Add x-axis (adjusted position for grid alignment)
-    const xAxis = axisBottom(xScale)
-      .ticks(10)
-      .tickFormat(d => d);
-
-    svg.append('g')
-      .attr('transform', `translate(0,${20 * gridSize})`)
-      .call(xAxis)
-      .attr('color', 'rgba(255, 255, 255, 0.6)')
+    // Replace x-axis code with label
+    svg.append('text')
+      .attr('x', (20 * gridSize) / 2)  // Center of the visualization
+      .attr('y', 20 * gridSize + 25)   // Below the visualization
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'rgba(255, 255, 255, 0.6)')
       .attr('font-family', 'Archivo')
-      .attr('font-size', '10px')
-      .call(g => g.select('.domain').remove());
+      .attr('font-size', '18px')
+      .text('warmer image →');
 
-    // Add y-axis (adjusted position for grid alignment)
-    const yAxis = axisLeft(yScale)
-      .ticks(10)
-      .tickFormat(d => d);
-
-    svg.append('g')
-      .call(yAxis)
-      .attr('color', 'rgba(255, 255, 255, 0.6)')
+    // Replace y-axis code with rotated label
+    svg.append('text')
+      .attr('transform', 'rotate(-90)')  // Rotate text vertically
+      .attr('x', -(20 * gridSize) / 2)   // Center of the visualization (y-axis)
+      .attr('y', -25)                    // Left of the visualization
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'rgba(255, 255, 255, 0.6)')
       .attr('font-family', 'Archivo')
-      .attr('font-size', '10px')
-      .call(g => g.select('.domain').remove());
+      .attr('font-size', '18px')
+      .text('warmer base →');
 
     // Add grid lines
     const gridLines = svg.append('g')

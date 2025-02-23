@@ -19,7 +19,7 @@ body {
 }
 
 html, body {
-  overflow-x: hidden;  /* prevent horizontal scroll only */
+  overflow-x: hidden;
   width: 100%;
   height: 100%;
   overscroll-behavior: none;
@@ -36,8 +36,23 @@ html, body {
   z-index: 0;
 }
 
+/* Mobile-specific override */
+@media (hover: none) {
+  #landing {
+    background-attachment: scroll; /* Fallback for mobile */
+    position: relative;
+    height: 100vh;
+  }
+
+  .landingContent {
+    position: relative;
+    top: 0;
+    margin-top: -1px; /* Prevents gap between sections */
+  }
+}
+
 .landingContent {
-  position: absolute;  /* Changed from relative to absolute */
+  position: absolute;
   top: 100vh;
   width: 100%;
   box-sizing: border-box;
@@ -47,7 +62,7 @@ html, body {
   align-items: center;
   background-color: var(--yaledarkgray);
   font-weight: 200;
-  z-index: 1;  /* Ensures content scrolls over the hero image */
+  z-index: 1;
 }
 
 #landingBlurb {
@@ -190,7 +205,7 @@ html, body {
 
 @media screen and (max-width: 600px) {
   .scroll-indicator {
-    display: none;
+    bottom: 7vh;
   }
 }
 
@@ -504,7 +519,8 @@ html, body {
       font-size: 0.75rem;
     }
 
-    .methodRow {
+    .methodRow.earlyRow,
+    .methodRow.lateRow {
       gap: 2rem;
     }
 
@@ -527,6 +543,11 @@ html, body {
       font-size: 0.75rem;
     }
 
+    .methodRow.earlyRow,
+    .methodRow.lateRow {
+      gap: 1rem;
+    }
+
   }
 
   @media screen and (max-width: 800px) {
@@ -535,27 +556,57 @@ html, body {
       display: none;
     }
 
-    .methodRow.earlyRow {
-      grid-template-columns: 1fr 1fr 4fr;
-    }
-
+    .methodRow.earlyRow,
     .methodRow.lateRow {
       grid-template-columns: 1fr 1fr 4fr;
+      gap: 0.5rem;
     }
 
   }
 
   @media screen and (max-width: 600px) {
-    
+    .methodRow {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      grid-template-rows: auto auto;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .methodAnnotation {
+      grid-column: 1 / -1; /* Span all columns */
+      grid-row: 2; /* Place on second row */
+      border-left: none;
+      padding: 0.5rem 0;
+    }
+
     .methodBlock {
+      height: 70px; /* Fixed height for consistency */
+      width: 80px; /* Fixed width for consistency */
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .methodBlock .material-icons {
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .methodBlock p {
+      font-size: 0.6rem;
+    }
+
+    .methodAnnotation p {
+      font-size: 0.85rem;
+    }
+
+    /* Hide empty blocks in mobile view */
+    .methodBlock.empty {
       display: none;
     }
-
-    .methodRow.earlyRow,
-    .methodRow.lateRow {
-      display: block;
-    }
-
   }
   
   .landingContentItems {
@@ -907,9 +958,9 @@ html, body {
     text-decoration: underline;
   }
   
-  .researchPaperUnit .readLink::before {
-    content: '📄';
+  .researchPaperUnit .readLink .material-icons {
     margin-right: 0.5rem;
+    font-size: 1.2rem;
   }
 
   @media screen and (max-width: 1280px) {
@@ -1194,7 +1245,13 @@ html, body {
       padding-left: 0;
     }
    
+  }
 
+  @media screen and (max-width: 450px) {
+    #s7 .landingContentSectionTitle,
+    .teamSection .landingContentItems {
+      max-width: 300px;
+    }
   }
   
   .teamSection.landingContentSection {
@@ -1283,6 +1340,13 @@ html, body {
     .teamSection .landingContentSectionTitle {
       max-width: 365px;
     }
+  }
+
+  @media screen and (max-width: 450px) {
+    .teamSection .landingContentSectionTitle,
+    .teamSection .landingContentItems {
+      max-width: 300px;
+    }    
   }
   
   .citationSection {
