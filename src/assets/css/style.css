@@ -145,7 +145,7 @@ button {
 }
 
 svg {
-  margin-right: 84px;
+  margin-right: 5vw;
 }
 
 #infomodal {
@@ -337,9 +337,9 @@ svg {
 }
 
 .panelItem {
-  padding: 16px;
-  margin: 8px;
-  border-radius: 20px;
+  padding: 1vw;
+  margin: 0.5vw;
+  border-radius: 1vw;
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   overflow: hidden;
