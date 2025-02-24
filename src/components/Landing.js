@@ -301,7 +301,7 @@ export default function Landing({ setPage }) {
   }, [layoutReady]);
 
   const tooNarrowMsg = "Please use a larger screen to view the collection.";
-  const tooNarrow = window.matchMedia("(max-width: 1375px)").matches;
+  const tooNarrow = window.matchMedia("(max-width: 1024px)").matches;
 
   return (
     <div id='landing' style={landingStyle}>

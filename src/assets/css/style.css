@@ -145,7 +145,7 @@ button {
 }
 
 svg {
-  margin-right: 5vw;
+  margin-right: 84px;
 }
 
 #infomodal {
@@ -337,9 +337,9 @@ svg {
 }
 
 .panelItem {
-  padding: 1vw;
-  margin: 0.5vw;
-  border-radius: 2vh;
+  padding: 16px;
+  margin: 8px;
+  border-radius: 20px;
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   overflow: hidden;
@@ -356,19 +356,18 @@ svg {
 }
 
 .grid {
-  max-width: 36vw;
-
+  max-width: 36vw; 
 }
 
 .gridMode {
-  width: 9vw;
-  height: 9vw;
+  width: 10.3vw;     
+  height: 10.3vw;    
   display: inline-block;
 }
 
 .gridModeSmall {
-  width: 4.2vw;
-  height: 4.2vw;
+  width: 5.74vw;       
+  height: 5.74vw;      
   display: inline-block;
 }
 
@@ -380,34 +379,34 @@ svg {
 
 .titleBar {
   display: inline-block;
-  font-size: 2.5vh;
+  font-size: 1.14vw;   
 }
 
 .titleBarMid {
-  font-size: 1.675vh;
+  font-size: 1vw;  
 }
 
 .titleBarSmall {
-  font-size: 1.25vh;
+  font-size: 0.72vw;  
 }
 
 .catalog {
-  font-size: 1.5vh;
+  font-size: 0.84vw;  
 }
 
 .catalogMid {
-  font-size: 1.25vh;
+  font-size: 0.72vw;   
 }
 
 .catalogSmall {
-  font-size: 1vh;
+  font-size: 0.60vw;   
 }
 
 .man {
   font-weight: 700;
   float: left;
   color: var(--yalemidgray);
-  margin-right: 0.5vh;
+  margin-right: 0.2vw;
 }
 
 .lightman {
@@ -416,25 +415,25 @@ svg {
 
 .bran {
   float: left;
-  margin-right: 0.5vh;
+  margin-right: 0.2vw;
 }
 
 .year {
   float: left;
-  margin-right: 0.335vh;
+  margin-right: 0.2vw;
   font-weight: 100;
 }
 
 .boxWord {
-  font-size: 1.5vh;
+  font-size: 0.84vw;   
 }
 
 .boxWordMid {
-  font-size: 1.33vh;
+  font-size: 0.78vw;   
 }
 
 .boxWordSmall {
-  font-size: 1vh;
+  font-size: 0.60vw;   
 }
 
 #detailScreen {

@@ -37,7 +37,6 @@ export default function PanelItem({
     packageImage,
     backprintImage,
     svgRadar,
-    smallItem,
     setDetailScreen,
     setDetailImageStringState,
     setDetailImageIndex,
@@ -160,8 +159,8 @@ export default function PanelItem({
     let catalog = data['catalog'][clickedItem];
     catalog = catalog.includes('1860') ? '1860' : catalog;
     
-    const textureThumbSize = smallItem ? 256 : 512;
-    const imgThumbSize = smallItem ? 512 : 1024;
+    const textureThumbSize = panelLayout === 3 ? 256 : 512;
+    const imgThumbSize = panelLayout === 3 ? 512 : 1024;
     const imgFolder = sb === '1' || sb === '-1' ? 'samplebooks' : 'packages';
   
     const imgStringTexture = returnDomain() + 'texture_' + textureThumbSize + '/' + catalog + '.jpg';
@@ -169,14 +168,14 @@ export default function PanelItem({
     const imgString = returnDomain() + imgFolder + '_' + imgThumbSize + '/' + catalog + '.jpg';
     const detailImgString = getDetailImageString(texture,backprintImage,clickedItem);
   
-    const svgSide = smallItem ? window.innerWidth * 0.042 : window.innerWidth * 0.09;
+    const svgSide = panelLayout === 3 ? window.innerWidth * 0.036 : window.innerWidth * 0.084;
     const sSixth = svgSide / 6;
     const sThird = svgSide / 3;
     const sHalf = svgSide / 2;
     const sTwoThird = svgSide * 2/3;
     const sFiveSixth = svgSide * 5/6;
   
-    const stroke = "#595959";
+    const stroke = "black";
   
     return (
       <div 
@@ -193,8 +192,8 @@ export default function PanelItem({
               : backprintImage
                 ? { backgroundImage: `url(${imgStringBackprint})`, backgroundPosition: 'center' }
                 : svgRadar 
-                ? { backgroundColor: 'var(--yalemidgray)' }
-                : { backgroundColor: 'var(--yalewhite)' }
+                ? { backgroundColor: 'var(--yalemidgray)', border: '1px solid black' }
+                : { backgroundColor: 'var(--yalewhite)', border: '1px solid transparent' }
               }
       >
         {svgRadar && <svg 
