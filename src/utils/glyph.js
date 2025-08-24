@@ -4,26 +4,36 @@ import { max, min } from "lodash";
 
 // Radar used in InfoPanel, drawn by d3 instead of webGL
 
-function getUniverse(dataU) {
-  return [
-    min(dataU["dmin"]),
-    max(dataU["dmin"]),
-    min(dataU["thickness"]),
-    max(dataU["thickness"]),
-    min(dataU["roughness"]),
-    max(dataU["roughness"]),
-    min(dataU["gloss"]),
-    max(dataU["gloss"]),
-  ];
-}
+const d = {
+  roughness: { lower: 0.005, upper: 0.373 },
+  bstar_base: { lower: -6.13, upper: 31.45 },
+  gloss: { lower: 0.19, upper: 123.55 },
+  thickness: { lower: 0.11, upper: 0.458 },
+};
 
-export function polygonPoints(dataU, clickedItem, svgSide) {
-  const universe = getUniverse(dataU);
-
-  const p1 = uScale(universe[0], universe[1], dataU["dmin"][clickedItem]);
-  const p2 = uScale(universe[2], universe[3], dataU["thickness"][clickedItem]);
-  const p3 = uScale(universe[4], universe[5], dataU["roughness"][clickedItem]);
-  const p4 = 1 - uScale(universe[6], universe[7], dataU["gloss"][clickedItem]);
+export function polygonPoints(data, clickedItem, svgSide) {
+  const p1 = uScale(
+    d["bstar_base"]["lower"],
+    d["bstar_base"]["upper"],
+    data["dmin"][clickedItem]
+  );
+  const p2 = uScale(
+    d["thickness"]["lower"],
+    d["thickness"]["upper"],
+    data["thickness"][clickedItem]
+  );
+  const p3 = uScale(
+    d["roughness"]["lower"],
+    d["roughness"]["upper"],
+    data["roughness"][clickedItem]
+  );
+  const p4 =
+    1 -
+    uScale(
+      d["gloss"]["lower"],
+      d["gloss"]["upper"],
+      data["gloss"][clickedItem]
+    );
 
   const zeroPoint = svgSide / 2;
 

@@ -11,8 +11,10 @@ import Download from "./Download";
 import BoxSelection from "./BoxSelection";
 import InfoModal from "./InfoModal";
 import { modalSequence } from "../utils/infomodal";
-import { valueCounts, rankTransform } from "../utils/stats";
+import { valueCounts } from "../utils/stats";
 import data from "../utils/data";
+
+console.log(data);
 
 import {
   makeColorArray,
@@ -91,15 +93,6 @@ const zArray = isoGroupArray.map((d) =>
 
 const radarGroupArray = Array.from(new Set(data["radarGroup"]));
 const radarMap = makeMap(data, radarGroupArray, "radarGroup");
-
-export const dataU = {
-  dmin: rankTransform(data["dmin"]),
-  thickness: rankTransform(data["thickness"]),
-  roughness: rankTransform(data["roughness"]),
-  gloss: rankTransform(data["gloss"]),
-};
-
-console.log(dataU);
 
 /*Models----------------------------------------------------------------------*/
 
